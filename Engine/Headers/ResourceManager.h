@@ -7,9 +7,10 @@
 
 class Bindable;
 class VertexBuffer;
-class Graphics;
 class VertexLayout;
 class IndexBuffer;
+class ConstantBuffer;
+class Graphics;
 class RootSignature;
 class PipelineStateObject;
 class PSO_Layout;
@@ -23,6 +24,7 @@ public:
 	std::shared_ptr<RootSignature> CreateNullRootSignature(Graphics* pGraphics);
 	std::shared_ptr<RootSignature> CreateRootSignature(Graphics* pGraphics, RS_Layout& Lay);
 	std::shared_ptr<PipelineStateObject> CreatePSO(Graphics* pGraphics, PSO_Layout& pLay, VertexLayout* vLay, RootSignature* RS);
+	std::shared_ptr<ConstantBuffer> CreateConstBuffer(Graphics* pGraphics, void* pData, unsigned int DataSize, unsigned int ParameterIndex);
 
 private:
 	std::unordered_map<std::string, std::shared_ptr<Bindable>> Bindables;

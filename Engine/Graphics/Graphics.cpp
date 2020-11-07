@@ -220,7 +220,7 @@ void Graphics::Setup(float R, float G, float B, float A)
 
 }
 
-Engine_API void Graphics::Execute()
+void Graphics::Execute()
 {
     // Indicate that the back buffer will now be used to present.
     pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));

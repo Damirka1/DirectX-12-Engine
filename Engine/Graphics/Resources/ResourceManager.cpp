@@ -87,3 +87,20 @@ std::shared_ptr<PipelineStateObject> ResourceManager::CreatePSO(Graphics* pGraph
 		return std::static_pointer_cast<PipelineStateObject>(i->second);
 	}
 }
+
+std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Graphics* pGraphics, void* pData, unsigned int DataSize, unsigned int ParameterIndex)
+{
+	using namespace std::string_literals;
+	const std::string key = typeid(ConstantBuffer).name() + '{' + std::to_string(DataSize) + ':' + std::to_string(static_cast<float*>(pData)[0]) + ':' + std::to_string(ParameterIndex) + '}';
+	const auto i = Bindables.find(key);
+	if (i == Bindables.end())
+	{
+		auto bind = std::make_shared<ConstantBuffer>(pGraphics, pData, DataSize, ParameterIndex);
+		Bindables[key] = bind;
+		return bind;
+	}
+	else
+	{
+		return std::static_pointer_cast<ConstantBuffer>(i->second);
+	}
+}

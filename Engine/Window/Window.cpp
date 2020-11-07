@@ -5,7 +5,8 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	:
 	hInst(hInst),
 	Width(Width),
-	Height(Height)
+	Height(Height),
+	t(new Timer)
 {
 	WNDCLASSEX wc = { 0 };
 	wc.cbSize = sizeof(wc);
@@ -22,7 +23,7 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 
 	RegisterClassEx(&wc);
 
-	// calculate window size based on desired client region size
+	// Calculate window size based on desired client region size.
 	RECT wr;
 	wr.left = 100;
 	wr.right = Width + wr.left;
@@ -33,14 +34,31 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	{
 		throw std::exception("Window size error");
 	}
-	// create window & get hWnd
+	
+
+	// Get center of the screen.
+	RECT sr;
+	LONG x = 0u, y = 0u, Wwidth = wr.right - wr.left, Wheight = wr.bottom - wr.top;
+	if(GetWindowRect(GetDesktopWindow(), &sr))
+	{
+		x = (sr.right / 2u) - (Wwidth / 2u);
+		y = (sr.bottom / 2u) - (Wheight / 2u);
+	}
+	else
+	{
+		x = sr.right / 4u;
+		y = sr.bottom / 4u;
+	}
+
+	// Create window and get hWnd.
 	pWindow = CreateWindowW(
 		L"Default Class", WindowName,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-		CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
+		x, y, Wwidth, Wheight,
 		nullptr, nullptr, hInst, this
 	);
-	// check for error
+
+	// Check for error.
 	if (pWindow == nullptr)
 	{
 		throw std::exception("Window creation error");
@@ -52,48 +70,13 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 
 Window::Window(const wchar_t* WindowName, short Width, short Height)
 	:
-	hInst(GetModuleHandle(nullptr)),
-	Width(Width),
-	Height(Height)
+	Window(GetModuleHandle(nullptr), WindowName, Width, Height)
 {
-	WNDCLASSEX wc = { 0 };
-	wc.cbSize = sizeof(wc);
-	wc.style = CS_OWNDC;
-	wc.lpfnWndProc = HandleMsgSetup;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInst;
+}
 
-	wc.hCursor = nullptr;
-	wc.hbrBackground = nullptr;
-	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = L"Default Class";
-
-	RegisterClassEx(&wc);
-
-	// calculate window size based on desired client region size
-	RECT wr;
-	wr.left = 100;
-	wr.right = Width + wr.left;
-	wr.top = 100;
-	wr.bottom = Height + wr.top;
-
-	if (AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
-	{
-		throw std::exception("Window size error");
-	}
-	// create window & get hWnd
-	pWindow = CreateWindowW(
-		L"Default Class", WindowName,
-		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-		CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
-		nullptr, nullptr, hInst, this
-	);
-	// check for error
-	if (pWindow == nullptr)
-	{
-		throw std::exception("Window creation error");
-	}
+Window::~Window()
+{
+	delete t;
 }
 
 void Window::Show()
@@ -131,6 +114,16 @@ void Window::SetGraphics(Graphics* pGtx)
 HWND Window::GetHWND()
 {
 	return pWindow;
+}
+
+float Window::TimerPeek()
+{
+	return t->Peek();
+}
+
+float Window::TimerMark()
+{
+	return t->Mark();
 }
 
 LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

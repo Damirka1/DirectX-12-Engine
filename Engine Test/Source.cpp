@@ -1,42 +1,26 @@
-#include "..\Engine\Headers\Window.h"
-#include "..\Engine\Headers\ResourceManager.h"
-#include "..\Engine\Headers\Graphics.h"
-#include "..\Engine\Models\Triangle.h"
-#ifdef _DEBUG
-#include "..\ConsoleDLL\Console.h"
-#endif // DEBUG
-
+#include "Application.h"
+#include "../Engine/Headers/Graphics/GraphicsException.h"
 
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR pCmdLine, _In_ int)
 {
-#ifdef _DEBUG
-	Console* Con = new Console(L"Test Console");
-	*Con << L"Hello, World\n" << L"123";
-#endif
-	Window* pWindow = new Window(hInstance, L"DirectX 12 Engine");
-	Graphics* gtx = new Graphics(pWindow->GetHWND());
-	pWindow->SetGraphics(gtx);
-	pWindow->Show();
-	ResourceManager* RM = new ResourceManager();
-	Triangle* t = new Triangle(gtx, RM);
-	gtx->Initialize();
+	Application* app = nullptr;
 
-	while (pWindow->IsExist())
+	try
 	{
-		pWindow->ProcessMessages();
-		gtx->Setup(0.5f, 0.5f, 0.5f);
-		t->Draw(gtx);
-		gtx->Execute();
+		app = new Application(hInstance);
+		app->Run();
 	}
-#ifdef _DEBUG
-	delete Con;
-#endif
+	catch (GraphicsException& ex)
+	{
+		MessageBoxA(nullptr, ex.What().c_str(), ex.GetType(), MB_OK | MB_ICONERROR);
+	}
+	catch (const std::exception& e)
+	{
+		MessageBoxA(nullptr, e.what(), "Unknown error", MB_OK | MB_ICONERROR);
+	}
 
-	delete pWindow;
-	delete gtx;
-	delete RM;
-	delete t;
+	delete app;
 
 	return 0;
 }

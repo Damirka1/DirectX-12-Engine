@@ -33,19 +33,19 @@ void PSO_Layout::SetShader(Shader Type, std::string Path)
 {
 	switch (Type)
 	{
-	case PSO_Layout::Vertex:
+	case PSO_Layout::Shader::Vertex:
 		VS = Path;
 		break;
-	case PSO_Layout::Pixel:
+	case PSO_Layout::Shader::Pixel:
 		PS = Path;
 		break;
-	case PSO_Layout::Geometry:
+	case PSO_Layout::Shader::Geometry:
 		GS = Path;
 		break;
-	case PSO_Layout::Hull:
+	case PSO_Layout::Shader::Hull:
 		HS = Path;
 		break;
-	case PSO_Layout::Domain:
+	case PSO_Layout::Shader::Domain:
 		DS = Path;
 		break;
 	}
@@ -59,7 +59,7 @@ void PSO_Layout::SetTopology(Topology Type)
 std::string PSO_Layout::GetCode()
 {
 	std::string code;
-	code += "{" + VS + "," + PS + "," + GS + "," + HS + "," + DS + ":" + std::to_string(rType) + "," + std::to_string(bType) + "," + std::to_string(pType)
+	code += "{" + VS + "," + PS + "," + GS + "," + HS + "," + DS + ":" + std::to_string(static_cast<UINT>(rType)) + "," + std::to_string(static_cast<UINT>(bType)) + "," + std::to_string(static_cast<UINT>(pType))
 		+ ":" + std::to_string(Depth) + "," + std::to_string(Stencil) + ":" + std::to_string(RenderTargetsCount) + ":" + std::to_string(RTV_Format) + ":" + std::to_string(SampleCount) + "}";
 	return code;
 }

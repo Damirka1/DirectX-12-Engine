@@ -7,7 +7,7 @@ class PSO_Layout
 {
 	friend class PipelineStateObject;
 public:
-	enum Shader
+	enum class Shader
 	{
 		Vertex,
 		Pixel,
@@ -16,15 +16,15 @@ public:
 		Domain
 	};
 
-	enum Rasterizer
+	enum class Rasterizer
 	{
 		Default
 	};
-	enum Blender
+	enum class Blender
 	{
 		DefaultValue
 	};
-	enum Topology
+	enum class Topology
 	{
 		Triangle
 	};

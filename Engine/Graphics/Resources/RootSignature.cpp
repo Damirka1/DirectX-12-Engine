@@ -65,30 +65,28 @@ RootSignature::RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string co
     // Create root parameters.
     UINT Count = static_cast<UINT>(Lay.DescriptorTables.size());
     CD3DX12_ROOT_PARAMETER1* rParameters = new CD3DX12_ROOT_PARAMETER1[Count];
+    std::vector<CD3DX12_DESCRIPTOR_RANGE1*> ranges;
     
     for (UINT i = 0; i < Count; i++)
     {
         // Create ranges.
         UINT RCount = static_cast<UINT>(Lay[i].Ranges.size());
-        CD3DX12_DESCRIPTOR_RANGE1* ranges = new CD3DX12_DESCRIPTOR_RANGE1[RCount];
+        UINT Padding = static_cast<UINT>(ranges.size());
 
-        for (UINT j = 0; j < RCount; j++)
+        for (UINT j = Padding; j < Padding + RCount; j++)
         {
+            ranges.push_back(new CD3DX12_DESCRIPTOR_RANGE1);
             // Init ranges.
-            RS_Layout::DescriptorTable::Range& r = Lay[i].Ranges[j];
-            ranges[j].Init(r.Type, r.numDescriptors, r.ShaderRegister, r.RegisterSpace, r.Flags);
+            RS_Layout::DescriptorTable::Range& r = Lay[i].Ranges[j - Padding];
+            ranges[j]->Init(r.Type, r.numDescriptors, r.ShaderRegister, r.RegisterSpace, r.Flags);
         }
 
         // Init root parameters.
-        rParameters[i].InitAsDescriptorTable(RCount, ranges, Lay[i].Visibility);
-
-        delete[] ranges;
+        rParameters[i].InitAsDescriptorTable(RCount, ranges[Padding], Lay[i].Visibility);
     }
     
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
     rootSignatureDesc.Init_1_1(Count, rParameters, 0, nullptr, Lay.Flags);
-
-    delete[] rParameters;
 
 
     ID3DBlob* signature;
@@ -99,6 +97,13 @@ RootSignature::RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string co
     Error_Check(
         pGraphics->GetDevice()->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&pRootSignature))
     );
+
+    delete[] rParameters;
+    for (auto& e : ranges)
+    {
+        delete e;
+    }
+    ranges.clear();
 
     if (signature)
         signature->Release();
