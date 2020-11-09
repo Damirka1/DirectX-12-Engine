@@ -126,9 +126,31 @@ float Window::TimerMark()
 	return t->Mark();
 }
 
+bool Window::AddHandler(MessageHandler* ptr, const char* Name)
+{
+	const auto i = MessageHandlers.find(Name);
+	if (i == MessageHandlers.end())
+	{
+		MessageHandlers[Name] = ptr;
+		return true;
+	}
+	return false;
+}
+
+bool Window::RemoveHandler(const char* Name)
+{
+	const auto i = MessageHandlers.find(Name);
+	if (i == MessageHandlers.end())
+	{
+		MessageHandlers.erase(i);
+		return true;
+	}
+	return false;
+}
+
 LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	// use create parameter passed in from CreateWindow() to store window class pointer at WinAPI side
+	// Use create parameter passed in from CreateWindow() to store window class pointer at WinAPI side.
 	if (msg == WM_NCCREATE)
 	{
 		// extract ptr to window class from creation data
@@ -141,15 +163,15 @@ LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		// forward message to window instance handler
 		return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
 	}
-	// if we get a message before the WM_NCCREATE message, handle with default handler
+	// If we get a message before the WM_NCCREATE message, handle with default handler.
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
 LRESULT Window::StaticHandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	// retrieve ptr to window instance
+	// Retrieve ptr to window instance.
 	Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	// forward message to window instance handler
+	// Forward message to window instance handler.
 	return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
 }
 
@@ -162,5 +184,10 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		return 0;
 	}
+
+	// Processing all handlers in map.
+	for (auto& el : MessageHandlers)
+		el.second->HandleMsg(hWnd, msg, wParam, lParam);
+
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }

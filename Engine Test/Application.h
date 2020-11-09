@@ -6,6 +6,7 @@
 #include "..\Engine\Headers\ResourceManager.h"
 #include "..\Engine\Headers\Graphics.h"
 #include "..\Engine\Models\Triangle.h"
+#include "..\Engine\Headers\Input\Keyboard.h"
 #ifdef _DEBUG
 #include "..\ConsoleDLL\Console.h"
 #endif // DEBUG
@@ -26,6 +27,7 @@ private:
 	Graphics* gtx;
 	ResourceManager* RM;
 	Triangle* t;
+	Keyboard* k;
 };
 
 #endif

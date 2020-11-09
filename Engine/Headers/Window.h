@@ -2,6 +2,8 @@
 #ifndef WINDOW_HEADER
 #define Window_HEADER
 #include <Windows.h>
+#include "MessageHandler.h"
+#include <unordered_map>
 
 #include "Header.h"
 #include "Timer.h"
@@ -21,8 +23,13 @@ public:
 	Engine_API void ProcessMessages();
 	Engine_API void SetGraphics(Graphics* pGtx);
 	Engine_API HWND GetHWND();
+	// Return elapsed time from start window.
 	Engine_API float TimerPeek();
+	// Return elapsed time from frame render.
 	Engine_API float TimerMark();
+	// All handler to map. Handler will be used in messages process.
+	Engine_API bool AddHandler(MessageHandler* ptr, const char* Name);
+	Engine_API bool RemoveHandler(const char* Name);
 
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -35,5 +42,6 @@ private:
 	HWND pWindow = nullptr;
 	HINSTANCE hInst = nullptr;
 	Graphics* pGtx = nullptr;
+	std::unordered_map<std::string, MessageHandler*> MessageHandlers;
 };
 #endif

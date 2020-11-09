@@ -28,8 +28,10 @@ Triangle::Triangle(Graphics* pGraphics, ResourceManager* pRM)
 
 	AddBindable(RS);
 
-	c = { 1.0f, 1.0f, 1.0f };
-	pConstBuffer = CreateConstBuffer(pGraphics, &c, sizeof(c), 0);
+	b.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	b.pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixIdentity());
+
+	pConstBuffer = CreateConstBuffer(pGraphics, &b, sizeof(b), 0);
 
 	PSO_Layout pLay(1, pGraphics->GetFormat());
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("..\\Engine\\Shaders\\VertexShader.cso"));
@@ -50,10 +52,12 @@ void Triangle::Draw(Graphics* pGraphics)
 	Drawable::DrawIndexed(pGraphics);
 }
 
-void Triangle::Update(float r, float g, float b)
+void Triangle::Update(float r, float g, float b, float up, float left)
 {
-	c = { r,g,b };
-	pConstBuffer->Update(&c, sizeof(c));
+	this->b.pos *= DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslation(left, up, 0.0f));
+	this->b.color = { r,g,b, 1.0f };
+
+	pConstBuffer->Update(&this->b, sizeof(this->b));
 }
 
 Triangle::~Triangle()

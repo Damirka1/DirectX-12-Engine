@@ -5,13 +5,14 @@ struct VSOut
 };
 
 cbuffer C {
-    float3 Color;
+    float4 Color;
+    matrix Pos;
 }
 
 VSOut main(float2 pos : Position)
 {
 	VSOut vsout;
-	vsout.pos = float4(pos, 1.0f, 1.0f);
-	vsout.Color = Color;
+    vsout.pos = mul(float4(pos, 1.0f, 1.0f), Pos);
+    vsout.Color = float3(Color.xyz);
 	return vsout;
 }
