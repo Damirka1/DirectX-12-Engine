@@ -6,10 +6,12 @@
 #include "..\..\d3dx12.h"
 #include "..\Bindable.h"
 
+
 class Buffer
 {
 protected:
-	Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state);
+	Buffer(Buffer&) = delete;
+	Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state, bool UseUpload = false, D3D12_RESOURCE_DESC* pDesc = nullptr);
 	~Buffer();
 
 	ID3D12Resource* pBuffer = nullptr;
@@ -20,6 +22,7 @@ protected:
 
 class VertexBuffer : public Buffer, public Bindable
 {
+	friend class Drawable;
 public:
 	VertexBuffer(Graphics* pGraphics, void* pData, UINT Stride, UINT DataSize, UINT Slot = 0);
 	void Bind(Graphics* pGraphics) override;
@@ -35,6 +38,7 @@ private:
 
 class IndexBuffer : public Buffer, public Bindable
 {
+	friend class Drawable;
 public:
 	IndexBuffer(Graphics* pGraphics, std::vector<unsigned int> Indecies);
 	void Bind(Graphics* pGraphics) override;
@@ -59,6 +63,21 @@ private:
 	ID3D12Resource* pBuffer = nullptr;
 	ID3D12DescriptorHeap* pHeap;
 	D3D12_CONSTANT_BUFFER_VIEW_DESC BufferView;
+	UINT RootParameterIndex = 0;
+};
+
+
+
+class Texture2D : public Buffer, public Bindable
+{
+public:
+	Texture2D(Graphics* pGraphics, void* pData, UINT DataSize, UINT BitsPerPixel, D3D12_RESOURCE_DESC* pDesc, UINT ParameterIndex);
+	void Bind(Graphics* pGraphics) override;
+	std::pair<ID3D12DescriptorHeap*, UINT> GetHeap();
+	~Texture2D();
+
+private:
+	ID3D12DescriptorHeap* pHeap = nullptr;
 	UINT RootParameterIndex = 0;
 };
 

@@ -18,7 +18,7 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 
 	if (file == INVALID_HANDLE_VALUE)
 	{
-		throw std::exception();
+		throw std::exception("Invalid shader path");
 	}
 
 	FILE_STANDARD_INFO fileInfo = {};

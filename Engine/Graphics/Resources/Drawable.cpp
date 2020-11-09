@@ -17,18 +17,30 @@ void Drawable::SetIndexBuffer(std::shared_ptr<IndexBuffer> pIB)
 	pIndexBuffer = std::move(pIB);
 }
 
-std::shared_ptr<ConstantBuffer> Drawable::AddConstBuffer(Graphics* pGraphics, ResourceManager* pManager, void* pData, unsigned int DataSize, unsigned int RootParameterIndex)
+std::shared_ptr<ConstantBuffer> Drawable::CreateConstBuffer(Graphics* pGraphics, void* pData, unsigned int DataSize, unsigned int RootParameterIndex)
+{
+	CheckArray();
+
+	std::shared_ptr<ConstantBuffer> buffer = std::make_shared<ConstantBuffer>(pGraphics, pData, DataSize, RootParameterIndex);
+	std::static_pointer_cast<HeapDescriptorArray>(Bindables[HeapArrayIndex])->
+		AddDescriptor(buffer->GetHeap().first, RootParameterIndex);
+	return buffer;
+}
+
+std::shared_ptr<Texture2D> Drawable::CreateTexture2D(Graphics* pGraphics, std::string Path, unsigned int RootParameterIndex)
+{
+	return nullptr;
+}
+
+void Drawable::CheckArray()
 {
 	if (HeapArrayIndex == -1)
 	{
 		AddBindable(std::make_shared<HeapDescriptorArray>());
 		HeapArrayIndex = static_cast<int>(Bindables.size()) - 1;
 	}
-	std::shared_ptr<ConstantBuffer> buffer = pManager->CreateConstBuffer(pGraphics, pData, DataSize, RootParameterIndex);
-	std::static_pointer_cast<HeapDescriptorArray>(Bindables[HeapArrayIndex])->
-		AddDescriptor(buffer->GetHeap().first, RootParameterIndex);
-	return buffer;
 }
+
 
 void Drawable::Bind(Graphics* pGraphics)
 {
@@ -41,12 +53,14 @@ void Drawable::Bind(Graphics* pGraphics)
 void Drawable::Draw(Graphics* pGraphics)
 {
 	pVertexBuffer->Bind(pGraphics);
-	pGraphics->GetCommandList()->DrawInstanced(pVertexBuffer->GetVertexCount(), 1, 0, 0);
+	pGraphics->GetCommandList()->DrawInstanced(pVertexBuffer->VertexCount, 1, 0, 0);
 }
 
 void Drawable::DrawIndexed(Graphics* pGraphics)
 {
 	pVertexBuffer->Bind(pGraphics);
 	pIndexBuffer->Bind(pGraphics);
-	pGraphics->GetCommandList()->DrawIndexedInstanced(pIndexBuffer->GetIndeciesCount(), 1, 0, 0, 0);
+	pGraphics->GetCommandList()->DrawIndexedInstanced(pIndexBuffer->Indecies, 1, 0, 0, 0);
 }
+
+

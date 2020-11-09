@@ -104,3 +104,21 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Graphics* pGr
 		return std::static_pointer_cast<ConstantBuffer>(i->second);
 	}
 }
+
+std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Graphics* pGraphics, std::string_view Path, void* pData, unsigned int DataSize, unsigned int BitsPerPixel, void* pDesc, unsigned int ParameterIndex)
+{
+	auto* pd = static_cast<D3D12_RESOURCE_DESC*>(pDesc);
+	using namespace std::string_literals;
+	const std::string key = typeid(Texture2D).name() + ':' + std::string(Path) + ':' + std::to_string(pd->Dimension) + ':' + std::to_string(pd->SampleDesc.Count) + ':' + std::to_string(BitsPerPixel);
+	const auto i = Bindables.find(key);
+	if (i == Bindables.end())
+	{
+		auto bind = std::make_shared<Texture2D>(pGraphics, pData, DataSize, BitsPerPixel, static_cast<D3D12_RESOURCE_DESC*>(pDesc), ParameterIndex);
+		Bindables[key] = bind;
+		return bind;
+	}
+	else
+	{
+		return std::static_pointer_cast<Texture2D>(i->second);
+	}
+}

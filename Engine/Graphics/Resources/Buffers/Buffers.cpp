@@ -1,6 +1,6 @@
 #include "..\..\..\Headers\Graphics\Resources\Buffers\Buffers.h"
 
-Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state)
+Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state, bool UseUpload, D3D12_RESOURCE_DESC* pDesc)
 {
 
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
@@ -11,7 +11,7 @@ Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_S
 		pDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(DataSize),
+			pDesc != nullptr ? pDesc : &CD3DX12_RESOURCE_DESC::Buffer(DataSize),
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr,
 			IID_PPV_ARGS(&pBuffer)
@@ -23,7 +23,7 @@ Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_S
 		pDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(DataSize),
+			&CD3DX12_RESOURCE_DESC::Buffer(UseUpload ? GetRequiredIntermediateSize(pBuffer, 0, 1) : DataSize),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&pCopyBuffer)
@@ -237,4 +237,53 @@ HeapDescriptorArray::~HeapDescriptorArray()
 		p->Release();
 	pHeaps.clear();
 	Indexes.clear();
+}
+
+
+Texture2D::Texture2D(Graphics* pGraphics, void* pData, UINT DataSize, UINT BitsPerPixel, D3D12_RESOURCE_DESC* pDesc, UINT ParameterIndex)
+	:
+	Buffer(pGraphics, pData, DataSize, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true, pDesc),
+	RootParameterIndex(ParameterIndex)
+{
+
+	ID3D12Device8* pDevice = pGraphics->GetDevice();
+
+	// Describe and create a shader resource view (SRV) heap for the texture.
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	Error_Check(
+		pDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&pHeap))
+	);
+	
+
+	// Describe and create a SRV for the texture.
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = pDesc->Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, pHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+void Texture2D::Bind(Graphics* pGraphics)
+{
+	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
+
+	ID3D12DescriptorHeap* pHeaps[] = { pHeap };
+
+	pCommandList->SetDescriptorHeaps(1, pHeaps);
+	pCommandList->SetGraphicsRootDescriptorTable(RootParameterIndex, pHeap->GetGPUDescriptorHandleForHeapStart());
+}
+
+std::pair<ID3D12DescriptorHeap*, UINT> Texture2D::GetHeap()
+{
+	return { pHeap, RootParameterIndex };
+}
+
+Texture2D::~Texture2D()
+{
+	pHeap->Release();
+	pHeap = nullptr;
 }

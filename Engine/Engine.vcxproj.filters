@@ -101,9 +101,18 @@
     <ClInclude Include="Headers\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\DirectXTex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShader.hlsl" />
     <FxCompile Include="Shaders\PixelShader.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="DirectXTex.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DirectXTex.dll" />
   </ItemGroup>
 </Project>

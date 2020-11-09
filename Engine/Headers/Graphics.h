@@ -5,6 +5,8 @@
 #include "Graphics\d3dx12.h"
 #pragma comment(lib, "D3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "uuid.lib")
 
 #include <d3d12.h>
 #include <dxgi1_6.h>

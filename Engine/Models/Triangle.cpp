@@ -29,11 +29,11 @@ Triangle::Triangle(Graphics* pGraphics, ResourceManager* pRM)
 	AddBindable(RS);
 
 	c = { 1.0f, 1.0f, 1.0f };
-	pConstBuffer = AddConstBuffer(pGraphics, pRM, &c, sizeof(c), 0);
+	pConstBuffer = CreateConstBuffer(pGraphics, &c, sizeof(c), 0);
 
 	PSO_Layout pLay(1, pGraphics->GetFormat());
-	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("E:\\Visual Projects\\DirectX 12 Engine\\Engine\\Shaders\\VertexShader.cso"));
-	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("E:\\Visual Projects\\DirectX 12 Engine\\Engine\\Shaders\\PixelShader.cso"));
+	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("..\\Engine\\Shaders\\VertexShader.cso"));
+	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("..\\Engine\\Shaders\\PixelShader.cso"));
 
 	AddBindable(pRM->CreatePSO(pGraphics, pLay, &Lay, RS.get()));
 
@@ -54,4 +54,8 @@ void Triangle::Update(float r, float g, float b)
 {
 	c = { r,g,b };
 	pConstBuffer->Update(&c, sizeof(c));
+}
+
+Triangle::~Triangle()
+{
 }
