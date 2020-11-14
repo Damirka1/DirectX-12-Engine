@@ -156,6 +156,7 @@
     <ClCompile Include="Graphics\Resources\RootSignature.cpp" />
     <ClCompile Include="Graphics\Resources\VertexLayout.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
+    <ClCompile Include="input\Mouse.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
     <ClCompile Include="Models\Triangle.cpp" />
     <ClCompile Include="Window\Window.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Headers\Graphics\Resources\VertexLayout.h" />
     <ClInclude Include="Headers\Header.h" />
     <ClInclude Include="Headers\Input\Keyboard.h" />
+    <ClInclude Include="Headers\Input\Mouse.h" />
     <ClInclude Include="Headers\MessageHandler.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
     <ClInclude Include="Headers\Timer.h" />

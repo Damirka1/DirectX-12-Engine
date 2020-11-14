@@ -79,6 +79,11 @@ Window::~Window()
 	delete t;
 }
 
+void Window::SetWindowName(const char* Name)
+{
+	SetWindowTextA(pWindow, Name);
+}
+
 void Window::Show()
 {
 	ShowWindow(pWindow, SW_SHOWDEFAULT);

@@ -26,6 +26,9 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam)
 {
 	switch (msg)
 	{
+	case WM_KILLFOCUS:
+		ClearState();
+		break;
 	case WM_CHAR:
 	case WM_KEYDOWN:
 	{
@@ -50,6 +53,11 @@ void Keyboard::PopQueue()
 {
 	while (Events.size() > QueueSize)
 		Events.pop();
+}
+
+void Keyboard::ClearState()
+{
+	Events = std::queue<KeyEvent>();
 }
 
 Keyboard::KeyEvent::KeyEvent()

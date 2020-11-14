@@ -7,9 +7,9 @@
 #include "..\Engine\Headers\Graphics.h"
 #include "..\Engine\Models\Triangle.h"
 #include "..\Engine\Headers\Input\Keyboard.h"
-#ifdef _DEBUG
+#include "..\Engine\Headers\Input\Mouse.h"
+
 #include "..\ConsoleDLL\Console.h"
-#endif // DEBUG
 
 
 class Application
@@ -20,14 +20,14 @@ public:
 	~Application();
 
 private:
-#ifdef _DEBUG
-	Console* Con;
-#endif
+	Console Con;
+
 	Window* pWindow;
 	Graphics* gtx;
 	ResourceManager* RM;
 	Triangle* t;
 	Keyboard* k;
+	Mouse* m;
 };
 
 #endif

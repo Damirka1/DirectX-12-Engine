@@ -39,6 +39,7 @@ public:
 private:
 	void CALLBACK HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) override;
 	void PopQueue();
+	void ClearState();
 
 	std::bitset<256> keys;
 	std::queue<KeyEvent> Events;

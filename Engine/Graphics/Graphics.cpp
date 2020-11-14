@@ -1,5 +1,6 @@
 #include "..\Headers\Graphics.h"
 #include "..\Headers\Graphics\Error_Check.h"
+#include <algorithm>
 
 Graphics::Graphics(HWND pWindow, short w, short h)
     :
@@ -25,14 +26,62 @@ Graphics::Graphics(HWND pWindow, short w, short h)
     }
 #endif
 
+    // Create Factory.
     IDXGIFactory7* pFactory = nullptr;
     Error_Check(
         CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&pFactory))
     );
 
-    Error_Check(
-        D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))
-    );
+
+    // Enumerate all gpu's.
+    {
+        struct DeviceInfo
+        {
+            DeviceInfo(IDXGIAdapter4* a, DXGI_ADAPTER_DESC3 d)
+                :
+                Adapter(a),
+                Desc(d)
+            {}
+
+            IDXGIAdapter4* Adapter;
+            DXGI_ADAPTER_DESC3 Desc;
+        };
+        std::vector<DeviceInfo> Devices;
+
+        IDXGIAdapter4* Adapter = nullptr;
+
+        for (char i = 0; pFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_UNSPECIFIED, IID_PPV_ARGS(&Adapter)) != DXGI_ERROR_NOT_FOUND; i++)
+        {
+            DXGI_ADAPTER_DESC3 desc;
+            Adapter->GetDesc3(&desc);
+            Devices.emplace_back(Adapter, desc);
+        }
+
+        // Get adapter with maximum video memory.
+        auto it = std::max_element(Devices.begin(), Devices.end(), 
+            [&](DeviceInfo f, DeviceInfo l)
+            {
+                return f.Desc.DedicatedVideoMemory < l.Desc.DedicatedVideoMemory;       // This need to test. May not work.
+            });
+
+        // Create device.
+        Error_Check(
+            D3D12CreateDevice(it->Adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))
+        );
+        
+        // This will be used to print info.
+        DeviceDesc = it->Desc;
+
+
+        // Delete data.
+        for (char i = 0; i < Devices.size(); i++)
+        {
+            Devices[i].Adapter->Release();
+        }
+        Devices.clear();
+    }
+
+    
 
     // Describe and create the command queue.
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -258,6 +307,13 @@ void Graphics::AddToRelease(ID3D12Resource*& pResource)
 DXGI_FORMAT Graphics::GetFormat()
 {
     return ViewFormat;
+}
+
+std::wstring Graphics::GetInfo()
+{
+    return L"[Device]: " + std::wstring(static_cast<wchar_t*>(DeviceDesc.Description)) + L'\n'
+        +  L"[Video Memory]: " + std::to_wstring(DeviceDesc.DedicatedVideoMemory / 1048576) + L" Mb\n"
+        +  L"[Shared Memory]: " + std::to_wstring(DeviceDesc.SharedSystemMemory / 1048576) + L" Mb\n";
 }
 
 void Graphics::WaitForGpu()

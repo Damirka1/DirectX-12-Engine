@@ -17,6 +17,7 @@ public:
 	Engine_API Window(HINSTANCE hInst, const wchar_t* WindowName, short Width = 800, short Height = 600);
 	Engine_API Window(const wchar_t* WindowName, short Width = 800, short Height = 600);
 	Engine_API ~Window();
+	Engine_API void SetWindowName(const char* Name);
 	Engine_API void Show();
 	Engine_API void Hide();
 	Engine_API bool IsExist();
