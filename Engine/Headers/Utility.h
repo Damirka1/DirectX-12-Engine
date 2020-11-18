@@ -47,7 +47,7 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 #include <string>
 #include <algorithm>
 
-std::wstring StringToWString(const std::string& s)
+static std::wstring StringToWString(const std::string& s)
 {
 	std::wstring temp(s.length(), L' ');
 	std::copy(s.begin(), s.end(), temp.begin());

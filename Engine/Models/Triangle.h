@@ -4,6 +4,8 @@
 #include "..\Headers\Graphics\Resources\Drawable.h"
 #include <DirectXMath.h>
 class ResourceManager;
+class Texture2D;
+class Sampler;
 
 class Triangle : public Drawable
 {
@@ -22,6 +24,8 @@ private:
 	buf b;
 
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
+	std::shared_ptr<Texture2D> pTexture;
+	std::shared_ptr<Sampler> pSampler;
 };
 
 #endif

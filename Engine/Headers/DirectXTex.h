@@ -872,7 +872,7 @@ namespace DirectX
 #pragma warning(push)
 #pragma warning(disable : 4619 4616 4061)
 
-#include "DirectXTex.inl"
+
 
 #pragma warning(pop)
 

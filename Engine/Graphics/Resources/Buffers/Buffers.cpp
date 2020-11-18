@@ -1,6 +1,6 @@
 #include "..\..\..\Headers\Graphics\Resources\Buffers\Buffers.h"
 
-Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state, bool UseUpload, D3D12_RESOURCE_DESC* pDesc)
+Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state)
 {
 
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
@@ -11,7 +11,7 @@ Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_S
 		pDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
-			pDesc != nullptr ? pDesc : &CD3DX12_RESOURCE_DESC::Buffer(DataSize),
+			&CD3DX12_RESOURCE_DESC::Buffer(DataSize),
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr,
 			IID_PPV_ARGS(&pBuffer)
@@ -23,7 +23,7 @@ Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_S
 		pDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(UseUpload ? GetRequiredIntermediateSize(pBuffer, 0, 1) : DataSize),
+			&CD3DX12_RESOURCE_DESC::Buffer(DataSize),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&pCopyBuffer)
@@ -101,32 +101,16 @@ unsigned int IndexBuffer::GetIndeciesCount()
 	return Indecies;
 }
 
-ConstantBuffer::ConstantBuffer(Graphics* pGraphics, void* pData, UINT DataSize, UINT ParameterIndex)
-	:
-	RootParameterIndex(ParameterIndex)
+ConstantBuffer::ConstantBuffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
-
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
-
-	// Describe and create a constant buffer view (CBV) descriptor heap.
-	// Flags indicate that this descriptor heap can be bound to the pipeline 
-	// and that descriptors contained in it can be referenced by a root table.
-	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-	cbvHeapDesc.NumDescriptors = 1;
-	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	Error_Check(
-		pDevice->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&pHeap))
-	);
-
-	UINT size = (DataSize + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
 
 	// Create buffer
 	Error_Check(
 		pDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(size),
+		&CD3DX12_RESOURCE_DESC::Buffer((DataSize + (1024 * 64 - 1)) & ~(1024 * 64 - 1)), // Heap must be 64Kb alligned.
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&pBuffer))
@@ -134,19 +118,14 @@ ConstantBuffer::ConstantBuffer(Graphics* pGraphics, void* pData, UINT DataSize, 
 
 	// Describe and create a constant buffer view.
 	BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-	BufferView.SizeInBytes = size;
-	pGraphics->GetDevice()->CreateConstantBufferView(&BufferView, pHeap->GetCPUDescriptorHandleForHeapStart());
+	BufferView.SizeInBytes = (DataSize + 255) & ~255;
+	pDevice->CreateConstantBufferView(&BufferView, pHandle);
 
 	Update(pData, DataSize);
 }
 
 void ConstantBuffer::Bind(Graphics* pGraphics)
 {
-	ID3D12DescriptorHeap* pHeaps[] = { pHeap };
-
-	pGraphics->GetCommandList()->SetDescriptorHeaps(_countof(pHeaps), pHeaps);
-
-	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(RootParameterIndex, pHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 void ConstantBuffer::Update(void* pData, UINT DataSize)
@@ -165,98 +144,47 @@ void ConstantBuffer::Update(void* pData, UINT DataSize)
 	pBuffer->Unmap(NULL, nullptr);
 }
 
-std::pair<ID3D12DescriptorHeap*, UINT> ConstantBuffer::GetHeap()
-{
-	return { pHeap, RootParameterIndex };
-}
 
 ConstantBuffer::~ConstantBuffer()
 {
-	pHeap->Release();
 	pBuffer->Release();
-	pHeap = nullptr;
 	pBuffer = nullptr;
 }
 
-HeapDescriptorArray::HeapDescriptorArray()
+
+Texture2D::Texture2D(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_DESC* pDesc, CD3DX12_CPU_DESCRIPTOR_HANDLE* pHandle)
 {
-}
-
-void HeapDescriptorArray::AddDescriptor(Graphics* pGrahpics, Type t, UINT RootParameterIndex)
-{
-	D3D12_DESCRIPTOR_HEAP_DESC Desc = {};
-	Desc.NumDescriptors = 1;
-	Desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
-	switch (t)
-	{
-	case HeapDescriptorArray::Type::CBV:
-	case HeapDescriptorArray::Type::SRV:
-	case HeapDescriptorArray::Type::UAV:
-	Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		break;
-	case HeapDescriptorArray::Type::DSV:
-	Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		break;
-	case HeapDescriptorArray::Type::RTV:
-	Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		break;
-	case HeapDescriptorArray::Type::SAMPLER:
-	Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-		break;
-	default:
-		throw std::exception("Unknown descriptor type");
-		break;
-	}
-
-	ID3D12DescriptorHeap* pHeap;
-
-	Error_Check(
-		pGrahpics->GetDevice()->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap))
-	);
-
-	AddDescriptor(pHeap, RootParameterIndex);
-}
-
-void HeapDescriptorArray::AddDescriptor(ID3D12DescriptorHeap* pHeap, UINT RootParameterIndex)
-{
-	pHeaps.push_back(pHeap);
-	Indexes.push_back(RootParameterIndex);
-}
-
-void HeapDescriptorArray::Bind(Graphics* pGraphics)
-{
-	pGraphics->GetCommandList()->SetDescriptorHeaps(static_cast<UINT>(pHeaps.size()), pHeaps.data());
-	for (size_t i = 0; i < pHeaps.size(); i++)
-		pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Indexes[i], pHeaps[i]->GetGPUDescriptorHandleForHeapStart());
-}
-
-HeapDescriptorArray::~HeapDescriptorArray()
-{
-	for (auto& p : pHeaps)
-		p->Release();
-	pHeaps.clear();
-	Indexes.clear();
-}
-
-
-Texture2D::Texture2D(Graphics* pGraphics, void* pData, UINT DataSize, UINT BitsPerPixel, D3D12_RESOURCE_DESC* pDesc, UINT ParameterIndex)
-	:
-	Buffer(pGraphics, pData, DataSize, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true, pDesc),
-	RootParameterIndex(ParameterIndex)
-{
-
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
+	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
 
-	// Describe and create a shader resource view (SRV) heap for the texture.
-	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 1;
-	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	Error_Check(
-		pDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&pHeap))
-	);
-	
+	Error_Check(pDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		pDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&pBuffer)));
+
+
+	Error_Check(pDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(GetRequiredIntermediateSize(pBuffer, 0, 1)),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&pCopyBuffer)));
+
+	UINT64 pixels = DataSize / (pDesc->Width * pDesc->Height);
+
+	D3D12_SUBRESOURCE_DATA textureData = {};
+	textureData.pData = pData;
+	textureData.RowPitch = pDesc->Width * pixels;
+	textureData.SlicePitch = textureData.RowPitch * pDesc->Height;
+
+	UpdateSubresources(pCommandList, pBuffer, pCopyBuffer, 0, 0, 1, &textureData);
+	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+	pGraphics->AddToRelease(pCopyBuffer);
 
 	// Describe and create a SRV for the texture.
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -264,26 +192,30 @@ Texture2D::Texture2D(Graphics* pGraphics, void* pData, UINT DataSize, UINT BitsP
 	srvDesc.Format = pDesc->Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
-	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, pHeap->GetCPUDescriptorHandleForHeapStart());
+	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, *pHandle);
 }
 
 void Texture2D::Bind(Graphics* pGraphics)
 {
-	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
-
-	ID3D12DescriptorHeap* pHeaps[] = { pHeap };
-
-	pCommandList->SetDescriptorHeaps(1, pHeaps);
-	pCommandList->SetGraphicsRootDescriptorTable(RootParameterIndex, pHeap->GetGPUDescriptorHandleForHeapStart());
-}
-
-std::pair<ID3D12DescriptorHeap*, UINT> Texture2D::GetHeap()
-{
-	return { pHeap, RootParameterIndex };
+	// Do nothing. Bind with Descriptors tables.
 }
 
 Texture2D::~Texture2D()
 {
-	pHeap->Release();
-	pHeap = nullptr;
+	pBuffer->Release();
+	pBuffer = nullptr;
+}
+
+Sampler::Sampler(Graphics* pGraphics, D3D12_SAMPLER_DESC pDesc, CD3DX12_CPU_DESCRIPTOR_HANDLE* pHandle)
+{
+	pGraphics->GetDevice()->CreateSampler(&pDesc, *pHandle);
+}
+
+void Sampler::Bind(Graphics* pGraphics)
+{
+	// Do nothing. Bind with Descriptors tables.
+}
+
+Sampler::~Sampler()
+{
 }

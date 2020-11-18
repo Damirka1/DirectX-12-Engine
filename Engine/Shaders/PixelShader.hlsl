@@ -1,4 +1,7 @@
-float4 main(float3 Color : Color) : SV_TARGET
+Texture2D tex;
+SamplerState smp;
+
+float4 main(float2 UV : UV) : SV_TARGET
 {
-	return float4(Color, 1.0f);
+    return tex.Sample(smp, UV);
 }
