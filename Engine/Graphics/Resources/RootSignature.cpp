@@ -102,15 +102,37 @@ RootSignature::RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string co
        
     // Create bindable element for all heap stuff, it bind all data on heap in pipeline. 
     HeapArray = std::make_shared<HeapDescriptorArray>();
+
+    // Create two heaps each for heap type;
+    std::vector<HeapDescriptorArray::RootParameter*> pHeap_CBV_SHR_UAV;
+    UINT Count_CBV_SHR_UAV = 0u;
+    std::vector<HeapDescriptorArray::RootParameter*> pHeap_SAMPLERS;
+    UINT Count_SAMPLERS = 0u;
         
     // First cycle for Parameters.
     for (UINT i = 0; i < Count; i++)
     {
+        // Current pointer to heap.
+        std::vector<HeapDescriptorArray::RootParameter*>* pCurr = nullptr;
+        UINT* pCount = nullptr;
+
+        switch (Lay[i].Ranges[0].Type)
+        {
+        case D3D12_DESCRIPTOR_RANGE_TYPE_CBV: case D3D12_DESCRIPTOR_RANGE_TYPE_SRV: case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
+            pCurr = &pHeap_CBV_SHR_UAV;
+            pCount = &Count_CBV_SHR_UAV;
+            break;
+        case D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER:
+            pCurr = &pHeap_SAMPLERS;
+            pCount = &Count_SAMPLERS;
+            break;
+        }
+
         // Create parameters in HeapArray.
         switch (Lay[i].type)
         {
         case RS_Layout::Type::DescriptorTable:
-            HeapArray->Parameters.push_back(new HeapDescriptorArray::DescriptorTable(i));
+            pCurr->push_back(new HeapDescriptorArray::DescriptorTable(i));
             break;
         //case RS_Layout::Type::Range:
         //    HeapArray->Parameters.push_back(HeapDescriptorArray::Range(i, Offset));
@@ -120,19 +142,7 @@ RootSignature::RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string co
         //    break;
         }
 
-        D3D12_DESCRIPTOR_HEAP_DESC Desc = {};
-        Desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-      
-        switch (Lay[i].Ranges[0].Type)
-        {
-        case D3D12_DESCRIPTOR_RANGE_TYPE_CBV: case D3D12_DESCRIPTOR_RANGE_TYPE_SRV: case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
-            Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            break;
-        case D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER:
-            Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-            break;
-        }
-
+        // Create range in vector.
         pRanges.emplace_back();
 
         // Second cycle for ranges.
@@ -142,27 +152,15 @@ RootSignature::RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string co
             RS_Layout::RootParameter::Range& r = Lay[i].Ranges[j];
             pRanges[i].emplace_back(r.Type, r.numDescriptors, r.ShaderRegister, r.RegisterSpace, r.Flags, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
            
-            // Add range to our HeapArray.
-            HeapArray->Parameters[i]->Ranges.emplace_back(r.Type, r.numDescriptors);
-
-            // Increment num descriptors and offset.
-            Desc.NumDescriptors += r.numDescriptors;
+            // Add range to our HeapArray and increase descriptors count.
+            pCurr->back()->Ranges.emplace_back(r.Type, r.numDescriptors);
+            *pCount += r.numDescriptors;
         }
                
         // Create root parameters.
         rParameters[i].InitAsDescriptorTable(static_cast<UINT>(pRanges[i].size()), pRanges[i].data(), Lay[i].Visibility);
-
-        ID3D12DescriptorHeap* pHeap;
-        Error_Check(
-            pDevice->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap))
-        );
-        HeapArray->pHeaps.push_back(pHeap);
-
-        HeapArray->Parameters[i]->GPU_OffsetFromStart = pHeap->GetGPUDescriptorHandleForHeapStart();
-        HeapArray->Parameters[i]->SetPointers(pDevice, Desc.Type, pHeap->GetCPUDescriptorHandleForHeapStart());
-
     }
-    
+
     // Allow input layout and deny uneccessary access to certain pipeline stages.
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -179,6 +177,58 @@ RootSignature::RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string co
     Error_Check(
         pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&pRootSignature))
     );
+
+
+    // Create two heap
+    {
+        // Initialize desc.
+        D3D12_DESCRIPTOR_HEAP_DESC Desc = {};
+        Desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        Desc.NumDescriptors = Count_CBV_SHR_UAV;
+        std::vector<HeapDescriptorArray::RootParameter*>* pCurr = &pHeap_CBV_SHR_UAV;
+        for (char i = 0; i < 2; i++)
+        {
+            // Create heap.
+            ID3D12DescriptorHeap* pHeap;
+            Error_Check(
+                pDevice->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap))
+            );
+            // Add to our array.
+            HeapArray->pHeaps.push_back(pHeap);
+
+            // Get pointers.
+            CD3DX12_GPU_DESCRIPTOR_HANDLE Ptr_GPU(pHeap->GetGPUDescriptorHandleForHeapStart());
+            UINT Size = pDevice->GetDescriptorHandleIncrementSize(Desc.Type);
+            CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr_CPU(pHeap->GetCPUDescriptorHandleForHeapStart());
+
+            // Assign pointers to our array.
+            for (UINT i = 0; i < pCurr->size(); i++)
+            {
+                (*pCurr)[i]->GPU_OffsetFromStart = Ptr_GPU;
+                UINT Offset_GPU = 0u;
+                for (UINT j = 0; j < (*pCurr)[i]->Ranges.size(); j++)
+                {
+                    (*pCurr)[i]->Ranges[j].CPU_Offset = Ptr_CPU;
+                    Ptr_CPU.Offset((*pCurr)[i]->Ranges[j].NumDescriptors, Size);
+                    Offset_GPU += (*pCurr)[i]->Ranges[j].Size = static_cast<UINT>(Ptr_CPU.ptr - (*pCurr)[i]->Ranges[j].CPU_Offset.ptr);
+                }
+
+                Ptr_GPU.Offset(1, Offset_GPU);
+                (*pCurr)[i]->Size = static_cast<UINT>(Ptr_GPU.ptr - (*pCurr)[i]->GPU_OffsetFromStart.ptr);
+            }
+
+            // Set next heap.
+            Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+            Desc.NumDescriptors = Count_SAMPLERS;
+            pCurr = &pHeap_SAMPLERS;
+        }
+
+        // Add our params to array.
+        HeapArray->Parameters.insert(HeapArray->Parameters.begin(), pHeap_CBV_SHR_UAV.begin(), pHeap_CBV_SHR_UAV.end());
+        HeapArray->Parameters.insert(HeapArray->Parameters.end(), pHeap_SAMPLERS.begin(), pHeap_SAMPLERS.end());
+
+    }
 
     // Delete unnecessary data.
     if (signature)
@@ -290,21 +340,6 @@ HeapDescriptorArray::RootParameter::RootParameter(UINT Index)
 void HeapDescriptorArray::RootParameter::Bind(ID3D12GraphicsCommandList * pCommandList)
 {
     pCommandList->SetGraphicsRootDescriptorTable(Index, GPU_OffsetFromStart);
-}
-
-void HeapDescriptorArray::RootParameter::SetPointers(ID3D12Device8* pDevice, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_CPU_DESCRIPTOR_HANDLE Handle)
-{
-    UINT Size = pDevice->GetDescriptorHandleIncrementSize(Type);
-    CD3DX12_CPU_DESCRIPTOR_HANDLE It (Handle);
-
-    this->Size = 0;
-    for (UINT i = 0; i < Ranges.size(); i++)
-    {
-        Ranges[i].Size = static_cast<UINT>(It.ptr);
-        Ranges[i].CPU_Offset = It;
-        It.Offset(Ranges[i].NumDescriptors, Size);
-        this->Size += Ranges[i].Size = static_cast<UINT>(It.ptr) - Ranges[i].Size;
-    }
 }
 
 HeapDescriptorArray::RootParameter::Range::Range(D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Nums)

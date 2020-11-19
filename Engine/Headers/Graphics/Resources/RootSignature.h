@@ -78,7 +78,6 @@ class HeapDescriptorArray : public Bindable
 	public:
 		RootParameter(UINT Index);
 		virtual void Bind(ID3D12GraphicsCommandList* pCommandList);
-		void SetPointers(ID3D12Device8* pDevice, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_CPU_DESCRIPTOR_HANDLE Handle);
 
 	protected:
 		UINT Index = 0u;
