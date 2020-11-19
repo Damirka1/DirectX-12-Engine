@@ -35,14 +35,17 @@ public:
 	Engine_API Keyboard(unsigned int QueueSize = 20);
 	Engine_API bool KeyIsPressed(const char* KeyCode);
 	Engine_API std::optional<KeyEvent> GetEvent();
+	Engine_API std::optional<char> GetCharacters();
 
 private:
 	void CALLBACK HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) override;
-	void PopQueue();
+	void PopQueueEv();
+	void PopQueueCh();
 	void ClearState();
 
 	std::bitset<256> keys;
 	std::queue<KeyEvent> Events;
+	std::queue<char> Characters;
 	unsigned int QueueSize;
 };
 

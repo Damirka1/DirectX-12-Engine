@@ -70,8 +70,8 @@ HeapDescriptorArray::~HeapDescriptorArray()
 {
     for (auto& e : Parameters)
         delete e;
-    for (size_t i = 0; i < pHeaps.size(); i++)
-        pHeaps[i]->Release();
+    for (auto& el : pHeaps)
+        el->Release();
     pHeaps.clear();
     Parameters.clear();
 

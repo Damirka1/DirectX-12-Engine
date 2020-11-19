@@ -22,6 +22,17 @@ std::optional<Keyboard::KeyEvent> Keyboard::GetEvent()
 	return std::nullopt;
 }
 
+std::optional<char> Keyboard::GetCharacters()
+{
+	if (Characters.size() > 0)
+	{
+		auto ev = Characters.front();
+		Characters.pop();
+		return ev;
+	}
+	return std::nullopt;
+}
+
 void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam)
 {
 	switch (msg)
@@ -30,18 +41,23 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam)
 		ClearState();
 		break;
 	case WM_CHAR:
+	{
+		Characters.push(static_cast<unsigned char>(wParam));
+		PopQueueCh();
+		break;
+	}
 	case WM_KEYDOWN:
 	{
 		keys[wParam] = true;
 		Events.emplace(static_cast<unsigned char>(wParam), Keyboard::KeyEvent::Type::Pressed);
-		PopQueue();
+		PopQueueEv();
 		return;
 	}
 	case WM_KEYUP:
 	{
 		keys[wParam] = false;
 		Events.emplace(static_cast<unsigned char>(wParam), Keyboard::KeyEvent::Type::Released);
-		PopQueue();
+		PopQueueEv();
 		return;
 	}
 	default:
@@ -49,10 +65,16 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam)
 	}
 }
 
-void Keyboard::PopQueue()
+void Keyboard::PopQueueEv()
 {
 	while (Events.size() > QueueSize)
 		Events.pop();
+}
+
+void Keyboard::PopQueueCh()
+{
+	while (Characters.size() > QueueSize)
+		Characters.pop();
 }
 
 void Keyboard::ClearState()

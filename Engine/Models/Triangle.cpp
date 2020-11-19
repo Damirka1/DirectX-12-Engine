@@ -48,13 +48,8 @@ Triangle::Triangle(Graphics* pGraphics, ResourceManager* pRM)
 
 	AddBindable(pRM->CreatePSO(pGraphics, pLay, &Lay, RS.get()));
 
-
 	std::vector<unsigned int> indecies = { 0,1,2,2,3,0 };
-
 	SetIndexBuffer(pRM->CreateIndexBuffer(pGraphics, indecies));
-
-	
-
 }
 
 void Triangle::Draw(Graphics* pGraphics)
