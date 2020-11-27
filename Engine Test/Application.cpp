@@ -11,12 +11,15 @@ Application::Application(HINSTANCE hInstance)
 	pWindow->SetGraphics(gtx);
 	pWindow->Show();
 	RM = new ResourceManager();
-	t = new Triangle(gtx, RM);
-	gtx->Initialize();
+	FC = new FrameCommander(gtx, RM);
+	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
+	t = new Triangle("Image\\bugatti-la-voiture-noire-roadster-rendering-lead-image.jpg", gtx, RM);
+	t2 = new Triangle("Image\\kung-fu-panda-9.jpg", gtx, RM);
 	k = new Keyboard();
 	m = new Mouse();
 	pWindow->AddHandler(k, "Keyboard");
 	pWindow->AddHandler(m, "Mouse");
+	RM->InitializeResources(gtx);
 }
 
 void Application::Run()
@@ -25,6 +28,7 @@ void Application::Run()
 	{
 		static float color[3] = { 0.6f, 0.6f, 0.6f };
 		float pos[2] = { 0.0f, 0.0f };
+		float pos2[2] = { 0.0f, 0.0f };
 
 		// Keyboard events.
 		while (auto e = k->GetEvent())
@@ -73,6 +77,23 @@ void Application::Run()
 			pos[1] += 0.5f * tm;
 		}
 
+		if (k->KeyIsPressed("I"))
+		{
+			pos2[0] += 0.5f * tm;
+		}
+		if (k->KeyIsPressed("K"))
+		{
+			pos2[0] -= 0.5f * tm;
+		}
+		if (k->KeyIsPressed("J"))
+		{
+			pos2[1] -= 0.5f * tm;
+		}
+		if (k->KeyIsPressed("L"))
+		{
+			pos2[1] += 0.5f * tm;
+		}
+
 
 		// Mouse events.
 		while (auto ev = m->GetEvent())
@@ -95,10 +116,10 @@ void Application::Run()
 		
 		// Render.
 		t->Update(color[0], color[1], color[2], pos[0], pos[1]);
+		t2->Update(color[0], color[1], color[2], pos2[0], pos2[1]);
 		pWindow->ProcessMessages();
-		gtx->Setup(0.3f, 0.3f, 0.3f);
-		t->Draw(gtx);
-		gtx->Execute();
+		
+		FC->Render();
 	}
 }
 
@@ -108,6 +129,7 @@ Application::~Application()
 	delete gtx;
 	delete RM;
 	delete t;
+	delete t2;
 	delete k;
 	delete m;
 }

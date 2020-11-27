@@ -3,8 +3,7 @@
 #define APPLICATION_HEADER
 
 #include "..\Engine\Headers\Window.h"
-#include "..\Engine\Headers\ResourceManager.h"
-#include "..\Engine\Headers\Graphics.h"
+#include "..\Engine\Headers\FrameCommander.h"
 #include "..\Engine\Models\Triangle.h"
 #include "..\Engine\Headers\Input\Keyboard.h"
 #include "..\Engine\Headers\Input\Mouse.h"
@@ -25,7 +24,9 @@ private:
 	Window* pWindow;
 	Graphics* gtx;
 	ResourceManager* RM;
+	FrameCommander* FC;
 	Triangle* t;
+	Triangle* t2;
 	Keyboard* k;
 	Mouse* m;
 };

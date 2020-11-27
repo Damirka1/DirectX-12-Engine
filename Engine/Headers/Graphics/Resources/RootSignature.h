@@ -3,10 +3,12 @@
 #define ROOTSIGNATURE_HEADER
 #include "Bindable.h"
 
+class HeapDescriptorArray;
 
 class RS_Layout
 {
 	friend class RootSignature;
+	friend HeapDescriptorArray;
 	enum class Type
 	{
 		Constant,
@@ -53,107 +55,18 @@ private:
 	D3D12_ROOT_SIGNATURE_FLAGS Flags;
 };
 
-class HeapDescriptorArray : public Bindable
-{
-	friend class RootSignature;
-
-	class RootParameter
-	{
-		friend class RootSignature;
-		friend HeapDescriptorArray;
-		class Range
-		{
-			friend class RootSignature;
-			friend HeapDescriptorArray;
-		public:
-			Range(D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Nums);
-			CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT Index);
-
-		private:
-			D3D12_DESCRIPTOR_RANGE_TYPE Type;
-			UINT NumDescriptors;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE CPU_Offset;
-			UINT Size = 0u;
-		};
-	public:
-		RootParameter(UINT Index);
-		virtual void Bind(ID3D12GraphicsCommandList* pCommandList);
-
-	protected:
-		UINT Index = 0u;
-		CD3DX12_GPU_DESCRIPTOR_HANDLE GPU_OffsetFromStart;
-		UINT Size = 0u;
-		std::vector<Range> Ranges;
-	};
-
-	//class Constant : public RootParameter
-	//{
-	//public:
-	//	Constant(UINT Index, CD3DX12_GPU_DESCRIPTOR_HANDLE Offset)
-	//		:
-	//		RootParameter(Index, Offset)
-	//	{}
-	//	void Bind(ID3D12GraphicsCommandList* pCommandList) override;
-	//};
-	//class Range : public RootParameter
-	//{
-	//public:
-	//	Range(UINT Index, CD3DX12_GPU_DESCRIPTOR_HANDLE Offset)
-	//		:
-	//		RootParameter(Index, Offset)
-	//	{}
-	//	void Bind(ID3D12GraphicsCommandList* pCommandList) override;
-	//};
-
-	class DescriptorTable : public RootParameter
-	{
-	public:
-		DescriptorTable(UINT Index)
-			:
-			RootParameter(Index)
-		{}
-		void Bind(ID3D12GraphicsCommandList* pCommandList) override
-		{
-			pCommandList->SetGraphicsRootDescriptorTable(Index, GPU_OffsetFromStart);
-		}
-	};
-
-public:
-	enum class Type
-	{
-		CBV,
-		SRV,
-		UAV,
-		DSV,
-		RTV,
-		SAMPLER
-	};
-
-	HeapDescriptorArray();
-	void Bind(Graphics* pGraphics) override;
-	CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT RootParam, UINT Range, UINT RangeIndex);
-	~HeapDescriptorArray() override;
-private:
-
-	std::vector<ID3D12DescriptorHeap*> pHeaps;
-	std::vector<RootParameter*> Parameters;
-};
-
 
 class RootSignature : public Bindable
 {
 	friend class PipelineStateObject;
 public:
-	RootSignature(Graphics* pGraphics, std::string code);
-	RootSignature(Graphics* pGraphics, RS_Layout& Lay, std::string code);
+	RootSignature(RS_Layout& Lay);
+	void Initialize(Graphics* pGraphics);
 	void Bind(Graphics* pGraphics) override;
 	~RootSignature() override;
-	std::string GetCode();
-	std::shared_ptr<HeapDescriptorArray> GetHeapArray();
 
 private:
-	ID3D12RootSignature* pRootSignature;
-	std::string Code;
-	std::shared_ptr<HeapDescriptorArray> HeapArray;
+	ID3D12RootSignature* pRootSignature = nullptr;
+	RS_Layout Lay;
 };
 #endif

@@ -2,7 +2,11 @@
 
 Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state)
 {
+	Initialize(pGraphics, pData, DataSize, state);
+}
 
+void Buffer::Initialize(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state)
+{
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
 	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
 
@@ -52,15 +56,18 @@ Buffer::~Buffer()
 	pBuffer = nullptr;
 }
 
-VertexBuffer::VertexBuffer(Graphics* pGraphics, void* pData, UINT Stride, UINT DataSize, UINT Slot)
+VertexBuffer::VertexBuffer(void* pData, UINT Stride, UINT DataSize, UINT Slot)
 	:
-	Buffer(pGraphics, pData, DataSize, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER),
-	Slot(Slot)
+	Slot(Slot),
+	DataSize(DataSize),
+	Stride(Stride)
 {
-	VertexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-	VertexView.StrideInBytes = Stride;
-	VertexView.SizeInBytes = DataSize;
-	VertexCount = DataSize / Stride;
+	// Copy data.
+	this->pData = malloc(DataSize);
+	if (pData)
+		memcpy(this->pData, pData, DataSize);
+	else
+		throw std::exception();
 }
 
 void VertexBuffer::Bind(Graphics* pGraphics)
@@ -68,8 +75,24 @@ void VertexBuffer::Bind(Graphics* pGraphics)
 	pGraphics->GetCommandList()->IASetVertexBuffers(Slot, 1, &VertexView);
 }
 
+void VertexBuffer::Initialize(Graphics* pGraphics)
+{
+	if (!Initialized)
+	{
+		Buffer::Initialize(pGraphics, pData, DataSize, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+		VertexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
+		VertexView.StrideInBytes = Stride;
+		VertexView.SizeInBytes = DataSize;
+		VertexCount = DataSize / Stride;
+
+		Initialized = true;
+	}
+}
+
 VertexBuffer::~VertexBuffer()
 {
+	free(pData);
 }
 
 unsigned int VertexBuffer::GetVertexCount()
@@ -77,19 +100,30 @@ unsigned int VertexBuffer::GetVertexCount()
 	return VertexCount;
 }
 
-IndexBuffer::IndexBuffer(Graphics* pGraphics, std::vector<unsigned int> Indecies)
+IndexBuffer::IndexBuffer(std::vector<unsigned int> Indecies)
 	:
-	Buffer(pGraphics, Indecies.data(), static_cast<UINT>(Indecies.size() * sizeof(unsigned int)), D3D12_RESOURCE_STATE_INDEX_BUFFER),
-	Indecies(static_cast<unsigned int>(Indecies.size()))
+	IndeciesCount(static_cast<unsigned int>(Indecies.size())),
+	Indecies(Indecies)
 {
-	IndexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-	IndexView.SizeInBytes = static_cast<UINT>(Indecies.size() * sizeof(unsigned int));
-	IndexView.Format = DXGI_FORMAT_R32_UINT;
 }
 
 void IndexBuffer::Bind(Graphics* pGraphics)
 {
 	pGraphics->GetCommandList()->IASetIndexBuffer(&IndexView);
+}
+
+void IndexBuffer::Initialize(Graphics* pGraphics)
+{
+	if (!Initialized)
+	{
+		Buffer::Initialize(pGraphics, Indecies.data(), static_cast<UINT>(Indecies.size() * sizeof(unsigned int)), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+
+		IndexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
+		IndexView.SizeInBytes = static_cast<UINT>(Indecies.size() * sizeof(unsigned int));
+		IndexView.Format = DXGI_FORMAT_R32_UINT;
+
+		Initialized = true;
+	}
 }
 
 IndexBuffer::~IndexBuffer()
@@ -98,22 +132,33 @@ IndexBuffer::~IndexBuffer()
 
 unsigned int IndexBuffer::GetIndeciesCount()
 {
-	return Indecies;
+	return IndeciesCount;
 }
 
-ConstantBuffer::ConstantBuffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
+ConstantBuffer::ConstantBuffer(void* pData, UINT DataSize)
+	:
+	pData(pData),
+	DataSize(DataSize)
+{
+}
+
+void ConstantBuffer::Bind(Graphics* pGraphics)
+{
+}
+
+void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
 
 	// Create buffer
 	Error_Check(
 		pDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer((DataSize + (1024 * 64 - 1)) & ~(1024 * 64 - 1)), // Heap must be 64Kb alligned.
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&pBuffer))
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer((DataSize + (1024 * 64 - 1)) & ~(1024 * 64 - 1)), // Heap must be 64Kb alligned.
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&pBuffer))
 	);
 
 	// Describe and create a constant buffer view.
@@ -122,10 +167,8 @@ ConstantBuffer::ConstantBuffer(Graphics* pGraphics, void* pData, UINT DataSize, 
 	pDevice->CreateConstantBufferView(&BufferView, pHandle);
 
 	Update(pData, DataSize);
-}
 
-void ConstantBuffer::Bind(Graphics* pGraphics)
-{
+	Initialized = true;
 }
 
 void ConstantBuffer::Update(void* pData, UINT DataSize)
@@ -151,71 +194,3 @@ ConstantBuffer::~ConstantBuffer()
 	pBuffer = nullptr;
 }
 
-
-Texture2D::Texture2D(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_DESC* pDesc, CD3DX12_CPU_DESCRIPTOR_HANDLE* pHandle)
-{
-	ID3D12Device8* pDevice = pGraphics->GetDevice();
-	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
-
-	Error_Check(pDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		pDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		nullptr,
-		IID_PPV_ARGS(&pBuffer)));
-
-
-	Error_Check(pDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(GetRequiredIntermediateSize(pBuffer, 0, 1)),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&pCopyBuffer)));
-
-	UINT64 pixels = DataSize / (pDesc->Width * pDesc->Height);
-
-	D3D12_SUBRESOURCE_DATA textureData = {};
-	textureData.pData = pData;
-	textureData.RowPitch = pDesc->Width * pixels;
-	textureData.SlicePitch = textureData.RowPitch * pDesc->Height;
-
-	UpdateSubresources(pCommandList, pBuffer, pCopyBuffer, 0, 0, 1, &textureData);
-	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-	pGraphics->AddToRelease(pCopyBuffer);
-
-	// Describe and create a SRV for the texture.
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = pDesc->Format;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
-	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, *pHandle);
-}
-
-void Texture2D::Bind(Graphics* pGraphics)
-{
-	// Do nothing. Bind with Descriptors tables.
-}
-
-Texture2D::~Texture2D()
-{
-	pBuffer->Release();
-	pBuffer = nullptr;
-}
-
-Sampler::Sampler(Graphics* pGraphics, D3D12_SAMPLER_DESC pDesc, CD3DX12_CPU_DESCRIPTOR_HANDLE* pHandle)
-{
-	pGraphics->GetDevice()->CreateSampler(&pDesc, *pHandle);
-}
-
-void Sampler::Bind(Graphics* pGraphics)
-{
-	// Do nothing. Bind with Descriptors tables.
-}
-
-Sampler::~Sampler()
-{
-}

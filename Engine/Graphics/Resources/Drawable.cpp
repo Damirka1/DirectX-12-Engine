@@ -37,7 +37,7 @@ void Drawable::DrawIndexed(Graphics* pGraphics)
 {
 	pVertexBuffer->Bind(pGraphics);
 	pIndexBuffer->Bind(pGraphics);
-	pGraphics->GetCommandList()->DrawIndexedInstanced(pIndexBuffer->Indecies, 1, 0, 0, 0);
+	pGraphics->GetCommandList()->DrawIndexedInstanced(pIndexBuffer->IndeciesCount, 1, 0, 0, 0);
 }
 
 

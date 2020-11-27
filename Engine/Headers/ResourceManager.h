@@ -1,39 +1,46 @@
 #pragma once
 #ifndef RESOURCE_MANAGER_HEADER
 #define RESOURCE_MANAGER_HEADER
+#include "Graphics\Resources\Bindable.h"
+#include "Graphics\Resources\BindablesHeader.h"
+#include "Graphics\Resources\Drawable.h"
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include <optional>
+#include <queue>
 
-class Bindable;
-class VertexBuffer;
-class VertexLayout;
-class IndexBuffer;
-class ConstantBuffer;
-class Graphics;
-class RootSignature;
-class PipelineStateObject;
-class PSO_Layout;
-class RS_Layout;
-class Texture2D;
-class Sampler;
-struct CD3DX12_CPU_DESCRIPTOR_HANDLE;
 
 class ResourceManager
 {
+	friend class FrameCommander;
+	class PipeLineResources
+	{
+		struct RootSignatureResources
+		{
+			std::shared_ptr<RootSignature> pRootSignature;
+			std::vector<Drawable*> pDrawables;
+			UINT Count = 0u;
+		};
+	public:
+		std::shared_ptr<PipelineStateObject> pPipeLineStateObject;
+		std::unordered_map<std::string, RootSignatureResources> RootSignatures;
+	};
 public:
-	std::shared_ptr<VertexBuffer> CreateVertexBuffer(Graphics* pGraphics, void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout Lay, unsigned int Slot = 0);
-	std::shared_ptr<IndexBuffer> CreateIndexBuffer(Graphics* pGraphics, std::vector<unsigned int> Indecies);
-	std::shared_ptr<RootSignature> CreateNullRootSignature(Graphics* pGraphics);
-	std::shared_ptr<RootSignature> CreateRootSignature(Graphics* pGraphics, RS_Layout& Lay);
-	std::shared_ptr<PipelineStateObject> CreatePSO(Graphics* pGraphics, PSO_Layout& pLay, VertexLayout* vLay, RootSignature* RS);
-	std::shared_ptr<ConstantBuffer> CreateConstBuffer(Graphics* pGraphics, void* pData, unsigned int DataSize, CD3DX12_CPU_DESCRIPTOR_HANDLE Handle);
-	std::shared_ptr<Texture2D> CreateTexture2D(Graphics* pGraphics, std::string Path, CD3DX12_CPU_DESCRIPTOR_HANDLE Handle);
-	std::shared_ptr<Sampler> CreateDefaultSampler(Graphics* pGraphics, CD3DX12_CPU_DESCRIPTOR_HANDLE Handle);
+	std::shared_ptr<VertexBuffer> CreateVertexBuffer(Drawable* pDrawable, void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout Lay, unsigned int Slot = 0);
+	std::shared_ptr<IndexBuffer> CreateIndexBuffer(Drawable* pDrawable, std::vector<unsigned int> Indecies);
+	std::string CreateRootSignature(std::string& PSO_Key, RS_Layout& Lay, Drawable* pDrawable);
+	std::string CreatePSO(PSO_Layout& pLay, VertexLayout* vLay);
+	std::shared_ptr<ConstantBuffer> CreateConstBuffer(Drawable* pDrawable, void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex);
+	std::shared_ptr<Texture2D> CreateTexture2D(Drawable* pDrawable, std::string Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader = false);
+	std::shared_ptr<Sampler> CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex);
+	
+	Engine_API void InitializeResources(Graphics* pGraphics);
 
 private:
+	GlobalHeap Heap;
+
 	std::unordered_map<std::string, std::shared_ptr<Bindable>> Bindables;
+	std::unordered_map<std::string, PipeLineResources> Resources;
 };
 
 #endif

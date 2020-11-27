@@ -10,7 +10,7 @@ class Sampler;
 class Triangle : public Drawable
 {
 public:
-	Engine_API Triangle(Graphics* pGraphics, ResourceManager* pRM);
+	Engine_API Triangle(std::string TexturePath, Graphics* pGraphics, ResourceManager* pRM);
 	Engine_API void Draw(Graphics* pGraphics);
 	Engine_API void Update(float r, float g, float b, float up, float left);
 	Engine_API ~Triangle();

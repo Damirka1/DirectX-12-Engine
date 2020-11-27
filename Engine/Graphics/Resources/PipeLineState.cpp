@@ -1,6 +1,4 @@
 #include "..\..\Headers\Graphics\Resources\PipeLineState.h"
-#include "..\..\Headers\Graphics\Resources\VertexLayout.h"
-#include "..\..\Headers\Graphics\Resources\RootSignature.h"
 #include "..\..\Headers\Utility.h"
 #include "..\..\Headers\Graphics\Error_Check.h"
 
@@ -64,37 +62,44 @@ std::string PSO_Layout::GetCode()
 	return code;
 }
 
-PipelineStateObject::PipelineStateObject(Graphics* pGraphics, PSO_Layout& pLay, VertexLayout* vLay, RootSignature* RS)
+PipelineStateObject::PipelineStateObject(PSO_Layout& pLay, VertexLayout* vLay)
+	:
+	P_Lay(pLay),
+	V_Lay(*vLay)
+
+{}
+
+void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)	
 {
 	// Describe and create the graphics pipeline state object (PSO).
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-	const auto& il = vLay->GetDesc();
+	const auto& il = V_Lay.GetDesc();
 	psoDesc.InputLayout = { il.data(), static_cast<UINT>(il.size()) };
-	psoDesc.pRootSignature = RS->pRootSignature;
+	psoDesc.pRootSignature = pRS->pRootSignature;
 
-	psoDesc.DepthStencilState.DepthEnable = pLay.Depth;
-	psoDesc.DepthStencilState.StencilEnable = pLay.Stencil;
+	psoDesc.DepthStencilState.DepthEnable = P_Lay.Depth;
+	psoDesc.DepthStencilState.StencilEnable = P_Lay.Stencil;
 	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.NumRenderTargets = pLay.RenderTargetsCount;
-	psoDesc.RTVFormats[0] = pLay.RTV_Format;
-	psoDesc.SampleDesc.Count = pLay.SampleCount;
+	psoDesc.NumRenderTargets = P_Lay.RenderTargetsCount;
+	psoDesc.RTVFormats[0] = P_Lay.RTV_Format;
+	psoDesc.SampleDesc.Count = P_Lay.SampleCount;
 
 
-	switch (pLay.rType)
+	switch (P_Lay.rType)
 	{
 	case PSO_Layout::Rasterizer::Default:
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		break;
 	}
 
-	switch (pLay.bType)
+	switch (P_Lay.bType)
 	{
 	case PSO_Layout::Blender::DefaultValue:
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 		break;
 	}
 
-	switch (pLay.pType)
+	switch (P_Lay.pType)
 	{
 	case PSO_Layout::Topology::Triangle:
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -102,30 +107,32 @@ PipelineStateObject::PipelineStateObject(Graphics* pGraphics, PSO_Layout& pLay, 
 	}
 
 
-	if (pLay.VS.length() > 0)
+	if (P_Lay.VS.length() > 0)
 	{
-		ReadShader(pLay.VS, &psoDesc.VS);
+		ReadShader(P_Lay.VS, &psoDesc.VS);
 	}
-	if (pLay.PS.length() > 0)
+	if (P_Lay.PS.length() > 0)
 	{
-		ReadShader(pLay.PS, &psoDesc.PS);
+		ReadShader(P_Lay.PS, &psoDesc.PS);
 	}
-	if (pLay.GS.length() > 0)
+	if (P_Lay.GS.length() > 0)
 	{
-		ReadShader(pLay.GS, &psoDesc.GS);
+		ReadShader(P_Lay.GS, &psoDesc.GS);
 	}
-	if (pLay.HS.length() > 0)
+	if (P_Lay.HS.length() > 0)
 	{
-		ReadShader(pLay.HS, &psoDesc.HS);
+		ReadShader(P_Lay.HS, &psoDesc.HS);
 	}
-	if (pLay.DS.length() > 0)
+	if (P_Lay.DS.length() > 0)
 	{
-		ReadShader(pLay.DS, &psoDesc.DS);
+		ReadShader(P_Lay.DS, &psoDesc.DS);
 	}
 
 	Error_Check(
 		pGraphics->GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pPipelineStateObject))
 	);
+
+	this->Initialized = true;
 }
 
 void PipelineStateObject::Bind(Graphics* pGraphics)

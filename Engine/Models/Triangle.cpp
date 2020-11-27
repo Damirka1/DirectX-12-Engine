@@ -2,7 +2,7 @@
 #include "..\Headers\ResourceManager.h"
 #include "..\Headers\Graphics\Resources\BindablesHeader.h"
 
-Triangle::Triangle(Graphics* pGraphics, ResourceManager* pRM)
+Triangle::Triangle(std::string TexturePath, Graphics* pGraphics, ResourceManager* pRM)
 {
 	struct VB
 	{
@@ -20,38 +20,36 @@ Triangle::Triangle(Graphics* pGraphics, ResourceManager* pRM)
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32_FLOAT);
 	Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
 
-	SetVertexbuffer(pRM->CreateVertexBuffer(pGraphics, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay));
-
-	RS_Layout RsLay;
-	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_VERTEX)
-		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
-	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
-		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
-	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL).
-		AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1);
-
-	auto RS = pRM->CreateRootSignature(pGraphics, RsLay);
-
-	auto pHeap = RS->GetHeapArray();
-
-	b.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	b.pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixIdentity());
-	pConstBuffer = pRM->CreateConstBuffer(pGraphics, &b, sizeof(b), pHeap->GetCPUHandle(0,0,0));
-
-	pTexture = pRM->CreateTexture2D(pGraphics, "Image\\bugatti-la-voiture-noire-roadster-rendering-lead-image.jpg", pHeap->GetCPUHandle(1,0,0));
-	pSampler = pRM->CreateDefaultSampler(pGraphics, pHeap->GetCPUHandle(2, 0, 0));
-
-	AddBindable(RS);
-	AddBindable(std::move(pHeap));
+	SetVertexbuffer(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay));
 
 	PSO_Layout pLay(1, pGraphics->GetFormat());
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("..\\Engine\\Shaders\\VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("..\\Engine\\Shaders\\PixelShader.cso"));
+	std::string PSO_key = pRM->CreatePSO(pLay, &Lay);
 
-	AddBindable(pRM->CreatePSO(pGraphics, pLay, &Lay, RS.get()));
+
+	RS_Layout RsLay;
+	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_ALL)
+		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE)
+		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL).
+		AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+
+	std::string RS_key =  pRM->CreateRootSignature(PSO_key, RsLay, this);
+
+	b.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	b.pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixIdentity());
+	pConstBuffer = pRM->CreateConstBuffer(this, &b.pos, sizeof(b.pos), 0,0,0);
+	pConstBuffer->SetKeys(PSO_key, RS_key);
+
+	pTexture = pRM->CreateTexture2D(this, TexturePath, 0,1,0);
+	pTexture->SetKeys(PSO_key, RS_key);
+	pSampler = pRM->CreateDefaultSampler(this, 1, 0, 0);
+	pSampler->SetKeys(PSO_key, RS_key);
+
 
 	std::vector<unsigned int> indecies = { 0,1,2,2,3,0 };
-	SetIndexBuffer(pRM->CreateIndexBuffer(pGraphics, indecies));
+	SetIndexBuffer(pRM->CreateIndexBuffer(this, indecies));
 }
 
 void Triangle::Draw(Graphics* pGraphics)

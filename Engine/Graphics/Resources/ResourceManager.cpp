@@ -1,18 +1,17 @@
 #include "..\..\Headers\ResourceManager.h"
-#include "..\..\Headers\Graphics\Resources\Bindable.h"
-#include "..\..\Headers\Graphics\Resources\BindablesHeader.h"
 #include "..\..\Headers\DirectXTex.h"
 #include "..\..\Headers\Utility.h"
 
-std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Graphics* pGraphics, void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout Lay, unsigned int Slot)
+std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDrawable, void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout Lay, unsigned int Slot)
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}";
 	const auto i = Bindables.find(key);
 	if (i == Bindables.end())
 	{
-		auto bind = std::make_shared<VertexBuffer>(pGraphics, pData, Stride, DataSize, Slot);
+		auto bind = std::make_shared<VertexBuffer>(pData, Stride, DataSize, Slot);
 		Bindables[key] = bind;
+		pDrawable->InitializeCommon_list.push_back(bind);
 		return bind;
 	}
 	else
@@ -21,15 +20,16 @@ std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Graphics* pGra
 	}
 }
 
-std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(Graphics* pGraphics, std::vector<unsigned int> Indecies)
+std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(Drawable* pDrawable, std::vector<unsigned int> Indecies)
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(IndexBuffer).name() + "#"s + std::to_string(Indecies.size()) + "{" + std::to_string(Indecies[0]) + "}";
 	const auto i = Bindables.find(key);
 	if (i == Bindables.end())
 	{
-		auto bind = std::make_shared<IndexBuffer>(pGraphics, std::move(Indecies));
+		auto bind = std::make_shared<IndexBuffer>( std::move(Indecies));
 		Bindables[key] = bind;
+		pDrawable->InitializeCommon_list.push_back(bind);
 		return bind;
 	}
 	else
@@ -38,64 +38,123 @@ std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(Graphics* pGraph
 	}
 }
 
-std::shared_ptr<RootSignature> ResourceManager::CreateNullRootSignature(Graphics* pGraphics)
+std::string ResourceManager::CreateRootSignature(std::string& PSO_Key, RS_Layout& Lay, Drawable* pDrawable)
 {
 	using namespace std::string_literals;
-	const std::string key = typeid(RootSignature).name() + "#"s + "NULL";
+	const std::string key = typeid(RootSignature).name() + "#"s + Lay.GetCode();
 	const auto i = Bindables.find(key);
 	if (i == Bindables.end())
 	{
-		auto bind = std::make_shared<RootSignature>(pGraphics, "NULL");
+		auto bind = std::make_shared<RootSignature>(Lay);
 		Bindables[key] = bind;
-		return bind;
+		auto& el = Resources[PSO_Key].RootSignatures[key];
+		el.pRootSignature = bind;
+		el.pDrawables.push_back(pDrawable);
 	}
 	else
 	{
-		return std::static_pointer_cast<RootSignature>(i->second);
+		Resources[PSO_Key].RootSignatures[key].pDrawables.push_back(pDrawable);
 	}
+
+	Resources[PSO_Key].RootSignatures[key].Count++;
+
+	// If heap is not exists.
+	if (pDrawable->DescHeapIndex == -1)
+	{
+		// Create heap.
+		std::shared_ptr<HeapDescriptorArray> pHeap = std::make_shared<HeapDescriptorArray>();
+		// Initialize.
+		pHeap->Initialize(Lay);
+		// Insert in the beggining of bindables.
+		pDrawable->Bindables.insert(pDrawable->Bindables.begin(), std::move(pHeap));
+		pDrawable->DescHeapIndex = 0;
+	}
+	
+	
+	return key;
 }
 
-std::shared_ptr<RootSignature> ResourceManager::CreateRootSignature(Graphics* pGraphics, RS_Layout& Lay)
+std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout* vLay)
 {
-	std::string code = Lay.GetCode();
 	using namespace std::string_literals;
-	const std::string key = typeid(RootSignature).name() + "#"s + code;
+	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay->GetCode();
 	const auto i = Bindables.find(key);
 	if (i == Bindables.end())
 	{
-		auto bind = std::make_shared<RootSignature>(pGraphics, Lay, code);
+		auto bind = std::make_shared<PipelineStateObject>(pLay, vLay);
 		Bindables[key] = bind;
-		return bind;
+		Resources[key].pPipeLineStateObject = bind;
+		return key;
 	}
 	else
 	{
-		return std::static_pointer_cast<RootSignature>(i->second);
+		return key;
 	}
 }
 
-std::shared_ptr<PipelineStateObject> ResourceManager::CreatePSO(Graphics* pGraphics, PSO_Layout& pLay, VertexLayout* vLay, RootSignature* RS)
+std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDrawable, void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex)
 {
-	using namespace std::string_literals;
-	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay->GetCode() + RS->GetCode();
-	const auto i = Bindables.find(key);
-	if (i == Bindables.end())
-	{
-		auto bind = std::make_shared<PipelineStateObject>(pGraphics, pLay, vLay, RS);
-		Bindables[key] = bind;
-		return bind;
-	}
-	else
-	{
-		return std::static_pointer_cast<PipelineStateObject>(i->second);
-	}
+	auto bind = std::make_shared<ConstantBuffer>(pData, DataSize);
+	bind->SetHeapIndex(RootParam, Range, RangeIndex);
+
+	// Increment desc count.
+	Heap.Add_CBV_SHR_UAV_Desc(1);
+
+	pDrawable->InitializeHeap_list.push_back(bind);
+	return bind;
 }
 
-std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Graphics* pGraphics, void* pData, unsigned int DataSize, CD3DX12_CPU_DESCRIPTOR_HANDLE Handle)
+void ResourceManager::InitializeResources(Graphics* pGraphics)
 {
-	return std::make_shared<ConstantBuffer>(pGraphics, pData, DataSize, Handle);
+	// Initialize Heap.
+	Heap.Initialize(pGraphics);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStart(Heap.GetCPUStartPtr());
+	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStart(Heap.GetGPUStartPtr());
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStartSamplers(Heap.GetCPUStartPtrForSAMPLERS());
+	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStartSamplers(Heap.GetGPUStartPtrForSAMPLERS());
+
+
+	// First initialize RootSignatures and PipeLineStateObjects.
+	for (auto begin = Resources.begin(), end = Resources.end(); begin != end; ++begin)
+	{
+		for (auto beginNext = begin->second.RootSignatures.begin(), endNext = begin->second.RootSignatures.end(); beginNext != endNext; ++beginNext)
+		{
+			beginNext->second.pRootSignature->Initialize(pGraphics);
+
+			// Initialize bindables in drawables.
+			for (auto& Drawable : beginNext->second.pDrawables)
+			{
+				// Initialize common things (vertex, index buffers and so on).
+				for (auto& Common : Drawable->InitializeCommon_list)
+				{
+					Common->Initialize(pGraphics);
+				}
+				Drawable->InitializeCommon_list.clear();
+				
+				// Set pointers to descriptor array.
+				auto HeapDesc = std::static_pointer_cast<HeapDescriptorArray>(Drawable->Bindables[Drawable->DescHeapIndex]);
+
+				HeapDesc->InitializePointers(pGraphics, pCPUStart,
+					pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
+
+				// Initialize heap elements in drawables.
+				for (auto& HeapEl : Drawable->InitializeHeap_list)
+				{
+					CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = HeapDesc->GetCPUHandle(HeapEl->Table, HeapEl->Range, HeapEl->Index);
+					HeapEl->Initialize(pGraphics, Ptr);
+				}
+				Drawable->InitializeHeap_list.clear();
+			}
+
+		}
+		begin->second.pPipeLineStateObject->Initialize(pGraphics, begin->second.RootSignatures.begin()->second.pRootSignature.get());
+	}
+
+	pGraphics->Initialize();
 }
 
-std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Graphics* pGraphics, std::string Path, CD3DX12_CPU_DESCRIPTOR_HANDLE Handle)
+std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, std::string Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)
 {
 	const auto i = Bindables.find(Path);
 	if (i == Bindables.end())
@@ -106,10 +165,8 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Graphics* pGraphics,
 		{
 			throw std::exception("Can't load texture");
 		}
-
 		// Get meta data from image.
 		auto& MetaData = img->GetMetadata();
-		size_t test1 = img->GetPixelsSize();
 
 		// Describe and create a Texture2D.
 		D3D12_RESOURCE_DESC textureDesc = {};
@@ -122,9 +179,16 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Graphics* pGraphics,
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
 		// Create texture pointer.
-		auto bind = std::make_shared<Texture2D>(pGraphics, static_cast<void*>(img->GetPixels()), static_cast<UINT>(img->GetPixelsSize()), &textureDesc, &Handle);
+		auto bind = std::make_shared<Texture2D>(std::move(img), &textureDesc, OnlyPixelShader);
+		bind->SetHeapIndex(RootParam, Range, RangeIndex);
 		Bindables[Path] = bind;
+
+		// Increment desc count.
+		Heap.Add_CBV_SHR_UAV_Desc(1);
+
+		pDrawable->InitializeHeap_list.push_back(bind);
 		return bind;
 	}
 	else
@@ -133,19 +197,35 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Graphics* pGraphics,
 	}
 }
 
-std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(Graphics* pGraphics, CD3DX12_CPU_DESCRIPTOR_HANDLE Handle)
+std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex)
 {
-	D3D12_SAMPLER_DESC sampler;
-	sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-	sampler.MipLODBias = 0;
-	sampler.MaxAnisotropy = 0;
-	sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	sampler.MinLOD = 0.0f;
-	sampler.MaxLOD = D3D12_FLOAT32_MAX;
-	
-	return std::make_shared<Sampler>(pGraphics, sampler, &Handle);
+	const auto i = Bindables.find("DEFAULT_SAMPLER");
+
+	if (i == Bindables.end())
+	{
+		D3D12_SAMPLER_DESC sampler;
+		sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+		sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		sampler.MipLODBias = 0;
+		sampler.MaxAnisotropy = 0;
+		sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+		sampler.MinLOD = 0.0f;
+		sampler.MaxLOD = D3D12_FLOAT32_MAX;
+
+		auto bind = std::make_shared<Sampler>(&sampler);
+		bind->SetHeapIndex(RootParam, Range, RangeIndex);
+
+		// Increment desc count.
+		Heap.Add_Samplers_Desc(1);
+
+		pDrawable->InitializeHeap_list.push_back(bind);
+		return bind;
+	}
+	else
+	{
+		return std::static_pointer_cast<Sampler>(i->second);
+	}
 }
 

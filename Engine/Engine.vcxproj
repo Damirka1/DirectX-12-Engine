@@ -151,10 +151,14 @@
     <ClCompile Include="Graphics\GraphicsException.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Buffers.cpp" />
     <ClCompile Include="Graphics\Resources\Drawable.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap.cpp" />
     <ClCompile Include="Graphics\Resources\PipeLineState.cpp" />
     <ClCompile Include="Graphics\Resources\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Resources\RootSignature.cpp" />
     <ClCompile Include="Graphics\Resources\VertexLayout.cpp" />
+    <ClCompile Include="Graphics\Resources\Buffers\Textures.cpp" />
+    <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
+    <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
@@ -163,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\DirectXTex.h" />
+    <ClInclude Include="Headers\FrameCommander.h" />
     <ClInclude Include="Headers\Graphics.h" />
     <ClInclude Include="Headers\Graphics\d3dx12.h" />
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
@@ -170,7 +175,10 @@
     <ClInclude Include="Headers\Graphics\Resources\Bindable.h" />
     <ClInclude Include="Headers\Graphics\Resources\BindablesHeader.h" />
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Buffers.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Buffers\Samplers.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Buffers\Textures.h" />
     <ClInclude Include="Headers\Graphics\Resources\Drawable.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap.h" />
     <ClInclude Include="Headers\Graphics\Resources\PipeLineState.h" />
     <ClInclude Include="Headers\Graphics\Resources\RootSignature.h" />
     <ClInclude Include="Headers\Graphics\Resources\VertexLayout.h" />

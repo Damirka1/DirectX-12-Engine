@@ -49,14 +49,14 @@ private:
 };
 
 
-class VertexLayout;
-class RootSignature;
-
+#include "VertexLayout.h"
+#include "RootSignature.h"
 
 class PipelineStateObject : public Bindable
 {
 public:
-	PipelineStateObject(Graphics* pGraphics, PSO_Layout& pLay, VertexLayout* vLay, RootSignature* RS);
+	PipelineStateObject(PSO_Layout& pLay, VertexLayout* vLay);
+	void Initialize(Graphics* pGraphics, RootSignature* pRS);
 	void Bind(Graphics* pGraphics) override;
 	~PipelineStateObject() override;
 
@@ -64,6 +64,8 @@ private:
 	void ReadShader(std::string Path, D3D12_SHADER_BYTECODE* pDesc);
 
 	ID3D12PipelineState* pPipelineStateObject;
+	PSO_Layout P_Lay;
+	VertexLayout V_Lay;
 };
 
 #endif
