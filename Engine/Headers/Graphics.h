@@ -51,6 +51,10 @@ private:
 	ID3D12DescriptorHeap* pRTV_Heap = nullptr;
 	UINT RTV_Size = 0;
 
+	// DepthStencil buffers.
+	ID3D12Resource* pDepthStencilBuffer;
+	ID3D12DescriptorHeap* pdsDescriptorHeap;
+
 	// Additional info.
 	DXGI_FORMAT ViewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_ADAPTER_DESC3 DeviceDesc;

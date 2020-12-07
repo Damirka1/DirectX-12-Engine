@@ -131,6 +131,41 @@ Graphics::Graphics(HWND pWindow, short w, short h)
         );
 
         RTV_Size = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+
+        // Create a depth stencil descriptor heap so we can get a pointer to the depth stencil buffer.
+        D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+        dsvHeapDesc.NumDescriptors = 1;
+        dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        Error_Check(
+            pDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&pdsDescriptorHeap))
+        );
+
+        // Create a depth stencil buffer.
+        D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+        depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+        depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+        depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+        Error_Check(
+            pDevice->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+            D3D12_HEAP_FLAG_NONE,
+            &CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, w, h, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+            D3D12_RESOURCE_STATE_DEPTH_WRITE,
+            &depthOptimizedClearValue,
+            IID_PPV_ARGS(&pDepthStencilBuffer))
+        );
+        pdsDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
+
+
+        D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+        depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+        depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+        pDevice->CreateDepthStencilView(pDepthStencilBuffer, &depthStencilDesc, pdsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
     }
 
 
@@ -202,6 +237,8 @@ Graphics::~Graphics()
 	pCommandQueue->Release();
 	pFence->Release();
     pRTV_Heap->Release();
+    pDepthStencilBuffer->Release();
+    pdsDescriptorHeap->Release();
 
     delete ListToRelease;
     ListToRelease = nullptr;
@@ -213,6 +250,8 @@ Graphics::~Graphics()
 	pCommandQueue = nullptr;
 	pFence = nullptr;
     pRTV_Heap = nullptr;
+    pDepthStencilBuffer = nullptr;
+    pdsDescriptorHeap = nullptr;
 }
 
 void Graphics::Initialize()
@@ -259,8 +298,13 @@ void Graphics::Setup(float R, float G, float B, float A)
     // Indicate that the back buffer will be used as a render target.
     pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
+    // Get a handle to the render target buffer
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(pRTV_Heap->GetCPUDescriptorHandleForHeapStart(), FrameIndex, RTV_Size);
-    pCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+    // Get a handle to the depth/stencil buffer
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(pdsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    // Bind render target and depth stencil buffers.
+    pCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+    pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // Record commands.
     const float clearColor[] = { R, G, B, A };

@@ -94,25 +94,6 @@ void Application::Run()
 			pos2[1] += 0.5f * tm;
 		}
 
-
-		// Mouse events.
-		while (auto ev = m->GetEvent())
-		{
-			auto& v = ev.value();
-			if (v.WheelDown())
-				Con << L"Wheel Down\n";
-			if (v.WheelUp())
-				Con << L"Wheel Up\n";
-			if (v.WheelPressed())
-				Con << L"Wheel Pressed\n";
-			if (v.L_Pressed())
-				Con << L"LeftButton Pressed\n";
-			if (v.R_Pressed())
-				Con << L"RightButton Pressed\n";
-		}
-
-		auto MousePos = m->GetPos();
-		pWindow->SetWindowName(std::string("Mouse pos " + std::to_string(MousePos.first) + ":" + std::to_string(MousePos.second)).c_str());
 		
 		// Render.
 		t->Update(color[0], color[1], color[2], pos[0], pos[1]);

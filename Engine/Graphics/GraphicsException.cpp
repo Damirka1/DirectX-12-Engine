@@ -1,4 +1,3 @@
-#ifdef _DEBUG
 #include "..\Headers\Graphics\GraphicsException.h"
 #include <sstream>
 
@@ -26,5 +25,3 @@ const char* GraphicsException::GetType() const
 {
 	return "GraphicsException";
 }
-
-#endif
