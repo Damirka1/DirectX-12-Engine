@@ -1,7 +1,11 @@
 Texture2D tex;
 SamplerState smp;
-
-float4 main(float2 UV : UV) : SV_TARGET
+cbuffer FaceColors : register(b1)
 {
-    return tex.Sample(smp, UV);
+    float4 face_colors[6];
+};
+
+float4 main(uint tid : SV_PrimitiveID) : SV_TARGET
+{
+    return face_colors[tid / 2];
 }

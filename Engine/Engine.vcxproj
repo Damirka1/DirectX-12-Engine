@@ -161,6 +161,7 @@
     <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
+    <ClCompile Include="Models\Cube.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
     <ClCompile Include="Models\Triangle.cpp" />
     <ClCompile Include="Window\Window.cpp" />
@@ -190,6 +191,7 @@
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />
+    <ClInclude Include="Models\Cube.h" />
     <ClInclude Include="Models\Triangle.h" />
   </ItemGroup>
   <ItemGroup>

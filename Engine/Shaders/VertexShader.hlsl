@@ -1,18 +1,16 @@
 struct VSOut
 {
-	float2 UV : UV;
 	float4 pos : SV_POSITION;
 };
 
 cbuffer C
 {
+    matrix Projection;
+    matrix View;
     matrix Pos;
 }
 
-VSOut main(float3 pos : Position, float2 UV : TexCoord)
+float4 main(float3 pos : Position) : SV_POSITION
 {
-	VSOut vsout;
-    vsout.pos = mul(float4(pos, 1.0f), Pos);
-    vsout.UV = UV;
-	return vsout;
+    return mul(mul(mul(float4(pos, 1.0f), Pos), View), Projection);
 }

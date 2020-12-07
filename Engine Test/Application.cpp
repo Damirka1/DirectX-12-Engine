@@ -13,8 +13,7 @@ Application::Application(HINSTANCE hInstance)
 	RM = new ResourceManager();
 	FC = new FrameCommander(gtx, RM);
 	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
-	t = new Triangle("Image\\bugatti-la-voiture-noire-roadster-rendering-lead-image.jpg", gtx, RM);
-	t2 = new Triangle("Image\\kung-fu-panda-9.jpg", gtx, RM);
+	t = new Cube("Image\\bugatti-la-voiture-noire-roadster-rendering-lead-image.jpg", RM);
 	k = new Keyboard();
 	m = new Mouse();
 	pWindow->AddHandler(k, "Keyboard");
@@ -26,77 +25,65 @@ void Application::Run()
 {
 	while (pWindow->IsExist())
 	{
-		static float color[3] = { 0.6f, 0.6f, 0.6f };
-		float pos[3] = { 0.0f, 0.0f, 0.0f };
-		float pos2[3] = { 0.0f, 0.0f, 0.0f };
+		static float color[3] = { 0.4f, 0.4f, 0.4f };
+		static float pos[6] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
-		// Keyboard events.
-		while (auto e = k->GetEvent())
-		{
-			auto& v = e.value();
-			if (v == "F")
-			{
-				Con << L"Pay respect\n";
-			}
-			if (v == "R")
-			{
-				color[0] += 0.1f;
-			}
-			if (v == "G")
-			{
-				color[1] += 0.1f;
-			}
-			if (v == "B")
-			{
-				color[2] += 0.1f;
-			}
-			if (v == "Q")
-			{
-				color[0] = 0.0f;
-				color[1] = 0.0f;
-				color[2] = 0.0f;
-			}
-		}
-
+		
 		auto tm = pWindow->TimerMark();
 
 		if (k->KeyIsPressed("W"))
 		{
-			pos[2] += 0.5f * tm;
+			pos[2] += 1.0f * tm;
 		}
 		if (k->KeyIsPressed("S"))
 		{
-			pos[2] -= 0.5f * tm;
+			pos[2] -= 1.0f * tm;
 		}
 		if (k->KeyIsPressed("A"))
 		{
-			pos[1] -= 0.5f * tm;
+			pos[0] -= 1.0f * tm;
 		}
 		if (k->KeyIsPressed("D"))
 		{
-			pos[1] += 0.5f * tm;
+			pos[0] += 1.0f * tm;
 		}
-
-		if (k->KeyIsPressed("I"))
+		if (k->KeyIsPressed("Z"))
 		{
-			pos2[2] += 0.5f * tm;
+			pos[1] += 1.0f * tm;
 		}
-		if (k->KeyIsPressed("K"))
+		if (k->KeyIsPressed("X"))
 		{
-			pos2[2] -= 0.5f * tm;
+			pos[1] -= 1.0f * tm;
 		}
-		if (k->KeyIsPressed("J"))
+		if (k->KeyIsPressed("R"))
 		{
-			pos2[1] -= 0.5f * tm;
+			pos[3] += 1.0f * tm;
 		}
-		if (k->KeyIsPressed("L"))
+		if (k->KeyIsPressed("F"))
 		{
-			pos2[1] += 0.5f * tm;
+			pos[3] -= 1.0f * tm;
+		}
+		if (k->KeyIsPressed("E"))
+		{
+			pos[4] += 1.0f * tm;
+		}
+		if (k->KeyIsPressed("Q"))
+		{
+			pos[4] -= 1.0f * tm;
+		}
+		if (k->KeyIsPressed("C"))
+		{
+			pos[5] += 1.0f * tm;
+		}
+		if (k->KeyIsPressed("V"))
+		{
+			pos[5] -= 1.0f * tm;
 		}
 
 		
-		t->Update(pos[0], pos[1], pos[2]);
-		t2->Update(pos2[0], pos2[1], pos2[2]);
+
+		
+		t->Update(pos, 6);
 		pWindow->ProcessMessages();
 		FC->SetBackgroundColor(color[0], color[1], color[2]);
 		// Render.
@@ -110,7 +97,6 @@ Application::~Application()
 	delete gtx;
 	delete RM;
 	delete t;
-	delete t2;
 	delete k;
 	delete m;
 }

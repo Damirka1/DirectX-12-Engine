@@ -1,8 +1,7 @@
 #include "Triangle.h"
-#include "..\Headers\ResourceManager.h"
-#include "..\Headers\Graphics\Resources\BindablesHeader.h"
 
-Triangle::Triangle(std::string TexturePath, Graphics* pGraphics, ResourceManager* pRM)
+
+Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 {
 	struct VB
 	{
@@ -50,12 +49,6 @@ Triangle::Triangle(std::string TexturePath, Graphics* pGraphics, ResourceManager
 
 	std::vector<unsigned int> indecies = { 0,1,2,2,3,0 };
 	SetIndexBuffer(pRM->CreateIndexBuffer(this, indecies));
-}
-
-void Triangle::Draw(Graphics* pGraphics)
-{
-	Drawable::Bind(pGraphics);
-	Drawable::DrawIndexed(pGraphics);
 }
 
 void Triangle::Update(float up, float left, float forward)

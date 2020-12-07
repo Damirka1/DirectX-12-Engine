@@ -4,12 +4,8 @@
 #include <vector>
 #include <memory>
 #include "Bindable.h"
-
-class VertexBuffer;
-class IndexBuffer;
-class ConstantBuffer;
-class ResourceManager;
-class Texture2D;
+#include "..\..\ResourceManager.h"
+#include "BindablesHeader.h"
 
 
 class Drawable

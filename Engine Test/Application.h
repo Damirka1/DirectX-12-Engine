@@ -5,6 +5,7 @@
 #include "..\Engine\Headers\Window.h"
 #include "..\Engine\Headers\FrameCommander.h"
 #include "..\Engine\Models\Triangle.h"
+#include "..\Engine\Models\Cube.h"
 #include "..\Engine\Headers\Input\Keyboard.h"
 #include "..\Engine\Headers\Input\Mouse.h"
 
@@ -25,8 +26,7 @@ private:
 	Graphics* gtx;
 	ResourceManager* RM;
 	FrameCommander* FC;
-	Triangle* t;
-	Triangle* t2;
+	Cube* t;
 	Keyboard* k;
 	Mouse* m;
 };
