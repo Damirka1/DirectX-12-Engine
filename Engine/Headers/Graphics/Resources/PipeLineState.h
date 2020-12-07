@@ -29,7 +29,7 @@ public:
 		Triangle
 	};
 
-	PSO_Layout(unsigned int RTC, DXGI_FORMAT Format, unsigned int SmpCount = 1);
+	PSO_Layout(unsigned int RTC, unsigned int SmpCount = 1);
 	void DepthState(bool v);
 	void StencilState(bool v);
 	void SetShader(Shader Type, std::string Path);
@@ -44,7 +44,6 @@ private:
 	Topology pType;
 	bool Depth, Stencil;
 	unsigned int RenderTargetsCount;
-	DXGI_FORMAT RTV_Format;
 	unsigned int SampleCount;
 };
 

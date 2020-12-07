@@ -6,23 +6,24 @@ Triangle::Triangle(std::string TexturePath, Graphics* pGraphics, ResourceManager
 {
 	struct VB
 	{
-		float x, y;
+		float x, y, z;
 		float U, V;
 	};
 
-	VB vb[] = { {-0.5f,  0.4f, 0.0f, 0.0f},
-				{ 0.5f,  0.4f, 1.0f, 0.0f},
-				{ 0.5f, -0.4f, 1.0f, 1.0f},
-				{-0.5f, -0.4f, 0.0f, 1.0f}
+	VB vb[] = { {-0.5f,  0.4f, 0.0f, 0.0f, 0.0f},
+				{ 0.5f,  0.4f, 0.0f, 1.0f, 0.0f},
+				{ 0.5f, -0.4f, 0.0f, 1.0f, 1.0f},
+				{-0.5f, -0.4f, 0.0f, 0.0f, 1.0f}
 	};
 
 	VertexLayout Lay;
-	Lay.AddElement("Position", DXGI_FORMAT_R32G32_FLOAT);
+	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
 	Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
 
 	SetVertexbuffer(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay));
 
-	PSO_Layout pLay(1, pGraphics->GetFormat());
+	PSO_Layout pLay(1);
+	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("..\\Engine\\Shaders\\VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("..\\Engine\\Shaders\\PixelShader.cso"));
 	std::string PSO_key = pRM->CreatePSO(pLay, &Lay);
@@ -37,7 +38,6 @@ Triangle::Triangle(std::string TexturePath, Graphics* pGraphics, ResourceManager
 
 	std::string RS_key =  pRM->CreateRootSignature(PSO_key, RsLay, this);
 
-	b.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	b.pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixIdentity());
 	pConstBuffer = pRM->CreateConstBuffer(this, &b.pos, sizeof(b.pos), 0,0,0);
 	pConstBuffer->SetKeys(PSO_key, RS_key);
@@ -58,10 +58,9 @@ void Triangle::Draw(Graphics* pGraphics)
 	Drawable::DrawIndexed(pGraphics);
 }
 
-void Triangle::Update(float r, float g, float b, float up, float left)
+void Triangle::Update(float up, float left, float forward)
 {
-	this->b.pos *= DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslation(left, up, 0.0f));
-	//this->b.color = { r,g,b, 1.0f };
+	this->b.pos *= DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslation(left, up, forward));
 
 	pConstBuffer->Update(&this->b.pos, sizeof(this->b.pos));
 }

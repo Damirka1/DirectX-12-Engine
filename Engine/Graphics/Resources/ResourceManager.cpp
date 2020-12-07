@@ -171,7 +171,7 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable,
 		// Describe and create a Texture2D.
 		D3D12_RESOURCE_DESC textureDesc = {};
 		textureDesc.MipLevels = 1;
-		textureDesc.Format = MetaData.format; //pGraphics->GetFormat();
+		textureDesc.Format = MetaData.format; //pGraphics->GetRTVFormat();
 		textureDesc.Width = static_cast<UINT>(MetaData.width);
 		textureDesc.Height = static_cast<UINT>(MetaData.height);
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;

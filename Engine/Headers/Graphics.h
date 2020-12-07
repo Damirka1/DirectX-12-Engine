@@ -28,7 +28,8 @@ public:
 	ID3D12GraphicsCommandList6* GetCommandList();
 
 	void AddToRelease(ID3D12Resource*& pResource);
-	DXGI_FORMAT GetFormat();
+	DXGI_FORMAT GetRTVFormat();
+	DXGI_FORMAT GetDSVFormat();
 
 private:
 	void WaitForGpu();
@@ -54,6 +55,7 @@ private:
 	// DepthStencil buffers.
 	ID3D12Resource* pDepthStencilBuffer;
 	ID3D12DescriptorHeap* pdsDescriptorHeap;
+	DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// Additional info.
 	DXGI_FORMAT ViewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;

@@ -144,7 +144,7 @@ Graphics::Graphics(HWND pWindow, short w, short h)
 
         // Create a depth stencil buffer.
         D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-        depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+        depthOptimizedClearValue.Format = dsvFormat;
         depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
         depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
@@ -152,7 +152,7 @@ Graphics::Graphics(HWND pWindow, short w, short h)
             pDevice->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
             D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, w, h, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+            &CD3DX12_RESOURCE_DESC::Tex2D(dsvFormat, w, h, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             &depthOptimizedClearValue,
             IID_PPV_ARGS(&pDepthStencilBuffer))
@@ -161,7 +161,7 @@ Graphics::Graphics(HWND pWindow, short w, short h)
 
 
         D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-        depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        depthStencilDesc.Format = dsvFormat;
         depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
         depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
 
@@ -348,9 +348,14 @@ void Graphics::AddToRelease(ID3D12Resource*& pResource)
     ListToRelease->push_back(pResource);
 }
 
-DXGI_FORMAT Graphics::GetFormat()
+DXGI_FORMAT Graphics::GetRTVFormat()
 {
     return ViewFormat;
+}
+
+DXGI_FORMAT Graphics::GetDSVFormat()
+{
+    return dsvFormat;
 }
 
 std::wstring Graphics::GetInfo()

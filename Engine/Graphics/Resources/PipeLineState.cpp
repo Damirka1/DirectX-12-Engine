@@ -3,13 +3,12 @@
 #include "..\..\Headers\Graphics\Error_Check.h"
 
 
-PSO_Layout::PSO_Layout(unsigned int RTC, DXGI_FORMAT Format, unsigned int SmpCount)
+PSO_Layout::PSO_Layout(unsigned int RTC, unsigned int SmpCount)
 	:
 	rType(Rasterizer::Default),
 	bType(Blender::DefaultValue),
 	pType(Topology::Triangle),
 	RenderTargetsCount(RTC),
-	RTV_Format(Format),
 	Depth(false),
 	Stencil(false),
 	SampleCount(SmpCount)
@@ -58,7 +57,7 @@ std::string PSO_Layout::GetCode()
 {
 	std::string code;
 	code += "{" + VS + "," + PS + "," + GS + "," + HS + "," + DS + ":" + std::to_string(static_cast<UINT>(rType)) + "," + std::to_string(static_cast<UINT>(bType)) + "," + std::to_string(static_cast<UINT>(pType))
-		+ ":" + std::to_string(Depth) + "," + std::to_string(Stencil) + ":" + std::to_string(RenderTargetsCount) + ":" + std::to_string(RTV_Format) + ":" + std::to_string(SampleCount) + "}";
+		+ ":" + std::to_string(Depth) + "," + std::to_string(Stencil) + ":" + std::to_string(RenderTargetsCount) + ":" + std::to_string(SampleCount) + "}";
 	return code;
 }
 
@@ -76,12 +75,27 @@ void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)
 	const auto& il = V_Lay.GetDesc();
 	psoDesc.InputLayout = { il.data(), static_cast<UINT>(il.size()) };
 	psoDesc.pRootSignature = pRS->pRootSignature;
-
+	psoDesc.DepthStencilState = { 0 };
 	psoDesc.DepthStencilState.DepthEnable = P_Lay.Depth;
+	psoDesc.DSVFormat = pGraphics->GetDSVFormat();
+	if (P_Lay.Depth)
+	{
+		psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; // Can write depth data to all of the depth/stencil buffer
+		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS; // Pixel fragment passes depth test if destination pixel's depth is less than pixel fragment's
+	}
 	psoDesc.DepthStencilState.StencilEnable = P_Lay.Stencil;
+	if (P_Lay.Stencil)
+	{
+		psoDesc.DepthStencilState.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK; // A default stencil read mask
+		psoDesc.DepthStencilState.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK; // A default stencil write mask
+		const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp = // A stencil operation structure
+		{ D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS };
+		psoDesc.DepthStencilState.FrontFace = defaultStencilOp; // Both front and back facing polygons get the same treatment
+		psoDesc.DepthStencilState.BackFace = defaultStencilOp;
+	}
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.NumRenderTargets = P_Lay.RenderTargetsCount;
-	psoDesc.RTVFormats[0] = P_Lay.RTV_Format;
+	psoDesc.RTVFormats[0] = pGraphics->GetRTVFormat();
 	psoDesc.SampleDesc.Count = P_Lay.SampleCount;
 
 

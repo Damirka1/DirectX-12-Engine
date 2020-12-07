@@ -27,8 +27,8 @@ void Application::Run()
 	while (pWindow->IsExist())
 	{
 		static float color[3] = { 0.6f, 0.6f, 0.6f };
-		float pos[2] = { 0.0f, 0.0f };
-		float pos2[2] = { 0.0f, 0.0f };
+		float pos[3] = { 0.0f, 0.0f, 0.0f };
+		float pos2[3] = { 0.0f, 0.0f, 0.0f };
 
 		// Keyboard events.
 		while (auto e = k->GetEvent())
@@ -62,11 +62,11 @@ void Application::Run()
 
 		if (k->KeyIsPressed("W"))
 		{
-			pos[0] += 0.5f * tm;
+			pos[2] += 0.5f * tm;
 		}
 		if (k->KeyIsPressed("S"))
 		{
-			pos[0] -= 0.5f * tm;
+			pos[2] -= 0.5f * tm;
 		}
 		if (k->KeyIsPressed("A"))
 		{
@@ -79,11 +79,11 @@ void Application::Run()
 
 		if (k->KeyIsPressed("I"))
 		{
-			pos2[0] += 0.5f * tm;
+			pos2[2] += 0.5f * tm;
 		}
 		if (k->KeyIsPressed("K"))
 		{
-			pos2[0] -= 0.5f * tm;
+			pos2[2] -= 0.5f * tm;
 		}
 		if (k->KeyIsPressed("J"))
 		{
@@ -95,11 +95,11 @@ void Application::Run()
 		}
 
 		
-		// Render.
-		t->Update(color[0], color[1], color[2], pos[0], pos[1]);
-		t2->Update(color[0], color[1], color[2], pos2[0], pos2[1]);
+		t->Update(pos[0], pos[1], pos[2]);
+		t2->Update(pos2[0], pos2[1], pos2[2]);
 		pWindow->ProcessMessages();
-		
+		FC->SetBackgroundColor(color[0], color[1], color[2]);
+		// Render.
 		FC->Render();
 	}
 }
