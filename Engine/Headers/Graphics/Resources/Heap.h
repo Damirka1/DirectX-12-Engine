@@ -25,6 +25,15 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStartPtrForSAMPLERS();
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStartPtrForSAMPLERS();
 
+	bool isHeapForCbvInitialized()
+	{
+		return HeapCBVInitialized;
+	}
+	bool isHeapForSamplersInitialized()
+	{
+		return HeapSamplersInitialized;
+	}
+
 	void Bind(Graphics* pGraphics);
 
 	Engine_API ~GlobalHeap();
@@ -33,7 +42,10 @@ private:
 	std::array<ID3D12DescriptorHeap*, 2> pHeaps;
 	UINT CBV_SHR_UAV_Desc_count = 0;
 	UINT SAMPLERS_Desc_count = 0;
+	char ActiveHeaps = 0;
 	bool Initialized = false;
+	bool HeapCBVInitialized = false;
+	bool HeapSamplersInitialized = false;
 };
 
 class HeapDescriptorArray : public Bindable

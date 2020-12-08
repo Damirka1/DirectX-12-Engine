@@ -108,11 +108,22 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 {
 	// Initialize Heap.
 	Heap.Initialize(pGraphics);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStart(Heap.GetCPUStartPtr());
-	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStart(Heap.GetGPUStartPtr());
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStartSamplers(Heap.GetCPUStartPtrForSAMPLERS());
-	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStartSamplers(Heap.GetGPUStartPtrForSAMPLERS());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStart;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStart;
+	if (Heap.isHeapForCbvInitialized())
+	{
+		pCPUStart = CD3DX12_CPU_DESCRIPTOR_HANDLE(Heap.GetCPUStartPtr());
+		pGPUStart = CD3DX12_GPU_DESCRIPTOR_HANDLE(Heap.GetGPUStartPtr());
+	}
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStartSamplers;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStartSamplers;
+	if (Heap.isHeapForSamplersInitialized())
+	{
+		pCPUStartSamplers = CD3DX12_CPU_DESCRIPTOR_HANDLE(Heap.GetCPUStartPtrForSAMPLERS());
+		pGPUStartSamplers = CD3DX12_GPU_DESCRIPTOR_HANDLE(Heap.GetGPUStartPtrForSAMPLERS());
+	}
 
 
 	// First initialize RootSignatures and PipeLineStateObjects.
@@ -132,6 +143,10 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 				}
 				Drawable->InitializeCommon_list.clear();
 				
+
+				if (Drawable->DescHeapIndex == -1)
+					continue;
+
 				// Set pointers to descriptor array.
 				auto HeapDesc = std::static_pointer_cast<HeapDescriptorArray>(Drawable->Bindables[Drawable->DescHeapIndex]);
 

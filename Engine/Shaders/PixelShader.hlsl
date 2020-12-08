@@ -1,6 +1,4 @@
-Texture2D tex;
-SamplerState smp;
-cbuffer FaceColors : register(b1)
+cbuffer FaceColors
 {
     float4 face_colors[6];
 };

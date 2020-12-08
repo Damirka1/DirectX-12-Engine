@@ -139,6 +139,8 @@ void GlobalHeap::Initialize(Graphics* pGraphics)
     Desc.NumDescriptors = CBV_SHR_UAV_Desc_count;
     for (char i = 0; i < 2; i++)
     {
+        if (Desc.NumDescriptors == 0)
+            continue;
         // Create heap.
         ID3D12DescriptorHeap* pHeap;
         Error_Check(
@@ -150,6 +152,17 @@ void GlobalHeap::Initialize(Graphics* pGraphics)
         // Set next heap.
         Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
         Desc.NumDescriptors = SAMPLERS_Desc_count;
+    }
+
+    if (pHeaps[0])
+    {
+        HeapCBVInitialized = true;
+        ActiveHeaps++;
+    }
+    if (pHeaps[1])
+    {
+        HeapSamplersInitialized = true;
+        ActiveHeaps++;
     }
 
     Initialized = true;
@@ -177,13 +190,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE GlobalHeap::GetGPUStartPtrForSAMPLERS()
 
 void GlobalHeap::Bind(Graphics* pGraphics)
 {
-    pGraphics->GetCommandList()->SetDescriptorHeaps(2, pHeaps.data());
+    pGraphics->GetCommandList()->SetDescriptorHeaps(ActiveHeaps, pHeaps.data());
 }
 
 GlobalHeap::~GlobalHeap()
 {
     for (auto& el : pHeaps)
     {
-        el->Release();
+        if(el)
+            el->Release();
     }
 }

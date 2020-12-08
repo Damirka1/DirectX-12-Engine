@@ -11,8 +11,8 @@ class Sampler;
 class Cube : public Drawable
 {
 public:
-	Engine_API Cube(std::string TexturePath, ResourceManager* pRM);
-	Engine_API void Update(float* pArray, int Count);
+	Engine_API Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos);
+	Engine_API void Update(DirectX::XMFLOAT3 Translation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	Engine_API ~Cube();
 
 private:
@@ -28,10 +28,13 @@ private:
 	{
 		float r, g, b, a;
 	} FaceColor[6];
+	DirectX::XMFLOAT3 Pos;
+	float angle;
+	float dAngle;
+	float ax, ay, az;
+
 
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
 	std::shared_ptr<ConstantBuffer> pConstBufferColors;
-	std::shared_ptr<Texture2D> pTexture;
-	std::shared_ptr<Sampler> pSampler;
 };
 #endif

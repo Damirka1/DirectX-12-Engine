@@ -26,7 +26,7 @@ private:
 	Graphics* gtx;
 	ResourceManager* RM;
 	FrameCommander* FC;
-	Cube* t;
+	std::vector<Cube*> Cubes;
 	Keyboard* k;
 	Mouse* m;
 };
