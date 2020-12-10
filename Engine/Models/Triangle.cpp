@@ -19,7 +19,10 @@ Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
 	Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
 
-	SetVertexbuffer(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay));
+	std::vector<unsigned int> indecies = { 0,1,2,2,3,0 };
+
+	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay),
+							 pRM->CreateIndexBuffer(this, indecies));
 
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
@@ -46,9 +49,6 @@ Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 	pSampler = pRM->CreateDefaultSampler(this, 1, 0, 0);
 	pSampler->SetKeys(PSO_key, RS_key);
 
-
-	std::vector<unsigned int> indecies = { 0,1,2,2,3,0 };
-	SetIndexBuffer(pRM->CreateIndexBuffer(this, indecies));
 }
 
 void Triangle::Update(float up, float left, float forward)

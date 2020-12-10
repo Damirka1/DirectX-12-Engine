@@ -28,7 +28,29 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 	VertexLayout Lay;
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
 
-	SetVertexbuffer(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay));
+	std::vector<unsigned int> indecies = {
+				0,1,2,
+				2,3,0,
+
+				3,2,7,
+				7,6,3,
+
+				1,4,7,
+				7,2,1,
+
+				4,5,6,
+				6,7,4,
+
+				0,5,4,
+				4,1,0,
+
+				0,3,6,
+				6,5,0
+	};
+
+	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay),
+							 pRM->CreateIndexBuffer(this, indecies));
+
 
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
@@ -61,26 +83,7 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 
 	
 
-	std::vector<unsigned int> indecies = { 
-				0,1,2,
-				2,3,0,
-
-				3,2,7,
-				7,6,3,
-
-				1,4,7,
-				7,2,1,
-
-				4,5,6,
-				6,7,4,
-
-				0,5,4,
-				4,1,0,
-
-				0,3,6,
-				6,5,0
-	};
-	SetIndexBuffer(pRM->CreateIndexBuffer(this, indecies));
+	
 
 	// Random numbers for rotation.
 	{

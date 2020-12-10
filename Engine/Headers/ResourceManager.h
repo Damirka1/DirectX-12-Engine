@@ -4,6 +4,7 @@
 #include "Graphics\Resources\Bindable.h"
 #include "Graphics\Resources\BindablesHeader.h"
 #include "Graphics\Resources\Drawable.h"
+#include "Graphics\Resources\DrawableArray.h"
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -18,8 +19,8 @@ class ResourceManager
 		struct RootSignatureResources
 		{
 			std::shared_ptr<RootSignature> pRootSignature;
-			std::vector<Drawable*> pDrawables;
-			UINT Count = 0u;
+			std::unordered_map<std::string, DrawableArray> DrawIndexed;
+			std::vector<Drawable*> pDrawablesToInitialize;
 		};
 	public:
 		std::shared_ptr<PipelineStateObject> pPipeLineStateObject;

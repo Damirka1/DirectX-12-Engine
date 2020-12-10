@@ -27,21 +27,20 @@ void FrameCommander::Render()
 	pGraphics->Setup(bg[0], bg[1], bg[2]);
 
 	// First bind pipelinestate object and heap.
-	for (auto PSO_begin = pRM->Resources.begin(), PSO_end = pRM->Resources.end(); PSO_begin != PSO_end; ++PSO_begin)
+	for (auto& PSO : pRM->Resources)
 	{
-		PSO_begin->second.pPipeLineStateObject->Bind(pGraphics);
+		PSO.second.pPipeLineStateObject->Bind(pGraphics);
 
 		// Next bind rootsignatures.
-		for (auto RS_begin = PSO_begin->second.RootSignatures.begin(), RS_end = PSO_begin->second.RootSignatures.end(); RS_begin != RS_end; ++RS_begin)
+		for (auto& RS : PSO.second.RootSignatures)
 		{
-			RS_begin->second.pRootSignature->Bind(pGraphics);
+			RS.second.pRootSignature->Bind(pGraphics);
 			pRM->Heap.Bind(pGraphics);
 
 			// And finaly render objects.
-			for (UINT i = 0; i < RS_begin->second.Count; i++)
+			for (auto& obj : RS.second.DrawIndexed)
 			{
-				RS_begin->second.pDrawables[i]->Bind(pGraphics);
-				RS_begin->second.pDrawables[i]->DrawIndexed(pGraphics);
+				obj.second.DrawIndexed(pGraphics);
 			}
 		}
 	}

@@ -86,6 +86,11 @@ void VertexBuffer::Initialize(Graphics* pGraphics)
 		VertexView.SizeInBytes = DataSize;
 		VertexCount = DataSize / Stride;
 
+		key = "{location: " + std::to_string(VertexView.BufferLocation);
+		key += "; size: " + std::to_string(VertexView.SizeInBytes);
+		key += "; stride: " + std::to_string(VertexView.StrideInBytes);
+		key += "; count: " + std::to_string(VertexCount) + '}';
+
 		Initialized = true;
 	}
 }
@@ -98,6 +103,11 @@ VertexBuffer::~VertexBuffer()
 unsigned int VertexBuffer::GetVertexCount()
 {
 	return VertexCount;
+}
+
+std::string VertexBuffer::GetKey()
+{
+	return key;
 }
 
 IndexBuffer::IndexBuffer(std::vector<unsigned int> Indecies)
@@ -122,6 +132,10 @@ void IndexBuffer::Initialize(Graphics* pGraphics)
 		IndexView.SizeInBytes = static_cast<UINT>(Indecies.size() * sizeof(unsigned int));
 		IndexView.Format = DXGI_FORMAT_R32_UINT;
 
+		key =  "{location: " + std::to_string(IndexView.BufferLocation);
+		key += "; size: " + std::to_string(IndexView.SizeInBytes);
+		key += "; format: " + std::to_string(IndexView.Format) + '}';
+
 		Initialized = true;
 	}
 }
@@ -133,6 +147,11 @@ IndexBuffer::~IndexBuffer()
 unsigned int IndexBuffer::GetIndeciesCount()
 {
 	return IndeciesCount;
+}
+
+std::string IndexBuffer::GetKey()
+{
+	return key;
 }
 
 ConstantBuffer::ConstantBuffer(void* pData, UINT DataSize)
@@ -150,12 +169,14 @@ void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE
 {
 	ID3D12Device8* pDevice = pGraphics->GetDevice();
 
+	UINT BufferSize = (DataSize + 255) & ~255;
+
 	// Create buffer
 	Error_Check(
 		pDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer((DataSize + (1024 * 64 - 1)) & ~(1024 * 64 - 1)), // Heap must be 64Kb alligned.
+			&CD3DX12_RESOURCE_DESC::Buffer(BufferSize),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&pBuffer))
@@ -163,7 +184,7 @@ void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE
 
 	// Describe and create a constant buffer view.
 	BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-	BufferView.SizeInBytes = (DataSize + 255) & ~255;
+	BufferView.SizeInBytes = BufferSize;
 	pDevice->CreateConstantBufferView(&BufferView, pHandle);
 
 	Update(pData, DataSize);

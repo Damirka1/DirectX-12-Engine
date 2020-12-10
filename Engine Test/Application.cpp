@@ -26,7 +26,7 @@ Application::Application(HINSTANCE hInstance)
 	std::uniform_real_distribution<float> disPosZ(4.0f, 100.0f);
 
 
-	for (int i = 0; i < 400; i++)
+	for (int i = 0; i < 64 * 64; i++)
 	{
 		Cubes.push_back(new Cube(RM, DirectX::XMFLOAT3{ disPosXY(gen), disPosXY(gen), disPosZ(gen) }));
 	}

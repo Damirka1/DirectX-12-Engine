@@ -43,20 +43,19 @@ std::string ResourceManager::CreateRootSignature(std::string& PSO_Key, RS_Layout
 	using namespace std::string_literals;
 	const std::string key = typeid(RootSignature).name() + "#"s + Lay.GetCode();
 	const auto i = Bindables.find(key);
+	
+	// Set keys in drawable.
+	pDrawable->PSO_Key = PSO_Key;
+	pDrawable->RS_Key = key;
+
 	if (i == Bindables.end())
 	{
 		auto bind = std::make_shared<RootSignature>(Lay);
 		Bindables[key] = bind;
 		auto& el = Resources[PSO_Key].RootSignatures[key];
 		el.pRootSignature = bind;
-		el.pDrawables.push_back(pDrawable);
 	}
-	else
-	{
-		Resources[PSO_Key].RootSignatures[key].pDrawables.push_back(pDrawable);
-	}
-
-	Resources[PSO_Key].RootSignatures[key].Count++;
+	Resources[PSO_Key].RootSignatures[key].pDrawablesToInitialize.push_back(pDrawable);
 
 	// If heap is not exists.
 	if (pDrawable->DescHeapIndex == -1)
@@ -127,14 +126,14 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 
 
 	// First initialize RootSignatures and PipeLineStateObjects.
-	for (auto begin = Resources.begin(), end = Resources.end(); begin != end; ++begin)
+	for (auto& PSO : Resources)
 	{
-		for (auto beginNext = begin->second.RootSignatures.begin(), endNext = begin->second.RootSignatures.end(); beginNext != endNext; ++beginNext)
+		for (auto& RS : PSO.second.RootSignatures)
 		{
-			beginNext->second.pRootSignature->Initialize(pGraphics);
+			RS.second.pRootSignature->Initialize(pGraphics);
 
 			// Initialize bindables in drawables.
-			for (auto& Drawable : beginNext->second.pDrawables)
+			for (auto& Drawable : RS.second.pDrawablesToInitialize)
 			{
 				// Initialize common things (vertex, index buffers and so on).
 				for (auto& Common : Drawable->InitializeCommon_list)
@@ -143,6 +142,13 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 				}
 				Drawable->InitializeCommon_list.clear();
 				
+
+				// Now add drawable to array. The same drawable will be bind vertex and index buffers only once.
+				std::string key = Drawable->pVertexBuffer->GetKey() + Drawable->pIndexBuffer->GetKey();
+				DrawableArray* pArray = &RS.second.DrawIndexed[key];
+				pArray->AddDrawable(Drawable);
+				pArray->SetVertexAndIndexBuffers(Drawable->pVertexBuffer, Drawable->pIndexBuffer);
+
 
 				if (Drawable->DescHeapIndex == -1)
 					continue;
@@ -162,8 +168,9 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 				Drawable->InitializeHeap_list.clear();
 			}
 
+			RS.second.pDrawablesToInitialize.clear();
 		}
-		begin->second.pPipeLineStateObject->Initialize(pGraphics, begin->second.RootSignatures.begin()->second.pRootSignature.get());
+		PSO.second.pPipeLineStateObject->Initialize(pGraphics, PSO.second.RootSignatures.begin()->second.pRootSignature.get());
 	}
 
 	pGraphics->Initialize();
