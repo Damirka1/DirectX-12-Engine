@@ -124,6 +124,13 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>MKDIR "$(TargetDir)Shaders\"
+COPY "$(ProjectDir)Shaders" "$(TargetDir)Shaders\"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy compiled shaders to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
