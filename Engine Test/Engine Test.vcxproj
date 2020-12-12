@@ -125,8 +125,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>MKDIR "$(TargetDir)Shaders\"
-COPY "$(ProjectDir)Shaders" "$(TargetDir)Shaders\"</Command>
+      <Command>if not exist "$(TargetDir)Shaders\" mkdir "$(TargetDir)Shaders\"
+copy "$(ProjectDir)Shaders\" "$(TargetDir)Shaders\"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy compiled shaders to output directory</Message>
@@ -150,6 +150,11 @@ COPY "$(ProjectDir)Shaders" "$(TargetDir)Shaders\"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(TargetDir)Shaders\" mkdir "$(TargetDir)Shaders\"
+copy "$(ProjectDir)Shaders\" "$(TargetDir)Shaders\"</Command>
+      <Message>Copy compiled shaders to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />

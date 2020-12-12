@@ -26,8 +26,8 @@ Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
-	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("..\\Engine\\Shaders\\VertexShader.cso"));
-	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("..\\Engine\\Shaders\\PixelShader.cso"));
+	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader.cso"));
+	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader.cso"));
 	std::string PSO_key = pRM->CreatePSO(pLay, &Lay);
 
 
