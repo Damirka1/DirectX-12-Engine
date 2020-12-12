@@ -63,6 +63,7 @@ Application::~Application()
 	delete RM;
 	delete k;
 	delete m;
+	delete FC;
 
 	for (Cube* obj : Cubes)
 	{

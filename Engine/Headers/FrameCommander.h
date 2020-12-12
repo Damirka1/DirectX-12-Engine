@@ -14,6 +14,7 @@ public:
 	Engine_API void SetBackgroundColor(float r, float g, float b);
 	Engine_API void ChangeBackgroundColor(float dr, float dg, float db);
 	Engine_API void Render();
+	Engine_API ~FrameCommander() = default;
 
 private:
 	Graphics* pGraphics;
