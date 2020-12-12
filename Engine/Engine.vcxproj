@@ -136,6 +136,12 @@ COPY "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <PostBuildEvent>
       <Message>Copy DirectXTex to output directory and copy compiled shader to engine test project</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>MKDIR "$(ProjectDir)Shaders\Compiled"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create folder for compiled shaders</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
