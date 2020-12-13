@@ -1,6 +1,5 @@
 #include "..\..\Headers\Graphics\Resources\Drawable.h"
 #include "..\..\Headers\Graphics\Resources\BindablesHeader.h"
-#include "..\..\Headers\ResourceManager.h"
 
 
 void Drawable::AddBindable(std::shared_ptr<Bindable> Bindable)

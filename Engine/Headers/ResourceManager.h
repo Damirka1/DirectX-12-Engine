@@ -27,21 +27,31 @@ class ResourceManager
 		std::unordered_map<std::string, RootSignatureResources> RootSignatures;
 	};
 public:
-	std::shared_ptr<VertexBuffer> CreateVertexBuffer(Drawable* pDrawable, void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout Lay, unsigned int Slot = 0);
+	ResourceManager() = delete;
+	ResourceManager(ResourceManager&) = delete;
+
+	std::shared_ptr<VertexBuffer> CreateVertexBuffer(Drawable* pDrawable, void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout Lay, bool unique = false, unsigned int Slot = 0);
 	std::shared_ptr<IndexBuffer> CreateIndexBuffer(Drawable* pDrawable, std::vector<unsigned int> Indecies);
 	std::string CreateRootSignature(std::string& PSO_Key, RS_Layout& Lay, Drawable* pDrawable);
-	std::string CreatePSO(PSO_Layout& pLay, VertexLayout* vLay);
+	std::string CreatePSO(PSO_Layout& pLay, VertexLayout* vLay, bool ForUI = false);
 	std::shared_ptr<ConstantBuffer> CreateConstBuffer(Drawable* pDrawable, void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex);
 	std::shared_ptr<Texture2D> CreateTexture2D(Drawable* pDrawable, std::string Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader = false);
 	std::shared_ptr<Sampler> CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex);
 	
 	Engine_API void InitializeResources(Graphics* pGraphics);
+	Engine_API ResourceManager(Graphics* pGraphics);
+	Engine_API DirectX::XMMATRIX& GetProjectionForUI();
+	Engine_API DirectX::XMMATRIX& GetPerspectiveProjection();
+
 
 private:
 	GlobalHeap Heap;
 
 	std::unordered_map<std::string, std::shared_ptr<Bindable>> Bindables;
 	std::unordered_map<std::string, PipeLineResources> Resources;
+	std::unordered_map<std::string, PipeLineResources> UI_Resources;
+	DirectX::XMMATRIX UI_OrthographicsProjection;
+	DirectX::XMMATRIX PerspectiveProjection;
 };
 
 #endif

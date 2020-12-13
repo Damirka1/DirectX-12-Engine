@@ -20,6 +20,9 @@ protected:
 
 	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB);
 
+protected:
+	bool UI_element = false;
+
 private:
 	std::vector<std::shared_ptr<Bindable>> Bindables;
 

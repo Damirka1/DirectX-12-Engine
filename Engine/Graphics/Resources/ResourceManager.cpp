@@ -2,10 +2,15 @@
 #include "..\..\Headers\DirectXTex.h"
 #include "..\..\Headers\Utility.h"
 
-std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDrawable, void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout Lay, unsigned int Slot)
+std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDrawable, void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout Lay, bool unique, unsigned int Slot)
 {
 	using namespace std::string_literals;
-	const std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}";
+	std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}";
+	if (unique)
+	{
+		static UINT Index;
+		key += std::to_string(Index++);
+	}
 	const auto i = Bindables.find(key);
 	if (i == Bindables.end())
 	{
@@ -48,14 +53,28 @@ std::string ResourceManager::CreateRootSignature(std::string& PSO_Key, RS_Layout
 	pDrawable->PSO_Key = PSO_Key;
 	pDrawable->RS_Key = key;
 
+	std::shared_ptr<RootSignature> bind;
+
 	if (i == Bindables.end())
 	{
-		auto bind = std::make_shared<RootSignature>(Lay);
+		bind = std::make_shared<RootSignature>(Lay);
 		Bindables[key] = bind;
+	}
+	else
+		bind = std::static_pointer_cast<RootSignature>(i->second);
+
+	if (pDrawable->UI_element)
+	{
+		UI_Resources[PSO_Key].RootSignatures[key].pDrawablesToInitialize.push_back(pDrawable);
+		auto& el = UI_Resources[PSO_Key].RootSignatures[key];
+		el.pRootSignature = bind;
+	}
+	else
+	{
+		Resources[PSO_Key].RootSignatures[key].pDrawablesToInitialize.push_back(pDrawable);
 		auto& el = Resources[PSO_Key].RootSignatures[key];
 		el.pRootSignature = bind;
 	}
-	Resources[PSO_Key].RootSignatures[key].pDrawablesToInitialize.push_back(pDrawable);
 
 	// If heap is not exists.
 	if (pDrawable->DescHeapIndex == -1)
@@ -73,7 +92,7 @@ std::string ResourceManager::CreateRootSignature(std::string& PSO_Key, RS_Layout
 	return key;
 }
 
-std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout* vLay)
+std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout* vLay, bool ForUI)
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay->GetCode();
@@ -82,7 +101,10 @@ std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout* vLay)
 	{
 		auto bind = std::make_shared<PipelineStateObject>(pLay, vLay);
 		Bindables[key] = bind;
-		Resources[key].pPipeLineStateObject = bind;
+		if (ForUI)
+			UI_Resources[key].pPipeLineStateObject = bind;
+		else
+			Resources[key].pPipeLineStateObject = bind;
 		return key;
 	}
 	else
@@ -102,6 +124,7 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDr
 	pDrawable->InitializeHeap_list.push_back(bind);
 	return bind;
 }
+
 
 void ResourceManager::InitializeResources(Graphics* pGraphics)
 {
@@ -125,55 +148,80 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 	}
 
 
-	// First initialize RootSignatures and PipeLineStateObjects.
-	for (auto& PSO : Resources)
+	auto Init = [&](std::unordered_map<std::string, PipeLineResources>& Resources)
 	{
-		for (auto& RS : PSO.second.RootSignatures)
+		// First initialize RootSignatures and PipeLineStateObjects.
+		for (auto& PSO : Resources)
 		{
-			RS.second.pRootSignature->Initialize(pGraphics);
-
-			// Initialize bindables in drawables.
-			for (auto& Drawable : RS.second.pDrawablesToInitialize)
+			for (auto& RS : PSO.second.RootSignatures)
 			{
-				// Initialize common things (vertex, index buffers and so on).
-				for (auto& Common : Drawable->InitializeCommon_list)
+				RS.second.pRootSignature->Initialize(pGraphics);
+
+				// Initialize bindables in drawables.
+				for (auto& Drawable : RS.second.pDrawablesToInitialize)
 				{
-					Common->Initialize(pGraphics);
+					// Initialize common things (vertex, index buffers and so on).
+					for (auto& Common : Drawable->InitializeCommon_list)
+					{
+						Common->Initialize(pGraphics);
+					}
+					Drawable->InitializeCommon_list.clear();
+
+
+					// Now add drawable to array. The same drawable will be bind vertex and index buffers only once.
+					std::string key = Drawable->pVertexBuffer->GetKey() + Drawable->pIndexBuffer->GetKey();
+					DrawableArray* pArray = &RS.second.DrawIndexed[key];
+					pArray->AddDrawable(Drawable);
+					pArray->SetVertexAndIndexBuffers(Drawable->pVertexBuffer, Drawable->pIndexBuffer);
+
+
+					if (Drawable->DescHeapIndex == -1)
+						continue;
+
+					// Set pointers to descriptor array.
+					auto HeapDesc = std::static_pointer_cast<HeapDescriptorArray>(Drawable->Bindables[Drawable->DescHeapIndex]);
+
+					HeapDesc->InitializePointers(pGraphics, pCPUStart,
+						pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
+
+					// Initialize heap elements in drawables.
+					for (auto& HeapEl : Drawable->InitializeHeap_list)
+					{
+						CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = HeapDesc->GetCPUHandle(HeapEl->Table, HeapEl->Range, HeapEl->Index);
+						HeapEl->Initialize(pGraphics, Ptr);
+					}
+					Drawable->InitializeHeap_list.clear();
 				}
-				Drawable->InitializeCommon_list.clear();
-				
 
-				// Now add drawable to array. The same drawable will be bind vertex and index buffers only once.
-				std::string key = Drawable->pVertexBuffer->GetKey() + Drawable->pIndexBuffer->GetKey();
-				DrawableArray* pArray = &RS.second.DrawIndexed[key];
-				pArray->AddDrawable(Drawable);
-				pArray->SetVertexAndIndexBuffers(Drawable->pVertexBuffer, Drawable->pIndexBuffer);
-
-
-				if (Drawable->DescHeapIndex == -1)
-					continue;
-
-				// Set pointers to descriptor array.
-				auto HeapDesc = std::static_pointer_cast<HeapDescriptorArray>(Drawable->Bindables[Drawable->DescHeapIndex]);
-
-				HeapDesc->InitializePointers(pGraphics, pCPUStart,
-					pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
-
-				// Initialize heap elements in drawables.
-				for (auto& HeapEl : Drawable->InitializeHeap_list)
-				{
-					CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = HeapDesc->GetCPUHandle(HeapEl->Table, HeapEl->Range, HeapEl->Index);
-					HeapEl->Initialize(pGraphics, Ptr);
-				}
-				Drawable->InitializeHeap_list.clear();
+				RS.second.pDrawablesToInitialize.clear();
 			}
-
-			RS.second.pDrawablesToInitialize.clear();
+			PSO.second.pPipeLineStateObject->Initialize(pGraphics, PSO.second.RootSignatures.begin()->second.pRootSignature.get());
 		}
-		PSO.second.pPipeLineStateObject->Initialize(pGraphics, PSO.second.RootSignatures.begin()->second.pRootSignature.get());
-	}
+	};
+
+	Init(Resources);
+
+	Init(UI_Resources);
 
 	pGraphics->Initialize();
+}
+
+ResourceManager::ResourceManager(Graphics* pGraphics)
+{
+	std::pair<float, float> res = pGraphics->GetResolution();
+
+	UI_OrthographicsProjection = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, res.first, 0.0f, res.second, 0.0f, 1.0f));
+	PerspectiveProjection = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60), res.first / res.second, 0.01f, 150.0f));
+}
+
+DirectX::XMMATRIX& ResourceManager::GetProjectionForUI()
+{
+	return UI_OrthographicsProjection;
+}
+
+DirectX::XMMATRIX& ResourceManager::GetPerspectiveProjection()
+{
+	return PerspectiveProjection;
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, std::string Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)

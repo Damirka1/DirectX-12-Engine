@@ -4,11 +4,13 @@
 #include <Windows.h>
 #include "MessageHandler.h"
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Header.h"
 #include "Timer.h"
 
 class Graphics;
+class UI_Element;
 
 class Window
 {
@@ -31,6 +33,9 @@ public:
 	// All handler to map. Handler will be used in messages process.
 	Engine_API bool AddHandler(MessageHandler* ptr, const char* Name);
 	Engine_API bool RemoveHandler(const char* Name);
+	// Add UI elements to the window.
+	Engine_API void AddElement(UI_Element* pElement);
+	Engine_API void RemoveElement(UI_Element* pElement);
 
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -44,5 +49,6 @@ private:
 	HINSTANCE hInst = nullptr;
 	Graphics* pGtx = nullptr;
 	std::unordered_map<std::string, MessageHandler*> MessageHandlers;
+	std::unordered_map<std::string, UI_Element*> UI_elements;
 };
 #endif

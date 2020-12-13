@@ -358,6 +358,11 @@ DXGI_FORMAT Graphics::GetDSVFormat()
     return dsvFormat;
 }
 
+std::pair<short, short> Graphics::GetResolution()
+{
+    return std::make_pair<short, short>(static_cast<short>(ViewPort.Width), static_cast<short>(ViewPort.Height));
+}
+
 std::wstring Graphics::GetInfo()
 {
     return L"[Device]: " + std::wstring(static_cast<wchar_t*>(DeviceDesc.Description)) + L'\n'

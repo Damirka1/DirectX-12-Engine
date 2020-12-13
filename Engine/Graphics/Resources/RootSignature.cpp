@@ -11,6 +11,9 @@ RootSignature::RootSignature(RS_Layout& Lay)
 
 void RootSignature::Initialize(Graphics* pGraphics)
 {
+    if (Initialized)
+        return;
+
     auto pDevice = pGraphics->GetDevice();
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
 
@@ -74,6 +77,8 @@ void RootSignature::Initialize(Graphics* pGraphics)
 
     signature = nullptr;
     error = nullptr;
+
+    Initialized = true;
 }
 
 void RootSignature::Bind(Graphics* pGraphics)

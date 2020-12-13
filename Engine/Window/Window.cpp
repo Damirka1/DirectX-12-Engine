@@ -1,4 +1,5 @@
 #include "..\Headers\Window.h"
+#include "..\Headers\Graphics\Resources\UI_Element.h"
 #include <exception>
 
 Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height)
@@ -151,6 +152,27 @@ bool Window::RemoveHandler(const char* Name)
 		return true;
 	}
 	return false;
+}
+
+void Window::AddElement(UI_Element* pElement)
+{
+	if (pElement)
+	{
+		auto i = UI_elements.find(pElement->ObjectName);
+
+		if (i == UI_elements.end())
+		{
+			UI_elements[pElement->ObjectName] = pElement;
+		}
+		else
+			throw std::exception((std::string("Element with name: ") + pElement->ObjectName + " already exsist").c_str());
+	}
+}
+
+void Window::RemoveElement(UI_Element* pElement)
+{
+	if(pElement)
+		UI_elements.erase(pElement->ObjectName);
 }
 
 LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

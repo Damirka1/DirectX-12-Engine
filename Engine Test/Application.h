@@ -6,6 +6,7 @@
 #include "..\Engine\Headers\FrameCommander.h"
 #include "..\Engine\Models\Triangle.h"
 #include "..\Engine\Models\Cube.h"
+#include "..\Engine\Models\Rectangle.h"
 #include "..\Engine\Headers\Input\Keyboard.h"
 #include "..\Engine\Headers\Input\Mouse.h"
 
@@ -27,6 +28,7 @@ private:
 	ResourceManager* RM;
 	FrameCommander* FC;
 	std::vector<Cube*> Cubes;
+	Rect* r;
 	Keyboard* k;
 	Mouse* m;
 };

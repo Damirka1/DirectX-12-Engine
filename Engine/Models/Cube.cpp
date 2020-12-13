@@ -27,6 +27,7 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 
 	VertexLayout Lay;
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
+	Lay.AddElement("Color", DXGI_FORMAT_R32G32B32_FLOAT);
 
 	std::vector<unsigned int> indecies = {
 				0,1,2,
@@ -68,22 +69,17 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 	std::string RS_key = pRM->CreateRootSignature(PSO_key, RsLay, this);
 
 	b.Pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * DirectX::XMMatrixTranslation(0.0f, 0.0f, 5.0f));
-	b.Projection = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60), 4.0f/3.0f, 0.01f, 150.0f));
+	b.Projection = pRM->GetPerspectiveProjection();
 
 	{
 		const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 		const auto lookVector = forwardBaseVector;
 		const auto camPosition = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);;
 		const auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector);
-		b.View = DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		b.View = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 	}
 
 	pConstBuffer = pRM->CreateConstBuffer(this, &b, sizeof(b), 0, 0, 0);
-	pConstBuffer->SetKeys(PSO_key, RS_key);
-
-	
-
-	
 
 	// Random numbers for rotation.
 	{
@@ -108,7 +104,6 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 
 
 		pConstBufferColors = pRM->CreateConstBuffer(this, &FaceColor, sizeof(FaceColor), 1, 0, 0);
-		pConstBufferColors->SetKeys(PSO_key, RS_key);
 	}
 }
 

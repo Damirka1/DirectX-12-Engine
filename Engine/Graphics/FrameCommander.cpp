@@ -5,7 +5,6 @@ FrameCommander::FrameCommander(Graphics* pGraphics, ResourceManager* pRM)
 	pGraphics(pGraphics),
 	pRM(pRM)
 {
-
 }
 
 void FrameCommander::SetBackgroundColor(float r, float g, float b)
@@ -26,24 +25,32 @@ void FrameCommander::Render()
 {
 	pGraphics->Setup(bg[0], bg[1], bg[2]);
 
-	// First bind pipelinestate object and heap.
-	for (auto& PSO : pRM->Resources)
+
+	auto Render = [&](std::unordered_map<std::string, ResourceManager::PipeLineResources>& Resources)
 	{
-		PSO.second.pPipeLineStateObject->Bind(pGraphics);
-
-		// Next bind rootsignatures.
-		for (auto& RS : PSO.second.RootSignatures)
+		// First bind pipelinestate object and heap.
+		for (auto& PSO : Resources)
 		{
-			RS.second.pRootSignature->Bind(pGraphics);
-			pRM->Heap.Bind(pGraphics);
+			PSO.second.pPipeLineStateObject->Bind(pGraphics);
 
-			// And finaly render objects.
-			for (auto& obj : RS.second.DrawIndexed)
+			// Next bind rootsignatures.
+			for (auto& RS : PSO.second.RootSignatures)
 			{
-				obj.second.DrawIndexed(pGraphics);
+				RS.second.pRootSignature->Bind(pGraphics);
+				pRM->Heap.Bind(pGraphics);
+
+				// And finaly render objects.
+				for (auto& obj : RS.second.DrawIndexed)
+				{
+					obj.second.DrawIndexed(pGraphics);
+				}
 			}
 		}
-	}
+	};
+
+	Render(pRM->Resources);
+
+	Render(pRM->UI_Resources);
 
 	pGraphics->Execute();
 }

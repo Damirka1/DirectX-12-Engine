@@ -167,29 +167,32 @@ void ConstantBuffer::Bind(Graphics* pGraphics)
 
 void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
-	ID3D12Device8* pDevice = pGraphics->GetDevice();
+	if (!Initialized)
+	{
+		ID3D12Device8* pDevice = pGraphics->GetDevice();
 
-	UINT BufferSize = (DataSize + 255) & ~255;
+		UINT BufferSize = (DataSize + 255) & ~255;
 
-	// Create buffer
-	Error_Check(
-		pDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(BufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&pBuffer))
-	);
+		// Create buffer
+		Error_Check(
+			pDevice->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(BufferSize),
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&pBuffer))
+		);
 
-	// Describe and create a constant buffer view.
-	BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-	BufferView.SizeInBytes = BufferSize;
-	pDevice->CreateConstantBufferView(&BufferView, pHandle);
+		// Describe and create a constant buffer view.
+		BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
+		BufferView.SizeInBytes = BufferSize;
+		pDevice->CreateConstantBufferView(&BufferView, pHandle);
 
-	Update(pData, DataSize);
+		Update(pData, DataSize);
 
-	Initialized = true;
+		Initialized = true;
+	}
 }
 
 void ConstantBuffer::Update(void* pData, UINT DataSize)

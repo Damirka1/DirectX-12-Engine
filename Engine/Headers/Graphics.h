@@ -31,6 +31,8 @@ public:
 	DXGI_FORMAT GetRTVFormat();
 	DXGI_FORMAT GetDSVFormat();
 
+	std::pair<short, short> GetResolution();
+
 private:
 	void WaitForGpu();
 	void MoveToNextFrame();

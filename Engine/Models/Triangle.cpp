@@ -42,12 +42,9 @@ Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 
 	b.pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixIdentity());
 	pConstBuffer = pRM->CreateConstBuffer(this, &b.pos, sizeof(b.pos), 0,0,0);
-	pConstBuffer->SetKeys(PSO_key, RS_key);
 
 	pTexture = pRM->CreateTexture2D(this, TexturePath, 0,1,0);
-	pTexture->SetKeys(PSO_key, RS_key);
 	pSampler = pRM->CreateDefaultSampler(this, 1, 0, 0);
-	pSampler->SetKeys(PSO_key, RS_key);
 
 }
 

@@ -70,6 +70,9 @@ PipelineStateObject::PipelineStateObject(PSO_Layout& pLay, VertexLayout* vLay)
 
 void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)	
 {
+	if (Initialized)
+		return;
+
 	// Describe and create the graphics pipeline state object (PSO).
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 	const auto& il = V_Lay.GetDesc();
@@ -146,7 +149,13 @@ void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)
 		pGraphics->GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pPipelineStateObject))
 	);
 
-	this->Initialized = true;
+	free(const_cast<void*>(psoDesc.VS.pShaderBytecode));
+	free(const_cast<void*>(psoDesc.PS.pShaderBytecode));
+	free(const_cast<void*>(psoDesc.GS.pShaderBytecode));
+	free(const_cast<void*>(psoDesc.HS.pShaderBytecode));
+	free(const_cast<void*>(psoDesc.DS.pShaderBytecode));
+
+	Initialized = true;
 }
 
 void PipelineStateObject::Bind(Graphics* pGraphics)
