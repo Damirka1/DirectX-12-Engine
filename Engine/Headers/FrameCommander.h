@@ -10,10 +10,10 @@ public:
 	FrameCommander() = delete;
 	FrameCommander(FrameCommander&) = delete;
 
-	Engine_API FrameCommander(Graphics* pGraphics, ResourceManager* pRM);
-	Engine_API void SetBackgroundColor(float r, float g, float b);
-	Engine_API void ChangeBackgroundColor(float dr, float dg, float db);
-	Engine_API void Render();
+	Engine_API FrameCommander(Window* pWindow, ResourceManager* pRM, bool SetToWindow = false) noexcept;
+	Engine_API void SetBackgroundColor(float r, float g, float b) noexcept;
+	Engine_API void ChangeBackgroundColor(float dr, float dg, float db) noexcept;
+	Engine_API void Render() const;
 	Engine_API ~FrameCommander() = default;
 
 private:

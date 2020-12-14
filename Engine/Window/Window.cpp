@@ -1,5 +1,7 @@
 #include "..\Headers\Window.h"
 #include "..\Headers\Graphics\Resources\UI_Element.h"
+#include "..\Headers\Input\Keyboard.h"
+#include "..\Headers\Input\Mouse.h"
 #include <exception>
 
 Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height)
@@ -66,7 +68,16 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	}
 
 	Exist = true;
+	
+	// Create Graphics.
+	pGraphics = new Graphics(pWindow, Width, Height);
 
+	// Create input handlers.
+	pKeyboard = new Keyboard();
+	pMouse = new Mouse();
+
+	AddHandler(pKeyboard, "KeyBoard");
+	AddHandler(pMouse, "Mouse");
 }
 
 Window::Window(const wchar_t* WindowName, short Width, short Height)
@@ -78,29 +89,32 @@ Window::Window(const wchar_t* WindowName, short Width, short Height)
 Window::~Window()
 {
 	delete t;
+	delete pGraphics;
+	delete pKeyboard;
+	delete pMouse;
 }
 
-void Window::SetWindowName(const char* Name)
+void Window::SetWindowName(const char* Name) const noexcept
 {
 	SetWindowTextA(pWindow, Name);
 }
 
-void Window::Show()
+void Window::Show() const noexcept
 {
 	ShowWindow(pWindow, SW_SHOWDEFAULT);
 }
 
-void Window::Hide()
+void Window::Hide() const noexcept
 {
 	ShowWindow(pWindow, SW_HIDE);
 }
 
-bool Window::IsExist()
+bool Window::IsExist() const noexcept
 {
 	return Exist;
 }
 
-void Window::ProcessMessages()
+void Window::ProcessMessages() const
 {
 	MSG msg;
 	// while queue has messages, remove and dispatch them (but do not block on empty queue)
@@ -112,27 +126,33 @@ void Window::ProcessMessages()
 	}
 }
 
-void Window::SetGraphics(Graphics* pGtx)
-{
-	this->pGtx = pGtx;
-}
 
-HWND Window::GetHWND()
+HWND Window::GetHWND() noexcept
 {
 	return pWindow;
 }
 
-float Window::TimerPeek()
+std::pair<short, short> Window::GetWindowResolution() const noexcept
+{
+	return { Width, Height };
+}
+
+std::pair<short, short> Window::GetGraphicsResolution() const noexcept
+{
+	return pGraphics->GetResolution();
+}
+
+float Window::TimerPeek() const noexcept
 {
 	return t->Peek();
 }
 
-float Window::TimerMark()
+float Window::TimerMark() const noexcept
 {
 	return t->Mark();
 }
 
-bool Window::AddHandler(MessageHandler* ptr, const char* Name)
+bool Window::AddHandler(MessageHandler* ptr, const char* Name) noexcept
 {
 	const auto i = MessageHandlers.find(Name);
 	if (i == MessageHandlers.end())
@@ -143,7 +163,7 @@ bool Window::AddHandler(MessageHandler* ptr, const char* Name)
 	return false;
 }
 
-bool Window::RemoveHandler(const char* Name)
+bool Window::RemoveHandler(const char* Name) noexcept
 {
 	const auto i = MessageHandlers.find(Name);
 	if (i == MessageHandlers.end())
@@ -169,13 +189,80 @@ void Window::AddElement(UI_Element* pElement)
 	}
 }
 
-void Window::RemoveElement(UI_Element* pElement)
+void Window::RemoveElement(UI_Element* pElement) noexcept
 {
 	if(pElement)
 		UI_elements.erase(pElement->ObjectName);
 }
 
-LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+const Graphics* Window::GetGraphics() const noexcept
+{
+	return pGraphics;
+}
+
+const Keyboard* Window::GetKeyboard() const noexcept
+{
+	return pKeyboard;
+}
+
+const Mouse* Window::GetMouse() const noexcept
+{
+	return pMouse;
+}
+
+Graphics* Window::GetGraphics() noexcept
+{
+	return pGraphics;
+}
+
+Keyboard* Window::GetKeyboard() noexcept
+{
+	return pKeyboard;
+}
+
+Mouse* Window::GetMouse() noexcept
+{
+	return pMouse;
+}
+
+void Window::EnableCursor() noexcept
+{
+	ShowCursor();
+	FreeCursor();
+	pMouse->CursorEnabled = true;
+}
+
+void Window::DisableCursor() noexcept
+{
+	HideCursor();
+	ConfineCursor();
+	pMouse->CursorEnabled = false;
+}
+
+void Window::ConfineCursor() noexcept
+{
+	RECT rect;
+	GetClientRect(pWindow, &rect);
+	MapWindowPoints(pWindow, nullptr, reinterpret_cast<POINT*>(&rect), 2);
+	ClipCursor(&rect);
+}
+
+void Window::FreeCursor() noexcept
+{
+	ClipCursor(nullptr);
+}
+
+void Window::HideCursor() noexcept
+{
+	while (::ShowCursor(FALSE) >= 0);
+}
+
+void Window::ShowCursor() noexcept
+{
+	while (::ShowCursor(TRUE) < 0);
+}
+
+LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	// Use create parameter passed in from CreateWindow() to store window class pointer at WinAPI side.
 	if (msg == WM_NCCREATE)
@@ -194,7 +281,7 @@ LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-LRESULT Window::StaticHandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT Window::StaticHandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	// Retrieve ptr to window instance.
 	Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -202,7 +289,7 @@ LRESULT Window::StaticHandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
 }
 
-LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) const noexcept
 {
 	switch (msg)
 	{

@@ -11,7 +11,7 @@ class Sampler;
 class Cube : public Drawable
 {
 public:
-	Engine_API Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos);
+	Engine_API Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept;
 	Engine_API void Update(DirectX::XMFLOAT3 Translation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	Engine_API ~Cube();
 

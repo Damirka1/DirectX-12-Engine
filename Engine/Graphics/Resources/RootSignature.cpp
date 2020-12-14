@@ -4,7 +4,7 @@
 #include "..\..\Headers\Graphics\Resources\Heap.h"
 #include <array>
 
-RootSignature::RootSignature(RS_Layout& Lay)
+RootSignature::RootSignature(RS_Layout& Lay) noexcept
     :
     Lay(Lay)
 {}
@@ -92,24 +92,24 @@ RootSignature::~RootSignature()
     pRootSignature = nullptr;
 }
 
-RS_Layout::RS_Layout(D3D12_ROOT_SIGNATURE_FLAGS F)
+RS_Layout::RS_Layout(D3D12_ROOT_SIGNATURE_FLAGS F) noexcept
     :
     Flags(F)
 {
 }
 
-RS_Layout::RootParameter& RS_Layout::AddDescriptorTable(D3D12_SHADER_VISIBILITY V)
+RS_Layout::RootParameter& RS_Layout::AddDescriptorTable(D3D12_SHADER_VISIBILITY V) noexcept
 {
     Params.emplace_back(V, RS_Layout::Type::DescriptorTable);
     return Params.back();
 }
 
-RS_Layout::RootParameter& RS_Layout::operator[](UINT index)
+RS_Layout::RootParameter& RS_Layout::operator[](UINT index) noexcept
 {
     return Params[index];
 }
 
-std::string RS_Layout::GetCode()
+std::string RS_Layout::GetCode() noexcept
 {
     std::string code;
     for (size_t i = 0; i < Params.size(); i++)
@@ -120,7 +120,7 @@ std::string RS_Layout::GetCode()
     return code;
 }
 
-RS_Layout::RootParameter::Range::Range(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT N, UINT SR, UINT RS, D3D12_DESCRIPTOR_RANGE_FLAGS F)
+RS_Layout::RootParameter::Range::Range(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT N, UINT SR, UINT RS, D3D12_DESCRIPTOR_RANGE_FLAGS F) noexcept
     :
     Type(T),
     numDescriptors(N),
@@ -129,30 +129,31 @@ RS_Layout::RootParameter::Range::Range(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT N, UI
     Flags(F)
 {}
 
-std::string RS_Layout::RootParameter::Range::GetCode()
+std::string RS_Layout::RootParameter::Range::GetCode() noexcept
 {
     std::string code;
     return code = std::to_string(Type) + ',' + std::to_string(numDescriptors) + ',' + std::to_string(ShaderRegister) + ',' + std::to_string(RegisterSpace) + ',' + std::to_string(Flags);
 }
 
-RS_Layout::RootParameter::RootParameter(D3D12_SHADER_VISIBILITY V, Type t)
+RS_Layout::RootParameter::RootParameter(D3D12_SHADER_VISIBILITY V, Type t) noexcept
     :
     Visibility(V),
     type(t)
 {}
 
-RS_Layout::RootParameter& RS_Layout::RootParameter::AddRange(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT numDescriptors, UINT ShaderRegister, UINT RegisterSpace, D3D12_DESCRIPTOR_RANGE_FLAGS Flags)
+RS_Layout::RootParameter& RS_Layout::RootParameter::AddRange(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT numDescriptors, UINT ShaderRegister, UINT RegisterSpace, D3D12_DESCRIPTOR_RANGE_FLAGS Flags) noexcept
 {
     Ranges.emplace_back(T, numDescriptors, ShaderRegister, RegisterSpace, Flags);
     return *this;
 }
 
-RS_Layout::RootParameter::Range& RS_Layout::RootParameter::operator[](UINT index)
+
+RS_Layout::RootParameter::Range& RS_Layout::RootParameter::operator[](UINT index) noexcept
 {
     return Ranges[index];
 }
 
-std::string RS_Layout::RootParameter::GetCode()
+std::string RS_Layout::RootParameter::GetCode() noexcept
 {
     std::string code;
     for (size_t i = 0; i < Ranges.size(); i++)

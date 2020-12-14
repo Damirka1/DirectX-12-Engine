@@ -1,9 +1,10 @@
 #include "Cube.h"
 #include <random>
 
-Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
+Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept
 	:
-	Pos(Pos)
+	Pos(Pos),
+	Drawable(pRM)
 {
 
 	struct VB
@@ -57,7 +58,7 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader.cso"));
-	std::string PSO_key = pRM->CreatePSO(pLay, &Lay);
+	std::string PSO_key = pRM->CreatePSO(pLay, Lay);
 
 
 	RS_Layout RsLay;
@@ -66,18 +67,11 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
-	std::string RS_key = pRM->CreateRootSignature(PSO_key, RsLay, this);
+	std::string RS_key = pRM->CreateRootSignature(this, PSO_key, RsLay);
 
 	b.Pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * DirectX::XMMatrixTranslation(0.0f, 0.0f, 5.0f));
-	b.Projection = pRM->GetPerspectiveProjection();
-
-	{
-		const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-		const auto lookVector = forwardBaseVector;
-		const auto camPosition = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);;
-		const auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector);
-		b.View = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
-	}
+	b.Projection = *Transformation.pProjection;
+	b.View = *Transformation.pView;
 
 	pConstBuffer = pRM->CreateConstBuffer(this, &b, sizeof(b), 0, 0, 0);
 
@@ -109,6 +103,8 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos)
 
 void Cube::Update(DirectX::XMFLOAT3 Translation)
 {
+	b.Projection = *Transformation.pProjection;
+	b.View = *Transformation.pView;
 	b.Pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationAxis({ ax,ay,az }, DirectX::XMConvertToRadians(angle)) * DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&Pos), DirectX::XMLoadFloat3(&Translation))));
 	pConstBuffer->Update(&b, sizeof(b));
 

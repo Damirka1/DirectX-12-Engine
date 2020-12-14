@@ -1,12 +1,12 @@
 #include "..\..\Headers\Graphics\Resources\DrawableArray.h"
 #include "..\..\Headers\Graphics\Resources\Drawable.h"
 
-void DrawableArray::AddDrawable(Drawable* pDrawable)
+void DrawableArray::AddDrawable(Drawable* pDrawable) noexcept
 {
 	pDrawables.insert(pDrawable);
 }
 
-void DrawableArray::RemoveDrawable(Drawable* pDrawable)
+void DrawableArray::RemoveDrawable(Drawable* pDrawable) noexcept
 {
 	pDrawables.erase(pDrawable);
 }
@@ -24,7 +24,7 @@ void DrawableArray::DrawIndexed(Graphics* pGraphics)
 	}
 }
 
-void DrawableArray::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB)
+void DrawableArray::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept
 {
 	pVertexBuffer = pVB;
 	pIndexBuffer = pIB;

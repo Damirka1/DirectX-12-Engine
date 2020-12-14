@@ -14,13 +14,13 @@ public:
 	{}
 	virtual ~Bindable()
 	{}
-	bool IsInitialized()
+	bool IsInitialized() noexcept
 	{
 		return Initialized;
 	}
 	
 protected:
-	void SetHeapIndex(UINT Table, UINT Range, UINT Index)
+	void SetHeapIndex(UINT Table, UINT Range, UINT Index) noexcept
 	{
 		this->Table = Table;
 		this->Range = Range;

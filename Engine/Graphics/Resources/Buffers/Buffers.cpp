@@ -56,7 +56,7 @@ Buffer::~Buffer()
 	pBuffer = nullptr;
 }
 
-VertexBuffer::VertexBuffer(void* pData, UINT Stride, UINT DataSize, UINT Slot)
+VertexBuffer::VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT Slot)
 	:
 	Slot(Slot),
 	DataSize(DataSize),
@@ -100,17 +100,17 @@ VertexBuffer::~VertexBuffer()
 	free(pData);
 }
 
-unsigned int VertexBuffer::GetVertexCount()
+unsigned int VertexBuffer::GetVertexCount() noexcept
 {
 	return VertexCount;
 }
 
-std::string VertexBuffer::GetKey()
+std::string VertexBuffer::GetKey() noexcept
 {
 	return key;
 }
 
-IndexBuffer::IndexBuffer(std::vector<unsigned int> Indecies)
+IndexBuffer::IndexBuffer(const std::vector<unsigned int>& Indecies) noexcept
 	:
 	IndeciesCount(static_cast<unsigned int>(Indecies.size())),
 	Indecies(Indecies)
@@ -144,25 +144,28 @@ IndexBuffer::~IndexBuffer()
 {
 }
 
-unsigned int IndexBuffer::GetIndeciesCount()
+unsigned int IndexBuffer::GetIndeciesCount() noexcept
 {
 	return IndeciesCount;
 }
 
-std::string IndexBuffer::GetKey()
+std::string IndexBuffer::GetKey() noexcept
 {
 	return key;
 }
 
-ConstantBuffer::ConstantBuffer(void* pData, UINT DataSize)
+ConstantBuffer::ConstantBuffer(const void* pData, UINT DataSize)
 	:
 	pData(pData),
 	DataSize(DataSize)
 {
+	if (!pData)
+		throw std::exception("Null pointer in constant buffer");
 }
 
 void ConstantBuffer::Bind(Graphics* pGraphics)
 {
+	// Do nothing. Bind from heap.
 }
 
 void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
@@ -195,7 +198,7 @@ void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE
 	}
 }
 
-void ConstantBuffer::Update(void* pData, UINT DataSize)
+void ConstantBuffer::Update(const void* pData, UINT DataSize)
 {
 	// Map and initialize the constant buffer.
 	CD3DX12_RANGE readRange(0, 0);        // We do not intend to read from this resource on the CPU.

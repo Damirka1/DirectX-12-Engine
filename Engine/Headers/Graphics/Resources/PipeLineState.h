@@ -29,20 +29,20 @@ public:
 		Triangle
 	};
 
-	PSO_Layout(unsigned int RTC, unsigned int SmpCount = 1);
-	void DepthState(bool v);
-	void StencilState(bool v);
-	void SetShader(Shader Type, std::string Path);
-	void SetTopology(Topology Type);
-	std::string GetCode();
+	PSO_Layout(unsigned int RTC, unsigned int SmpCount = 1) noexcept;
+	void DepthState(bool v) noexcept;
+	void StencilState(bool v) noexcept;
+	void SetShader(Shader Type, std::string Path) noexcept;
+	void SetTopology(Topology Type) noexcept;
+	std::string GetCode() noexcept;
 
 
 private:
-	std::string VS{}, PS{}, GS{}, HS{}, DS{};
-	Rasterizer rType;
-	Blender bType;
-	Topology pType;
-	bool Depth, Stencil;
+	mutable std::string VS{}, PS{}, GS{}, HS{}, DS{};
+	mutable Rasterizer rType;
+	mutable Blender bType;
+	mutable Topology pType;
+	mutable bool Depth, Stencil;
 	unsigned int RenderTargetsCount;
 	unsigned int SampleCount;
 };
@@ -54,7 +54,7 @@ private:
 class PipelineStateObject : public Bindable
 {
 public:
-	PipelineStateObject(PSO_Layout& pLay, VertexLayout* vLay);
+	PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept;
 	void Initialize(Graphics* pGraphics, RootSignature* pRS);
 	void Bind(Graphics* pGraphics) override;
 	~PipelineStateObject() override;

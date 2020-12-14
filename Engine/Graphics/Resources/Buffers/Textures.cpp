@@ -1,7 +1,7 @@
 #include "..\..\..\Headers\Graphics\Resources\Buffers\Textures.h"
 #include "..\..\..\Headers\Graphics\Error_Check.h"
 
-Texture2D::Texture2D(std::unique_ptr<DirectX::ScratchImage> pImage, D3D12_RESOURCE_DESC* pDesc, bool OnlyPixelShader)
+Texture2D::Texture2D(std::unique_ptr<DirectX::ScratchImage> pImage, D3D12_RESOURCE_DESC* pDesc, bool OnlyPixelShader) noexcept
 	:
 	pImage(std::move(pImage)),
 	pDesc(*pDesc),

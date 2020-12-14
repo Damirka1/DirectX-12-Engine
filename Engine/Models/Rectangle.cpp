@@ -1,9 +1,9 @@
 #include "Rectangle.h"
 
-Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 Size)
+Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 Size) noexcept
 {
 
-	Init(Name, Pos, Size);
+	Init(pRM, Name, Pos, Size);
 
 	struct VB
 	{
@@ -32,7 +32,7 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 	PSO_Layout pLay(1);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\UI_VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\UI_PixelShader.cso"));
-	std::string PSO_key = pRM->CreatePSO(pLay, &Lay, true);
+	std::string PSO_key = pRM->CreatePSO(pLay, Lay, true);
 
 
 	RS_Layout RsLay;
@@ -41,12 +41,12 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
-	pRM->CreateRootSignature(PSO_key, RsLay, this);
+	pRM->CreateRootSignature(this, PSO_key, RsLay);
 
 	pBufferColor = pRM->CreateConstBuffer(this, &Color, sizeof(Color), 1, 0, 0);
 
 	Cbuff.Pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat2(&Pos)));
-	Cbuff.Projection = pRM->GetProjectionForUI();
+	Cbuff.Projection = *Transformation.pProjection;
 
 	pBufferProjection = pRM->CreateConstBuffer(this, &Cbuff, sizeof(Cbuff), 0, 0, 0);
 }

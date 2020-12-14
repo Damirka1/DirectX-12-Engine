@@ -9,6 +9,7 @@
 #include "..\Engine\Models\Rectangle.h"
 #include "..\Engine\Headers\Input\Keyboard.h"
 #include "..\Engine\Headers\Input\Mouse.h"
+#include "..\Engine\Headers\Input\Camera.h"
 
 #include "..\ConsoleDLL\Console.h"
 
@@ -24,13 +25,13 @@ private:
 	Console Con;
 
 	Window* pWindow;
-	Graphics* gtx;
 	ResourceManager* RM;
 	FrameCommander* FC;
 	std::vector<Cube*> Cubes;
 	Rect* r;
 	Keyboard* k;
 	Mouse* m;
+	Camera* cam;
 };
 
 #endif

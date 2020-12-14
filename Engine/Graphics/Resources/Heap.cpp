@@ -6,7 +6,7 @@ HeapDescriptorArray::HeapDescriptorArray()
 {
 }
 
-void HeapDescriptorArray::Initialize(RS_Layout& Lay)
+void HeapDescriptorArray::Initialize(RS_Layout& Lay) noexcept
 {
     // First cycle for Parameters.
     for (UINT i = 0; i < Lay.Params.size(); i++)
@@ -34,7 +34,7 @@ void HeapDescriptorArray::Initialize(RS_Layout& Lay)
     }
 }
 
-void HeapDescriptorArray::InitializePointers(Graphics* pGraphics, CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPU, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPU, CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPUForSamplers, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPUForSamplers)
+void HeapDescriptorArray::InitializePointers(Graphics* pGraphics, CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPU, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPU, CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPUForSamplers, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPUForSamplers) noexcept
 {
     auto pDevice = pGraphics->GetDevice();
 
@@ -80,7 +80,7 @@ void HeapDescriptorArray::Bind(Graphics* pGraphics)
 
 }
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE HeapDescriptorArray::GetCPUHandle(UINT RootParam, UINT Range, UINT RangeIndex)
+CD3DX12_CPU_DESCRIPTOR_HANDLE HeapDescriptorArray::GetCPUHandle(UINT RootParam, UINT Range, UINT RangeIndex) noexcept
 {
     return Parameters[RootParam]->Ranges[Range].GetCPUHandle(RangeIndex);
 }
@@ -94,7 +94,7 @@ HeapDescriptorArray::~HeapDescriptorArray()
 }
 
 
-HeapDescriptorArray::RootParameter::RootParameter(UINT Index)
+HeapDescriptorArray::RootParameter::RootParameter(UINT Index) noexcept
     :
     Index(Index)
 {}
@@ -104,26 +104,26 @@ void HeapDescriptorArray::RootParameter::Bind(ID3D12GraphicsCommandList* pComman
     pCommandList->SetGraphicsRootDescriptorTable(Index, GPU_OffsetFromStart);
 }
 
-HeapDescriptorArray::RootParameter::Range::Range(D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Nums)
+HeapDescriptorArray::RootParameter::Range::Range(D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Nums) noexcept
     :
     Type(Type),
     NumDescriptors(Nums)
 {}
 
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE HeapDescriptorArray::RootParameter::Range::GetCPUHandle(UINT Index)
+CD3DX12_CPU_DESCRIPTOR_HANDLE HeapDescriptorArray::RootParameter::Range::GetCPUHandle(UINT Index) noexcept
 {
     UINT Step = Size / NumDescriptors;
     CD3DX12_CPU_DESCRIPTOR_HANDLE Offset = CPU_Offset;
     return Offset.Offset(Index, Step);
 }
 
-void GlobalHeap::Add_CBV_SHR_UAV_Desc(UINT Count)
+void GlobalHeap::Add_CBV_SHR_UAV_Desc(UINT Count) noexcept
 {
     CBV_SHR_UAV_Desc_count += Count;
 }
 
-void GlobalHeap::Add_Samplers_Desc(UINT Count)
+void GlobalHeap::Add_Samplers_Desc(UINT Count) noexcept
 {
     SAMPLERS_Desc_count += Count;
 }
@@ -168,24 +168,34 @@ void GlobalHeap::Initialize(Graphics* pGraphics)
     Initialized = true;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE GlobalHeap::GetCPUStartPtr()
+D3D12_CPU_DESCRIPTOR_HANDLE GlobalHeap::GetCPUStartPtr() noexcept
 {
     return pHeaps[0]->GetCPUDescriptorHandleForHeapStart();
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE GlobalHeap::GetGPUStartPtr()
+D3D12_GPU_DESCRIPTOR_HANDLE GlobalHeap::GetGPUStartPtr() noexcept
 {
     return pHeaps[0]->GetGPUDescriptorHandleForHeapStart();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE GlobalHeap::GetCPUStartPtrForSAMPLERS()
+D3D12_CPU_DESCRIPTOR_HANDLE GlobalHeap::GetCPUStartPtrForSAMPLERS() noexcept
 {
     return pHeaps[1]->GetCPUDescriptorHandleForHeapStart();
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE GlobalHeap::GetGPUStartPtrForSAMPLERS()
+D3D12_GPU_DESCRIPTOR_HANDLE GlobalHeap::GetGPUStartPtrForSAMPLERS() noexcept
 {
     return pHeaps[1]->GetGPUDescriptorHandleForHeapStart();
+}
+
+bool GlobalHeap::isHeapForCbvInitialized() noexcept
+{
+    return HeapCBVInitialized;
+}
+
+bool GlobalHeap::isHeapForSamplersInitialized() noexcept
+{
+    return HeapSamplersInitialized;
 }
 
 void GlobalHeap::Bind(Graphics* pGraphics)
@@ -200,4 +210,14 @@ GlobalHeap::~GlobalHeap()
         if(el)
             el->Release();
     }
+}
+
+HeapDescriptorArray::DescriptorTable::DescriptorTable(UINT Index) noexcept
+    :
+    RootParameter(Index)
+{}
+
+void HeapDescriptorArray::DescriptorTable::Bind(ID3D12GraphicsCommandList* pCommandList)
+{
+    pCommandList->SetGraphicsRootDescriptorTable(Index, GPU_OffsetFromStart);
 }

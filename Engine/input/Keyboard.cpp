@@ -1,17 +1,17 @@
 #include "..\Headers\Input\Keyboard.h"
 
-Keyboard::Keyboard(unsigned int QueueSize)
+Keyboard::Keyboard(unsigned int QueueSize) noexcept
 	:
 	QueueSize(QueueSize)
 {
 }
 
-bool Keyboard::KeyIsPressed(const char* KeyCode)
+bool Keyboard::KeyIsPressed(const char KeyCode) noexcept
 {
-	return keys[*KeyCode];
+	return keys[KeyCode];
 }
 
-std::optional<Keyboard::KeyEvent> Keyboard::GetEvent()
+std::optional<Keyboard::KeyEvent> Keyboard::GetEvent() noexcept
 {
 	if (Events.size() > 0)
 	{
@@ -22,7 +22,7 @@ std::optional<Keyboard::KeyEvent> Keyboard::GetEvent()
 	return std::nullopt;
 }
 
-std::optional<char> Keyboard::GetCharacters()
+std::optional<char> Keyboard::GetCharacters() noexcept
 {
 	if (Characters.size() > 0)
 	{
@@ -33,7 +33,7 @@ std::optional<char> Keyboard::GetCharacters()
 	return std::nullopt;
 }
 
-void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam)
+void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept
 {
 	switch (msg)
 	{
@@ -65,40 +65,40 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam)
 	}
 }
 
-void Keyboard::PopQueueEv()
+void Keyboard::PopQueueEv() noexcept
 {
 	while (Events.size() > QueueSize)
 		Events.pop();
 }
 
-void Keyboard::PopQueueCh()
+void Keyboard::PopQueueCh() noexcept
 {
 	while (Characters.size() > QueueSize)
 		Characters.pop();
 }
 
-void Keyboard::ClearState()
+void Keyboard::ClearState() noexcept
 {
 	Events = std::queue<KeyEvent>();
 }
 
-Keyboard::KeyEvent::KeyEvent()
+Keyboard::KeyEvent::KeyEvent() noexcept
 	:
 	Code(0),
 	t(Type::Undefined)
 {
 }
 
-Keyboard::KeyEvent::KeyEvent(unsigned char Code, Type type)
+Keyboard::KeyEvent::KeyEvent(unsigned char Code, Type type) noexcept
 	:
 	Code(Code),
 	t(type)
 {
 }
 
-bool Keyboard::KeyEvent::operator==(const char* Key)
+bool Keyboard::KeyEvent::operator==(const char Key) noexcept
 {
-	if (t == Type::Pressed && Code == *Key)
+	if (t == Type::Pressed && Code == Key)
 		return true;
 	return false;
 }

@@ -3,7 +3,7 @@
 #include "..\..\Headers\Graphics\Error_Check.h"
 
 
-PSO_Layout::PSO_Layout(unsigned int RTC, unsigned int SmpCount)
+PSO_Layout::PSO_Layout(unsigned int RTC, unsigned int SmpCount) noexcept
 	:
 	rType(Rasterizer::Default),
 	bType(Blender::DefaultValue),
@@ -16,17 +16,17 @@ PSO_Layout::PSO_Layout(unsigned int RTC, unsigned int SmpCount)
 
 }
 
-void PSO_Layout::DepthState(bool v)
+void PSO_Layout::DepthState(bool v) noexcept
 {
 	Depth = v;
 }
 
-void PSO_Layout::StencilState(bool v)
+void PSO_Layout::StencilState(bool v) noexcept
 {
 	Stencil = v;
 }
 
-void PSO_Layout::SetShader(Shader Type, std::string Path)
+void PSO_Layout::SetShader(Shader Type, std::string Path) noexcept
 {
 	switch (Type)
 	{
@@ -48,12 +48,12 @@ void PSO_Layout::SetShader(Shader Type, std::string Path)
 	}
 }
 
-void PSO_Layout::SetTopology(Topology Type)
+void PSO_Layout::SetTopology(Topology Type) noexcept
 {
 	pType = Type;
 }
 
-std::string PSO_Layout::GetCode()
+std::string PSO_Layout::GetCode() noexcept
 {
 	std::string code;
 	code += "{" + VS + "," + PS + "," + GS + "," + HS + "," + DS + ":" + std::to_string(static_cast<UINT>(rType)) + "," + std::to_string(static_cast<UINT>(bType)) + "," + std::to_string(static_cast<UINT>(pType))
@@ -61,14 +61,14 @@ std::string PSO_Layout::GetCode()
 	return code;
 }
 
-PipelineStateObject::PipelineStateObject(PSO_Layout& pLay, VertexLayout* vLay)
+PipelineStateObject::PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept
 	:
 	P_Lay(pLay),
-	V_Lay(*vLay)
+	V_Lay(vLay)
 
 {}
 
-void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)	
+void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)
 {
 	if (Initialized)
 		return;

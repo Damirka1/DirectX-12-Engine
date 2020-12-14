@@ -1,8 +1,9 @@
 #include "..\..\Headers\ResourceManager.h"
+#include "..\..\Headers\Window.h"
 #include "..\..\Headers\DirectXTex.h"
 #include "..\..\Headers\Utility.h"
 
-std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDrawable, void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout Lay, bool unique, unsigned int Slot)
+std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDrawable, const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, bool unique, unsigned int Slot) noexcept
 {
 	using namespace std::string_literals;
 	std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}";
@@ -25,7 +26,7 @@ std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDra
 	}
 }
 
-std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(Drawable* pDrawable, std::vector<unsigned int> Indecies)
+std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(Drawable* pDrawable, const std::vector<unsigned int>& Indecies) noexcept
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(IndexBuffer).name() + "#"s + std::to_string(Indecies.size()) + "{" + std::to_string(Indecies[0]) + "}";
@@ -43,7 +44,7 @@ std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(Drawable* pDrawa
 	}
 }
 
-std::string ResourceManager::CreateRootSignature(std::string& PSO_Key, RS_Layout& Lay, Drawable* pDrawable)
+std::string ResourceManager::CreateRootSignature(Drawable* pDrawable, std::string& PSO_Key, RS_Layout& Lay) noexcept
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(RootSignature).name() + "#"s + Lay.GetCode();
@@ -92,10 +93,10 @@ std::string ResourceManager::CreateRootSignature(std::string& PSO_Key, RS_Layout
 	return key;
 }
 
-std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout* vLay, bool ForUI)
+std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout& vLay, bool ForUI) noexcept
 {
 	using namespace std::string_literals;
-	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay->GetCode();
+	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay.GetCode();
 	const auto i = Bindables.find(key);
 	if (i == Bindables.end())
 	{
@@ -113,7 +114,7 @@ std::string ResourceManager::CreatePSO(PSO_Layout& pLay, VertexLayout* vLay, boo
 	}
 }
 
-std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDrawable, void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex)
+std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDrawable, const void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex) noexcept
 {
 	auto bind = std::make_shared<ConstantBuffer>(pData, DataSize);
 	bind->SetHeapIndex(RootParam, Range, RangeIndex);
@@ -126,8 +127,10 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDr
 }
 
 
-void ResourceManager::InitializeResources(Graphics* pGraphics)
+void ResourceManager::InitializeResources(Window* pWindow)
 {
+
+	Graphics* pGraphics = pWindow->GetGraphics();
 	// Initialize Heap.
 	Heap.Initialize(pGraphics);
 
@@ -206,25 +209,31 @@ void ResourceManager::InitializeResources(Graphics* pGraphics)
 	pGraphics->Initialize();
 }
 
-ResourceManager::ResourceManager(Graphics* pGraphics)
+ResourceManager::ResourceManager(Window* pWindow) noexcept
 {
-	std::pair<float, float> res = pGraphics->GetResolution();
+	Graphics* pGraphics = pWindow->GetGraphics();
 
-	UI_OrthographicsProjection = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, res.first, 0.0f, res.second, 0.0f, 1.0f));
-	PerspectiveProjection = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60), res.first / res.second, 0.01f, 150.0f));
+	UI_OrthographicsProjection = pGraphics->GetOrthographicMatrix();
+	PerspectiveProjection = pGraphics->GetPerspectiveMatrix();
+	View = pGraphics->GetViewMatrix();
 }
 
-DirectX::XMMATRIX& ResourceManager::GetProjectionForUI()
+const DirectX::XMMATRIX* ResourceManager::GetProjectionForUI() noexcept
 {
 	return UI_OrthographicsProjection;
 }
 
-DirectX::XMMATRIX& ResourceManager::GetPerspectiveProjection()
+const DirectX::XMMATRIX* ResourceManager::GetPerspectiveProjection() noexcept
 {
 	return PerspectiveProjection;
 }
 
-std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, std::string Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)
+const DirectX::XMMATRIX* ResourceManager::GetView() noexcept
+{
+	return View;
+}
+
+std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, const std::string& Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)
 {
 	const auto i = Bindables.find(Path);
 	if (i == Bindables.end())
@@ -267,7 +276,7 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable,
 	}
 }
 
-std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex)
+std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex) noexcept
 {
 	const auto i = Bindables.find("DEFAULT_SAMPLER");
 

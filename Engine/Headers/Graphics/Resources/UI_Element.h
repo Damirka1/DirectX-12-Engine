@@ -8,10 +8,10 @@ class UI_Element : public Drawable
 {
 	friend class Window;
 public:
-	UI_Element() = default;
-	UI_Element(std::string ObjectName, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 ActiveSize);
+	UI_Element() noexcept = default;
+	UI_Element(ResourceManager* pRM, std::string ObjectName, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 ActiveSize) noexcept;
 
-	void Init(std::string ObjectName, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 ActiveSize);
+	void Init(ResourceManager* pRM, std::string ObjectName, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 ActiveSize) noexcept;
 
 	void (*OnMouseLbClick)(void* This, void* pWindow) = nullptr;
 	void (*OnMouseRbClick)(void* This, void* pWindow) = nullptr;
@@ -23,7 +23,7 @@ public:
 
 	void (*OnUpdate)(void* This, void* pWindow) = nullptr;
 
-	void UpdateWindow(void* pWindow);
+	void UpdateWindow(void* pWindow) noexcept;
 protected:
 	std::string ObjectName;
 	DirectX::XMFLOAT2 Pos;

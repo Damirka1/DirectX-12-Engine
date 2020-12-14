@@ -1,7 +1,9 @@
 #include "Triangle.h"
 
 
-Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
+Triangle::Triangle(ResourceManager* pRM, std::string TexturePath)
+	:
+	Drawable(pRM)
 {
 	struct VB
 	{
@@ -28,7 +30,7 @@ Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader.cso"));
-	std::string PSO_key = pRM->CreatePSO(pLay, &Lay);
+	std::string PSO_key = pRM->CreatePSO(pLay, Lay);
 
 
 	RS_Layout RsLay;
@@ -38,7 +40,7 @@ Triangle::Triangle(std::string TexturePath, ResourceManager* pRM)
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL).
 		AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1);
 
-	std::string RS_key =  pRM->CreateRootSignature(PSO_key, RsLay, this);
+	std::string RS_key =  pRM->CreateRootSignature(this, PSO_key, RsLay);
 
 	b.pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixIdentity());
 	pConstBuffer = pRM->CreateConstBuffer(this, &b.pos, sizeof(b.pos), 0,0,0);

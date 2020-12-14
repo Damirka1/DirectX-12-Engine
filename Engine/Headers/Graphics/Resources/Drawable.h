@@ -14,14 +14,26 @@ class Drawable
 	friend class FrameCommander;
 	friend class DrawableArray;
 protected:
-	void AddBindable(std::shared_ptr<Bindable> Bindable);
+	Drawable() noexcept = default;
+	Drawable(ResourceManager* pRM) noexcept;
+	void Init(ResourceManager* pRM) noexcept;
+
+	void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
 
 	void Bind(Graphics* pGraphics);
 
-	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB);
+	virtual void Update() const;
+
+	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
 
 protected:
 	bool UI_element = false;
+
+	struct
+	{
+		const DirectX::XMMATRIX* pView;
+		const DirectX::XMMATRIX* pProjection;
+	} Transformation;
 
 private:
 	std::vector<std::shared_ptr<Bindable>> Bindables;
@@ -35,6 +47,8 @@ private:
 	char DescHeapIndex = -1;
 	
 	std::string PSO_Key, RS_Key;
+
+	
 };
 
 #endif

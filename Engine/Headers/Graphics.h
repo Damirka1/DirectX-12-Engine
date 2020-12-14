@@ -9,12 +9,16 @@
 #pragma comment(lib, "uuid.lib")
 
 #include <d3d12.h>
+#include <DirectXMath.h>
 #include <dxgi1_6.h>
 #include <d3d12sdklayers.h>
 #include <vector>
 
+class Camera;
+
 class Graphics
 {
+	friend class Window;
 public:
 	Engine_API Graphics(HWND pWindow, short Width = 800, short Height = 600);
 	Engine_API ~Graphics();
@@ -22,20 +26,26 @@ public:
 
 	Engine_API void Setup(float R, float G, float B, float A = 1.0f);
 	Engine_API void Execute();
-	Engine_API std::wstring GetInfo();
+	Engine_API std::wstring GetInfo() noexcept;
 
-	ID3D12Device8* GetDevice();
-	ID3D12GraphicsCommandList6* GetCommandList();
+	ID3D12Device8* GetDevice() noexcept;
+	ID3D12GraphicsCommandList6* GetCommandList() noexcept;
 
-	void AddToRelease(ID3D12Resource*& pResource);
-	DXGI_FORMAT GetRTVFormat();
-	DXGI_FORMAT GetDSVFormat();
+	void AddToRelease(ID3D12Resource*& pResource) noexcept;
+	DXGI_FORMAT GetRTVFormat() noexcept;
+	DXGI_FORMAT GetDSVFormat() noexcept;
 
-	std::pair<short, short> GetResolution();
+	std::pair<short, short> GetResolution() noexcept;
+
+	const DirectX::XMMATRIX* GetOrthographicMatrix() noexcept;
+	const DirectX::XMMATRIX* GetPerspectiveMatrix() noexcept;
+	const DirectX::XMMATRIX* GetViewMatrix() noexcept;
+	void SetCamera(Camera* cam) noexcept;
 
 private:
 	void WaitForGpu();
 	void MoveToNextFrame();
+
 
 private:
 	static const UINT FrameCount = 2;
@@ -69,12 +79,14 @@ private:
 	ID3D12Fence* pFence = nullptr;
 	UINT64 FenceValues[FrameCount];
 	std::vector<ID3D12Resource*>* ListToRelease = nullptr;
+
+	// Matrix default.
+	DirectX::XMMATRIX OrthographicMatrixDefault;
+	DirectX::XMMATRIX PerspectiveMatrixDefault;
+	DirectX::XMMATRIX ViewDefault;
+
+	// Matrix from camera.
+	Camera* cam = nullptr;
 };
-
-
-
-
-
-
 
 #endif

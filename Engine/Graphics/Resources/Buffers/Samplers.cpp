@@ -1,6 +1,6 @@
 #include "..\..\..\Headers\Graphics\Resources\Buffers\Samplers.h"
 
-Sampler::Sampler(D3D12_SAMPLER_DESC* pDesc)
+Sampler::Sampler(D3D12_SAMPLER_DESC* pDesc) noexcept
 	:
 	pDesc(*pDesc)
 {

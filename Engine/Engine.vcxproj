@@ -193,6 +193,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
     <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="Graphics\Resources\DrawableArray.cpp" />
+    <ClCompile Include="input\Camera.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
     <ClCompile Include="Models\Cube.cpp" />
@@ -224,6 +225,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Input\Camera.h" />
     <ClInclude Include="Headers\Input\Keyboard.h" />
     <ClInclude Include="Headers\Input\Mouse.h" />
+    <ClInclude Include="Headers\MathUtilities.h" />
     <ClInclude Include="Headers\MessageHandler.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
     <ClInclude Include="Headers\Timer.h" />

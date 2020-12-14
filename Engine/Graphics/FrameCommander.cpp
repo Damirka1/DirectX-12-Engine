@@ -1,27 +1,32 @@
 #include "..\Headers\FrameCommander.h"
+#include "..\Headers\Window.h"
 
-FrameCommander::FrameCommander(Graphics* pGraphics, ResourceManager* pRM)
+FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM, bool SetToWindow) noexcept
 	:
-	pGraphics(pGraphics),
+	pGraphics(pWindow->GetGraphics()),
 	pRM(pRM)
 {
+	if (SetToWindow)
+	{
+		// TO DO: set to window.
+	}
 }
 
-void FrameCommander::SetBackgroundColor(float r, float g, float b)
+void FrameCommander::SetBackgroundColor(float r, float g, float b) noexcept
 {
 	bg[0] = r;
 	bg[1] = g;
 	bg[2] = b;
 }
 
-void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db)
+void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db) noexcept
 {
 	bg[0] += dr;
 	bg[1] += dg;
 	bg[2] += db;
 }
 
-void FrameCommander::Render()
+void FrameCommander::Render() const
 {
 	pGraphics->Setup(bg[0], bg[1], bg[2]);
 
