@@ -187,16 +187,18 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Resources\PipeLineState.cpp" />
     <ClCompile Include="Graphics\Resources\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Resources\RootSignature.cpp" />
+    <ClCompile Include="Graphics\Resources\UI_Element.cpp" />
     <ClCompile Include="Graphics\Resources\VertexLayout.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Textures.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
     <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="Graphics\Resources\DrawableArray.cpp" />
+    <ClCompile Include="input\Camera.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
     <ClCompile Include="Models\Cube.cpp" />
+    <ClCompile Include="Models\Rectangle.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
-    <ClCompile Include="Models\Triangle.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -216,19 +218,28 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\Resources\Heap.h" />
     <ClInclude Include="Headers\Graphics\Resources\PipeLineState.h" />
     <ClInclude Include="Headers\Graphics\Resources\RootSignature.h" />
+    <ClInclude Include="Headers\Graphics\Resources\UI_Element.h" />
     <ClInclude Include="Headers\Graphics\Resources\VertexLayout.h" />
     <ClInclude Include="Headers\Header.h" />
+    <ClInclude Include="Headers\Input\Camera.h" />
     <ClInclude Include="Headers\Input\Keyboard.h" />
     <ClInclude Include="Headers\Input\Mouse.h" />
+    <ClInclude Include="Headers\MathUtilities.h" />
     <ClInclude Include="Headers\MessageHandler.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />
     <ClInclude Include="Models\Cube.h" />
-    <ClInclude Include="Models\Triangle.h" />
+    <ClInclude Include="Models\Rectangle.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\UI_PixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders\Compiled\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders\Compiled\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Shaders\PixelShader.hlsl">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
@@ -236,6 +247,12 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders\Compiled\%(Filename).cso</ObjectFileOutput>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\UI_VertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders\Compiled\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders\Compiled\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders\Compiled\%(Filename).cso</ObjectFileOutput>

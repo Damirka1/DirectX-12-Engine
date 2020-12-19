@@ -14,14 +14,13 @@ public:
 	{}
 	virtual ~Bindable()
 	{}
-	void SetKeys(std::string PSO, std::string RS)
+	bool IsInitialized() noexcept
 	{
-		this->PSO_key = PSO;
-		this->RS_key = RS;
+		return Initialized;
 	}
 	
 protected:
-	void SetHeapIndex(UINT Table, UINT Range, UINT Index)
+	void SetHeapIndex(UINT Table, UINT Range, UINT Index) noexcept
 	{
 		this->Table = Table;
 		this->Range = Range;
@@ -29,7 +28,6 @@ protected:
 	}
 
 	bool Initialized = false;
-	std::string PSO_key = "", RS_key = "";
 	UINT Table = 0u, Range = 0u, Index = 0u;
 };
 

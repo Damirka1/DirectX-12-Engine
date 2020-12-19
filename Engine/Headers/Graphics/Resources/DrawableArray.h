@@ -6,15 +6,17 @@ class Drawable;
 class Graphics;
 class VertexBuffer;
 class IndexBuffer;
+class ResourceManager;
 
 class DrawableArray
 {
 public:
 
-	void AddDrawable(Drawable* pDrawable);
-	void RemoveDrawable(Drawable* pDrawable);
+	void AddDrawable(Drawable* pDrawable) noexcept;
+	void RemoveDrawable(Drawable* pDrawable) noexcept;
 	void DrawIndexed(Graphics* pGraphics);
-	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB);
+	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept; 
+	void InitCamera(ResourceManager* pRM) noexcept;
 
 private:
 	std::shared_ptr<VertexBuffer> pVertexBuffer;

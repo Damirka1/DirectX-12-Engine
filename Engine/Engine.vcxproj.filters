@@ -39,9 +39,6 @@
     <ClCompile Include="Graphics\GraphicsException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Models\Triangle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Window\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -70,6 +67,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Resources\DrawableArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Resources\UI_Element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Models\Rectangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="input\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,9 +122,6 @@
     <ClInclude Include="Headers\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Models\Triangle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Graphics\GraphicsException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -155,10 +158,24 @@
     <ClInclude Include="Headers\Graphics\Resources\DrawableArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Input\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\Resources\UI_Element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\Rectangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\MathUtilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\PixelShader.hlsl" />
     <FxCompile Include="Shaders\VertexShader.hlsl" />
+    <FxCompile Include="Shaders\UI_VertexShader.hlsl" />
+    <FxCompile Include="Shaders\UI_PixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="DirectXTex.lib" />

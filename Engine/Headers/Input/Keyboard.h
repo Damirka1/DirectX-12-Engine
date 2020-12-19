@@ -20,10 +20,10 @@ class Keyboard : public MessageHandler
 		};
 
 	public:
-		KeyEvent();
-		KeyEvent(unsigned char Code, Type type);
+		KeyEvent() noexcept;
+		KeyEvent(unsigned char Code, Type type) noexcept;
 		
-		Engine_API bool operator==(const char* Key);
+		Engine_API bool operator==(const char Key)  noexcept;
 
 	private:
 		unsigned char Code;
@@ -32,16 +32,16 @@ class Keyboard : public MessageHandler
 
 
 public:
-	Engine_API Keyboard(unsigned int QueueSize = 20);
-	Engine_API bool KeyIsPressed(const char* KeyCode);
-	Engine_API std::optional<KeyEvent> GetEvent();
-	Engine_API std::optional<char> GetCharacters();
+	Engine_API Keyboard(unsigned int QueueSize = 20) noexcept;
+	Engine_API bool KeyIsPressed(const char KeyCode) noexcept;
+	Engine_API std::optional<KeyEvent> GetEvent() noexcept;
+	Engine_API std::optional<char> GetCharacters() noexcept;
 
 private:
-	void CALLBACK HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) override;
-	void PopQueueEv();
-	void PopQueueCh();
-	void ClearState();
+	void CALLBACK HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept override;
+	void PopQueueEv() noexcept;
+	void PopQueueCh() noexcept;
+	void ClearState() noexcept;
 
 	std::bitset<256> keys;
 	std::queue<KeyEvent> Events;

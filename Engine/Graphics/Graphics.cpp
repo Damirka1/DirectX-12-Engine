@@ -333,32 +333,37 @@ void Graphics::Execute()
     MoveToNextFrame();
 }
 
-ID3D12Device8* Graphics::GetDevice()
+ID3D12Device8* Graphics::GetDevice() noexcept
 {
     return pDevice;
 }
 
-ID3D12GraphicsCommandList6* Graphics::GetCommandList()
+ID3D12GraphicsCommandList6* Graphics::GetCommandList() noexcept
 {
     return pCommandList;
 }
 
-void Graphics::AddToRelease(ID3D12Resource*& pResource)
+void Graphics::AddToRelease(ID3D12Resource*& pResource) noexcept
 {
     ListToRelease->push_back(pResource);
 }
 
-DXGI_FORMAT Graphics::GetRTVFormat()
+DXGI_FORMAT Graphics::GetRTVFormat() noexcept
 {
     return ViewFormat;
 }
 
-DXGI_FORMAT Graphics::GetDSVFormat()
+DXGI_FORMAT Graphics::GetDSVFormat() noexcept
 {
     return dsvFormat;
 }
 
-std::wstring Graphics::GetInfo()
+std::pair<short, short> Graphics::GetResolution() noexcept
+{
+    return std::make_pair<short, short>(static_cast<short>(ViewPort.Width), static_cast<short>(ViewPort.Height));
+}
+
+std::wstring Graphics::GetInfo() noexcept
 {
     return L"[Device]: " + std::wstring(static_cast<wchar_t*>(DeviceDesc.Description)) + L'\n'
         +  L"[Video Memory]: " + std::to_wstring(DeviceDesc.DedicatedVideoMemory / 1048576) + L" Mb\n"

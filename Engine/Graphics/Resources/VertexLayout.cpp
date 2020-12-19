@@ -1,15 +1,15 @@
 #include "..\..\Headers\Graphics\Resources\VertexLayout.h"
 
-VertexLayout::VertexLayout()
+VertexLayout::VertexLayout() noexcept
 {
 }
 
-void VertexLayout::AddElement(std::string Name, DXGI_FORMAT f, unsigned int SemanticIndex, unsigned int InputSlot, D3D12_INPUT_CLASSIFICATION IC)
+void VertexLayout::AddElement(std::string Name, DXGI_FORMAT f, unsigned int SemanticIndex, unsigned int InputSlot, D3D12_INPUT_CLASSIFICATION IC) noexcept
 {
 	elements.emplace_back(Name, f, SemanticIndex, InputSlot, IC);
 }
 
-std::string VertexLayout::GetCode()
+std::string VertexLayout::GetCode() noexcept
 {
 	std::string code;
 	for (auto& el : elements)
@@ -19,7 +19,7 @@ std::string VertexLayout::GetCode()
 	return code;
 }
 
-std::vector<D3D12_INPUT_ELEMENT_DESC> VertexLayout::GetDesc()
+std::vector<D3D12_INPUT_ELEMENT_DESC> VertexLayout::GetDesc() noexcept
 {
 	std::vector<D3D12_INPUT_ELEMENT_DESC> desc;
 	unsigned int Offset = 0u;
@@ -32,7 +32,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> VertexLayout::GetDesc()
 	return desc;
 }
 
-VertexLayout::Element::Element(std::string Name, DXGI_FORMAT f, unsigned int SemanticIndex, unsigned int InputSlot, D3D12_INPUT_CLASSIFICATION IC)
+VertexLayout::Element::Element(std::string Name, DXGI_FORMAT f, unsigned int SemanticIndex, unsigned int InputSlot, D3D12_INPUT_CLASSIFICATION IC) noexcept
 	:
 	Name(Name),
 	Format(f),

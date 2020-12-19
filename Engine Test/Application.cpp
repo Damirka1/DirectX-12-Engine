@@ -5,19 +5,19 @@ Application::Application(HINSTANCE hInstance)
 	:
 	Con(L"DirectX 12 Console")
 {
-	pWindow = new Window(hInstance, L"DirectX 12 Engine");
-	gtx = new Graphics(pWindow->GetHWND());
-	Con << gtx->GetInfo().c_str();
-	pWindow->SetGraphics(gtx);
+	pWindow = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
+	Con << pWindow->GetGraphics()->GetInfo().c_str();
 	pWindow->Show();
-	RM = new ResourceManager();
-	FC = new FrameCommander(gtx, RM);
+	// Camera needs to be initialized before resource manager initialization!
+	cam = new Camera(pWindow->GetGraphicsResolution());
+	cam->SetSensitivity(0.005f);
+	RM = new ResourceManager(pWindow, cam);
+	FC = new FrameCommander(pWindow, RM);
 	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
-	k = new Keyboard();
-	m = new Mouse();
-	pWindow->AddHandler(k, "Keyboard");
-	pWindow->AddHandler(m, "Mouse");
+	k = pWindow->GetKeyboard();
+	m = pWindow->GetMouse();
 	
+	r = new Rect(RM, "Rect", { 635.0f, 355.0f }, { 5, 5 });
 
 	// Random numbers for cube's position.
 	std::random_device rd;  // Will be used to obtain a seed for the random number engine
@@ -25,13 +25,12 @@ Application::Application(HINSTANCE hInstance)
 	std::uniform_real_distribution<float> disPosXY(-50.0f, 50.0f);
 	std::uniform_real_distribution<float> disPosZ(4.0f, 100.0f);
 
-
 	for (int i = 0; i < 64 * 64; i++)
 	{
 		Cubes.push_back(new Cube(RM, DirectX::XMFLOAT3{ disPosXY(gen), disPosXY(gen), disPosZ(gen) }));
 	}
 
-	RM->InitializeResources(gtx);
+	RM->InitializeResources(pWindow);
 }
 
 void Application::Run()
@@ -40,9 +39,55 @@ void Application::Run()
 	{
 		static float color[3] = { 0.4f, 0.4f, 0.4f };
 
-		
 		auto tm = pWindow->TimerMark();
+		{
+			DirectX::XMFLOAT3 Translation = { 0.0f, 0.0f, 0.0f };
 
+			if (k->KeyIsPressed(VK_SHIFT))
+				cam->SetSpeed(4.0f);
+			else
+				cam->SetSpeed(1.0f);
+
+			if (k->KeyIsPressed('W'))
+				Translation.z += 10.0f * tm;
+			if (k->KeyIsPressed('S'))
+				Translation.z -= 10.0f * tm;
+			if (k->KeyIsPressed('A'))
+				Translation.x -= 10.0f * tm;
+			if (k->KeyIsPressed('D'))
+				Translation.x += 10.0f * tm;
+			if (k->KeyIsPressed(VK_SPACE))
+				Translation.y += 10.0f * tm;
+			if (k->KeyIsPressed(VK_CONTROL))
+				Translation.y -= 10.0f * tm;
+
+			while (auto el = k->GetEvent())
+			{
+				auto& ev = el.value();
+
+				if (ev == VK_ESCAPE)
+				{
+					if (!m->IsCursorEnabled())
+					{
+						pWindow->EnableCursor();
+						m->DisableRawInput();
+					}
+					else
+					{
+						pWindow->DisableCursor();
+						m->EnableRawInput();
+					}
+				}
+			}
+			
+			if (!m->IsCursorEnabled())
+			{
+				while(const auto ev = m->GetRawData())
+						cam->Rotate((float)ev->dx, (float)ev->dy);
+			}
+
+			cam->Translate(Translation);
+		}
 		
 		for (Cube* obj : Cubes)
 		{
@@ -59,11 +104,9 @@ void Application::Run()
 Application::~Application()
 {
 	delete pWindow;
-	delete gtx;
-	delete RM;
-	delete k;
-	delete m;
 	delete FC;
+	delete RM;
+	delete r;
 
 	for (Cube* obj : Cubes)
 	{

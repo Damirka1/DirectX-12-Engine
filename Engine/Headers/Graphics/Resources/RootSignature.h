@@ -19,8 +19,8 @@ class RS_Layout
 	{
 		struct Range
 		{
-			Range(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT N, UINT SR, UINT RS, D3D12_DESCRIPTOR_RANGE_FLAGS F);
-			std::string GetCode();
+			Range(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT N, UINT SR, UINT RS, D3D12_DESCRIPTOR_RANGE_FLAGS F) noexcept;
+			std::string GetCode() noexcept;
 
 			D3D12_DESCRIPTOR_RANGE_TYPE Type;
 			UINT numDescriptors;
@@ -29,10 +29,10 @@ class RS_Layout
 			D3D12_DESCRIPTOR_RANGE_FLAGS Flags;
 		};
 
-		RootParameter(D3D12_SHADER_VISIBILITY V, Type t);
-		RootParameter& AddRange(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT numDescriptors, UINT ShaderRegister = 0u, UINT RegisterSpace = 0u, D3D12_DESCRIPTOR_RANGE_FLAGS Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
-		Range& operator[](UINT index);
-		std::string GetCode();
+		RootParameter(D3D12_SHADER_VISIBILITY V, Type t) noexcept;
+		RootParameter& AddRange(D3D12_DESCRIPTOR_RANGE_TYPE T, UINT numDescriptors, UINT ShaderRegister = 0u, UINT RegisterSpace = 0u, D3D12_DESCRIPTOR_RANGE_FLAGS Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE) noexcept;
+		Range& operator[](UINT index) noexcept;
+		std::string GetCode() noexcept;
 
 		std::vector<Range> Ranges;
 		D3D12_SHADER_VISIBILITY Visibility;
@@ -45,10 +45,10 @@ public:
 											 D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS		  |
 											 D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS     |
 											 D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS   |
-											 D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS);
-	RootParameter& AddDescriptorTable(D3D12_SHADER_VISIBILITY V);
-	RootParameter& operator[](UINT index);
-	std::string GetCode();
+											 D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS) noexcept;
+	RootParameter& AddDescriptorTable(D3D12_SHADER_VISIBILITY V) noexcept;
+	RootParameter& operator[](UINT index) noexcept;
+	std::string GetCode() noexcept;
 
 private:
 	std::vector<RootParameter> Params;
@@ -60,7 +60,7 @@ class RootSignature : public Bindable
 {
 	friend class PipelineStateObject;
 public:
-	RootSignature(RS_Layout& Lay);
+	RootSignature(RS_Layout& Lay) noexcept;
 	void Initialize(Graphics* pGraphics);
 	void Bind(Graphics* pGraphics) override;
 	~RootSignature() override;

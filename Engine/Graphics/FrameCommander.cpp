@@ -1,21 +1,25 @@
 #include "..\Headers\FrameCommander.h"
+#include "..\Headers\Window.h"
 
-FrameCommander::FrameCommander(Graphics* pGraphics, ResourceManager* pRM)
+FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM, bool SetToWindow) noexcept
 	:
-	pGraphics(pGraphics),
+	pGraphics(pWindow->GetGraphics()),
 	pRM(pRM)
 {
-
+	if (SetToWindow)
+	{
+		// TO DO: set to window.
+	}
 }
 
-void FrameCommander::SetBackgroundColor(float r, float g, float b)
+void FrameCommander::SetBackgroundColor(float r, float g, float b) noexcept
 {
 	bg[0] = r;
 	bg[1] = g;
 	bg[2] = b;
 }
 
-void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db)
+void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db) noexcept
 {
 	bg[0] += dr;
 	bg[1] += dg;
@@ -26,24 +30,33 @@ void FrameCommander::Render()
 {
 	pGraphics->Setup(bg[0], bg[1], bg[2]);
 
-	// First bind pipelinestate object and heap.
-	for (auto& PSO : pRM->Resources)
+	// Bind global heap.
+	pRM->Heap.Bind(pGraphics);
+
+	auto Render = [&](std::unordered_map<std::string, ResourceManager::PipeLineResources>& Resources)
 	{
-		PSO.second.pPipeLineStateObject->Bind(pGraphics);
-
-		// Next bind rootsignatures.
-		for (auto& RS : PSO.second.RootSignatures)
+		// Bind pipelinestate object.
+		for (auto& PSO : Resources)
 		{
-			RS.second.pRootSignature->Bind(pGraphics);
-			pRM->Heap.Bind(pGraphics);
+			PSO.second.pPipeLineStateObject->Bind(pGraphics);
 
-			// And finaly render objects.
-			for (auto& obj : RS.second.DrawIndexed)
+			// Bind rootsignatures.
+			for (auto& RS : PSO.second.RootSignatures)
 			{
-				obj.second.DrawIndexed(pGraphics);
+				RS.second.pRootSignature->Bind(pGraphics);
+
+				// And finaly render objects.
+				for (auto& obj : RS.second.DrawIndexed)
+				{
+					obj.second.DrawIndexed(pGraphics);
+				}
 			}
 		}
-	}
+	};
+
+	Render(pRM->Resources);
+
+	Render(pRM->UI_Resources);
 
 	pGraphics->Execute();
 }

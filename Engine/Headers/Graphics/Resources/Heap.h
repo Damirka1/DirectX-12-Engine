@@ -9,30 +9,25 @@ class RS_Layout;
 class GlobalHeap
 {
 public:
-	GlobalHeap() = default;
+	GlobalHeap() noexcept = default;
 	GlobalHeap(GlobalHeap&) = delete;
 
-	void Add_CBV_SHR_UAV_Desc(UINT Count);
-	void Add_Samplers_Desc(UINT Count);
+	void Add_CBV_SHR_UAV_Desc(UINT Count) noexcept;
+	void Add_Samplers_Desc(UINT Count) noexcept;
 
 	void Initialize(Graphics* pGraphics);
 
 	// Start pointer to cbv, srv, uav heap.
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStartPtr();
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStartPtr();
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStartPtr() noexcept;
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStartPtr() noexcept;
 
 	// Start pinter to sampler's heap.
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStartPtrForSAMPLERS();
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStartPtrForSAMPLERS();
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStartPtrForSAMPLERS() noexcept;
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStartPtrForSAMPLERS() noexcept;
 
-	bool isHeapForCbvInitialized()
-	{
-		return HeapCBVInitialized;
-	}
-	bool isHeapForSamplersInitialized()
-	{
-		return HeapSamplersInitialized;
-	}
+	bool isHeapForCbvInitialized() noexcept;
+
+	bool isHeapForSamplersInitialized() noexcept;
 
 	void Bind(Graphics* pGraphics);
 
@@ -57,8 +52,8 @@ class HeapDescriptorArray : public Bindable
 		{
 			friend HeapDescriptorArray;
 		public:
-			Range(D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Nums);
-			CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT Index);
+			Range(D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Nums) noexcept;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT Index) noexcept;
 
 		private:
 			D3D12_DESCRIPTOR_RANGE_TYPE Type;
@@ -67,7 +62,7 @@ class HeapDescriptorArray : public Bindable
 			UINT Size = 0u;
 		};
 	public:
-		RootParameter(UINT Index);
+		RootParameter(UINT Index) noexcept;
 		virtual void Bind(ID3D12GraphicsCommandList* pCommandList);
 
 	protected:
@@ -99,14 +94,10 @@ class HeapDescriptorArray : public Bindable
 	class DescriptorTable : public RootParameter
 	{
 	public:
-		DescriptorTable(UINT Index)
-			:
-			RootParameter(Index)
-		{}
-		void Bind(ID3D12GraphicsCommandList* pCommandList) override
-		{
-			pCommandList->SetGraphicsRootDescriptorTable(Index, GPU_OffsetFromStart);
-		}
+		DescriptorTable(UINT Index) noexcept;
+
+		void Bind(ID3D12GraphicsCommandList* pCommandList) override;
+
 	};
 
 public:
@@ -122,10 +113,10 @@ public:
 
 	HeapDescriptorArray();
 	void Bind(Graphics* pGraphics) override;
-	void Initialize(RS_Layout& Lay);
+	void Initialize(RS_Layout& Lay) noexcept;
 	void InitializePointers(Graphics* pGraphics, CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPU, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPU, 
-		CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPUForSamplers, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPUForSamplers);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT RootParam, UINT Range, UINT RangeIndex);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE& pCPUForSamplers, CD3DX12_GPU_DESCRIPTOR_HANDLE& pGPUForSamplers) noexcept;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(UINT RootParam, UINT Range, UINT RangeIndex) noexcept;
 	~HeapDescriptorArray() override;
 private:
 	std::vector<RootParameter*> Parameters;

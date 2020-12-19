@@ -7,16 +7,11 @@
 class Triangle : public Drawable
 {
 public:
-	Engine_API Triangle(std::string TexturePath, ResourceManager* pRM);
+	Engine_API Triangle(ResourceManager* pRM, std::string TexturePath);
 	Engine_API void Update(float up, float left, float forward);
 	Engine_API ~Triangle();
 
 private:
-	struct buf
-	{
-		DirectX::XMMATRIX pos;
-	};
-	buf b;
 
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
 	std::shared_ptr<Texture2D> pTexture;
