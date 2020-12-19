@@ -1,11 +1,9 @@
 cbuffer C
 {
-    matrix Projection;
-    matrix View;
-    matrix Pos;
+    matrix PosViewProj;
 }
 
 float4 main(float3 pos : Position) : SV_Position
 {
-    return mul(mul(mul(float4(pos, 1.0f), Pos), View), Projection);
+    return mul(float4(pos, 1.0f), PosViewProj);
 }

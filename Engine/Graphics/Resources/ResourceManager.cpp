@@ -2,6 +2,7 @@
 #include "..\..\Headers\Window.h"
 #include "..\..\Headers\DirectXTex.h"
 #include "..\..\Headers\Utility.h"
+#include "..\..\Headers\Input\Camera.h"
 
 std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(Drawable* pDrawable, const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, bool unique, unsigned int Slot) noexcept
 {
@@ -129,6 +130,8 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDr
 
 void ResourceManager::InitializeResources(Window* pWindow)
 {
+	if (!cam)
+		throw std::exception("Camera is nullptr");
 
 	Graphics* pGraphics = pWindow->GetGraphics();
 	// Initialize Heap.
@@ -209,28 +212,58 @@ void ResourceManager::InitializeResources(Window* pWindow)
 	pGraphics->Initialize();
 }
 
-ResourceManager::ResourceManager(Window* pWindow) noexcept
+ResourceManager::ResourceManager(Window* pWindow, Camera* cam) noexcept
+	:
+	cam(cam)
 {
-	Graphics* pGraphics = pWindow->GetGraphics();
+	auto res = pWindow->GetGraphicsResolution();
 
-	UI_OrthographicsProjection = pGraphics->GetOrthographicMatrix();
-	PerspectiveProjection = pGraphics->GetPerspectiveMatrix();
-	View = pGraphics->GetViewMatrix();
+	UI_OrthographicsProjection = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)res.first, 0.0f, (float)res.second, 0.0f, 1.0f);
 }
 
 const DirectX::XMMATRIX* ResourceManager::GetProjectionForUI() noexcept
 {
-	return UI_OrthographicsProjection;
+	return &UI_OrthographicsProjection;
 }
 
 const DirectX::XMMATRIX* ResourceManager::GetPerspectiveProjection() noexcept
 {
-	return PerspectiveProjection;
+	if(cam)
+		return &cam->GetProjection();
+	return nullptr;
 }
 
 const DirectX::XMMATRIX* ResourceManager::GetView() noexcept
 {
-	return View;
+	if(cam)
+		return &cam->GetView();
+	return nullptr;
+}
+
+void ResourceManager::SetCamera(Camera* cam) noexcept
+{
+	if (!cam)
+		return;
+
+	this->cam = cam;
+
+	auto InitCamera = [&](std::unordered_map<std::string, PipeLineResources>& Resources)
+	{
+		for (auto& PSO : Resources)
+		{
+			for (auto& RS : PSO.second.RootSignatures)
+			{
+				for (auto& Drawable : RS.second.DrawIndexed)
+				{
+					Drawable.second.InitCamera(this);
+				}
+			}
+		}
+	};
+
+	InitCamera(Resources);
+
+	InitCamera(UI_Resources);
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, const std::string& Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)

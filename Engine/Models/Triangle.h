@@ -12,11 +12,6 @@ public:
 	Engine_API ~Triangle();
 
 private:
-	struct buf
-	{
-		DirectX::XMMATRIX pos;
-	};
-	buf b;
 
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
 	std::shared_ptr<Texture2D> pTexture;

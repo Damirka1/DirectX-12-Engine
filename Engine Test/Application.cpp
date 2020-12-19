@@ -8,10 +8,10 @@ Application::Application(HINSTANCE hInstance)
 	pWindow = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
 	Con << pWindow->GetGraphics()->GetInfo().c_str();
 	pWindow->Show();
-	// Camera needs to initialize before resource manager initialization!
-	cam = new Camera(pWindow);
+	// Camera needs to be initialized before resource manager initialization!
+	cam = new Camera(pWindow->GetGraphicsResolution());
 	cam->SetSensitivity(0.005f);
-	RM = new ResourceManager(pWindow);
+	RM = new ResourceManager(pWindow, cam);
 	FC = new FrameCommander(pWindow, RM);
 	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
 	k = pWindow->GetKeyboard();

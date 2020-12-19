@@ -5,25 +5,13 @@
 #include <algorithm>
 
 
-Camera::Camera(float FovInDegrees, float Near, float Far)
+Camera::Camera(std::pair<short, short> res, float FovInDegrees, float Near, float Far)
 	:
-	Camera(nullptr, 0.01f, { 0.0f, 0.0f,0.0f }, 0, 0, FovInDegrees, Near, Far)
+	Camera(res, 0.01f, {0.0f, 0.0f,0.0f}, 0, 0, FovInDegrees, Near, Far)
 {
 }
 
-Camera::Camera(float Sensitivity, DirectX::XMFLOAT3 Pos, float Pitch, float Yaw, float FovInDegrees, float Near, float Far)
-	:
-	Camera(nullptr, Sensitivity, Pos, Pitch, Yaw, FovInDegrees, Near, Far)
-{
-}
-
-Camera::Camera(Window* pWindow, float FovInDegrees, float Near, float Far)
-	:
-	Camera(pWindow, 0.01f, {0.0f, 0.0f,0.0f}, 0, 0, FovInDegrees, Near, Far)
-{
-}
-
-Camera::Camera(Window* pWindow, float Sensitivity, DirectX::XMFLOAT3 Pos, float Pitch, float Yaw, float FovInDegrees, float Near, float Far)
+Camera::Camera(std::pair<short, short> res, float Sensitivity, DirectX::XMFLOAT3 Pos, float Pitch, float Yaw, float FovInDegrees, float Near, float Far)
 	:
 	Pos(Pos),
 	Sensitivity(Sensitivity),
@@ -34,13 +22,9 @@ Camera::Camera(Window* pWindow, float Sensitivity, DirectX::XMFLOAT3 Pos, float 
 	Far(Far),
 	Fov(FovInDegrees)
 {
-	const auto res = pWindow->GetGraphicsResolution();
-	Projection = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(FovInDegrees), (float)res.first / (float)res.second, Near, Far));
+	Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(FovInDegrees), (float)res.first / (float)res.second, Near, Far);
 	
 	UpdateView();
-
-	if (pWindow)
-		SetCameraTo(pWindow);
 }
 
 DirectX::XMMATRIX& Camera::GetView() noexcept
@@ -104,11 +88,6 @@ void Camera::SetSensitivity(float Value) noexcept
 	Sensitivity = Value;
 }
 
-void Camera::SetCameraTo(Window* pWindow)
-{
-	pWindow->GetGraphics()->SetCamera(this);
-}
-
 void Camera::UpdateView()
 {
 	const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
@@ -121,5 +100,5 @@ void Camera::UpdateView()
 	// camera "top" always faces towards +Y (cannot do a barrel roll)
 	const auto camPosition = DirectX::XMLoadFloat3(&Pos);
 	const auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector);
-	View = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
+	View = DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 }

@@ -22,18 +22,19 @@ protected:
 
 	void Bind(Graphics* pGraphics);
 
-	virtual void Update() const;
-
 	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
 
 protected:
 	bool UI_element = false;
 
+	DirectX::XMMATRIX Transformation;
+	DirectX::XMFLOAT3 Pos;
+
 	struct
 	{
-		const DirectX::XMMATRIX* pView;
-		const DirectX::XMMATRIX* pProjection;
-	} Transformation;
+		const DirectX::XMMATRIX* View;
+		const DirectX::XMMATRIX* Projection;
+	} pCamera;
 
 private:
 	std::vector<std::shared_ptr<Bindable>> Bindables;
@@ -47,8 +48,6 @@ private:
 	char DescHeapIndex = -1;
 	
 	std::string PSO_Key, RS_Key;
-
-	
 };
 
 #endif

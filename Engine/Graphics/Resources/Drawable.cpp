@@ -9,13 +9,12 @@ Drawable::Drawable(ResourceManager* pRM) noexcept
 
 void Drawable::Init(ResourceManager* pRM) noexcept
 {
+	pCamera.View = pRM->GetView();
 	if (UI_element)
-		Transformation.pProjection = pRM->GetProjectionForUI();
+		pCamera.Projection = pRM->GetProjectionForUI();
 	else
-	{
-		Transformation.pProjection = pRM->GetPerspectiveProjection();
-		Transformation.pView = pRM->GetView();
-	}
+		pCamera.Projection = pRM->GetPerspectiveProjection();
+	Pos = {0.0f, 0.0f, 0.0f};
 }
 
 void Drawable::AddBindable(std::shared_ptr<Bindable> Bindable) noexcept
@@ -29,10 +28,6 @@ void Drawable::Bind(Graphics* pGraphics)
 	{
 		e->Bind(pGraphics);
 	}
-}
-
-void Drawable::Update() const
-{
 }
 
 void Drawable::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept

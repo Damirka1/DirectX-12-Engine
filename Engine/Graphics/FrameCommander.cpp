@@ -26,23 +26,24 @@ void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db) noexcep
 	bg[2] += db;
 }
 
-void FrameCommander::Render() const
+void FrameCommander::Render()
 {
 	pGraphics->Setup(bg[0], bg[1], bg[2]);
 
+	// Bind global heap.
+	pRM->Heap.Bind(pGraphics);
 
 	auto Render = [&](std::unordered_map<std::string, ResourceManager::PipeLineResources>& Resources)
 	{
-		// First bind pipelinestate object and heap.
+		// Bind pipelinestate object.
 		for (auto& PSO : Resources)
 		{
 			PSO.second.pPipeLineStateObject->Bind(pGraphics);
 
-			// Next bind rootsignatures.
+			// Bind rootsignatures.
 			for (auto& RS : PSO.second.RootSignatures)
 			{
 				RS.second.pRootSignature->Bind(pGraphics);
-				pRM->Heap.Bind(pGraphics);
 
 				// And finaly render objects.
 				for (auto& obj : RS.second.DrawIndexed)

@@ -78,11 +78,13 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 
 	AddHandler(pKeyboard, "KeyBoard");
 	AddHandler(pMouse, "Mouse");
+
+	SetCursor(LoadCursorW(0, IDC_ARROW));
 }
 
 Window::Window(const wchar_t* WindowName, short Width, short Height)
 	:
-	Window(GetModuleHandle(nullptr), WindowName, Width, Height)
+	Window(GetModuleHandleW(nullptr), WindowName, Width, Height)
 {
 }
 

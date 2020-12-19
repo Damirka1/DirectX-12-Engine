@@ -16,19 +16,11 @@ public:
 	Engine_API ~Cube();
 
 private:
-	struct buf
-	{
-		DirectX::XMMATRIX Projection;
-		DirectX::XMMATRIX View;
-		DirectX::XMMATRIX Pos;
-	};
-	buf b;
-
+	
 	struct FaceColors
 	{
 		float r, g, b, a;
 	} FaceColor[6];
-	DirectX::XMFLOAT3 Pos;
 	float angle;
 	float dAngle;
 	float ax, ay, az;

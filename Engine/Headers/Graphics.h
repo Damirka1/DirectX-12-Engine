@@ -9,7 +9,6 @@
 #pragma comment(lib, "uuid.lib")
 
 #include <d3d12.h>
-#include <DirectXMath.h>
 #include <dxgi1_6.h>
 #include <d3d12sdklayers.h>
 #include <vector>
@@ -36,11 +35,6 @@ public:
 	DXGI_FORMAT GetDSVFormat() noexcept;
 
 	std::pair<short, short> GetResolution() noexcept;
-
-	const DirectX::XMMATRIX* GetOrthographicMatrix() noexcept;
-	const DirectX::XMMATRIX* GetPerspectiveMatrix() noexcept;
-	const DirectX::XMMATRIX* GetViewMatrix() noexcept;
-	void SetCamera(Camera* cam) noexcept;
 
 private:
 	void WaitForGpu();
@@ -79,14 +73,6 @@ private:
 	ID3D12Fence* pFence = nullptr;
 	UINT64 FenceValues[FrameCount];
 	std::vector<ID3D12Resource*>* ListToRelease = nullptr;
-
-	// Matrix default.
-	DirectX::XMMATRIX OrthographicMatrixDefault;
-	DirectX::XMMATRIX PerspectiveMatrixDefault;
-	DirectX::XMMATRIX ViewDefault;
-
-	// Matrix from camera.
-	Camera* cam = nullptr;
 };
 
 #endif

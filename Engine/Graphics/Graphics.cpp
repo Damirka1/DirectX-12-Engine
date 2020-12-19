@@ -1,16 +1,12 @@
 #include "..\Headers\Graphics.h"
 #include "..\Headers\Graphics\Error_Check.h"
-#include "..\Headers\Input\Camera.h"
 #include <algorithm>
 
 Graphics::Graphics(HWND pWindow, short w, short h)
     :
     ViewPort(0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h)),
     ScissorRect(0, 0, static_cast<LONG>(w), static_cast<LONG>(h)),
-    ListToRelease(new std::vector<ID3D12Resource*>),
-    OrthographicMatrixDefault(DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, float(w), 0.0f, float(h), 0.0f, 1.0f))),
-    PerspectiveMatrixDefault(DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60), float(w) / float(h), 0.01f, 150.0f))),
-    ViewDefault(DirectX::XMMatrixIdentity())
+    ListToRelease(new std::vector<ID3D12Resource*>)
 {
     UINT dxgiFactoryFlags = 0;
 
@@ -367,27 +363,6 @@ std::pair<short, short> Graphics::GetResolution() noexcept
     return std::make_pair<short, short>(static_cast<short>(ViewPort.Width), static_cast<short>(ViewPort.Height));
 }
 
-const DirectX::XMMATRIX* Graphics::GetOrthographicMatrix() noexcept
-{
-    return &OrthographicMatrixDefault;
-}
-
-const DirectX::XMMATRIX* Graphics::GetPerspectiveMatrix() noexcept
-{
-    if (cam)
-        return &cam->Projection;
-    else
-        return &PerspectiveMatrixDefault;
-}
-
-const DirectX::XMMATRIX* Graphics::GetViewMatrix() noexcept
-{
-    if (cam)
-        return &cam->View;
-    else
-        return &ViewDefault;
-}
-
 std::wstring Graphics::GetInfo() noexcept
 {
     return L"[Device]: " + std::wstring(static_cast<wchar_t*>(DeviceDesc.Description)) + L'\n'
@@ -435,9 +410,4 @@ void Graphics::MoveToNextFrame()
 
     // Set the fence value for the next frame.
     FenceValues[FrameIndex] = currentFenceValue + 1;
-}
-
-void Graphics::SetCamera(Camera* cam) noexcept
-{
-    this->cam = cam;
 }

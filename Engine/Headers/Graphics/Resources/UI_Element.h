@@ -29,13 +29,6 @@ protected:
 	DirectX::XMFLOAT2 Pos;
 	DirectX::XMFLOAT2 ActiveSize;
 
-	struct
-	{
-		DirectX::XMMATRIX Pos;
-		DirectX::XMMATRIX Projection;
-	}Cbuff;
-
-
 };
 
 

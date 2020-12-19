@@ -45,10 +45,10 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 
 	pBufferColor = pRM->CreateConstBuffer(this, &Color, sizeof(Color), 1, 0, 0);
 
-	Cbuff.Pos = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat2(&Pos)));
-	Cbuff.Projection = *Transformation.pProjection;
+	Drawable::Pos = DirectX::XMFLOAT3(Pos.x, Pos.y, 0.0f);
 
-	pBufferProjection = pRM->CreateConstBuffer(this, &Cbuff, sizeof(Cbuff), 0, 0, 0);
+	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat2(&Pos)) * *pCamera.View * *pCamera.Projection);
+	pBufferProjection = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 }
 
 Rect::~Rect()
