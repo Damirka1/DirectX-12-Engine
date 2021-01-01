@@ -80,6 +80,10 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	AddHandler(pMouse, "Mouse");
 
 	SetCursor(LoadCursorW(0, IDC_ARROW));
+
+
+	// Create thread for handle ui elements.
+	ThreadElements = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)this->HandleUIElements, this, NULL, nullptr);
 }
 
 Window::Window(const wchar_t* WindowName, short Width, short Height)
@@ -132,6 +136,11 @@ void Window::ProcessMessages() const
 HWND Window::GetHWND() noexcept
 {
 	return pWindow;
+}
+
+void Window::UpdateWindow() noexcept
+{
+	SendMessageW(pWindow, WM_PAINT, 0, 0);
 }
 
 std::pair<short, short> Window::GetWindowResolution() const noexcept
@@ -306,4 +315,30 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) con
 		el.second->HandleMsg(hWnd, msg, wParam, lParam);
 
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
+}
+
+void Window::HandleUIElements(Window* pWindow)
+{
+	while (pWindow->Exist)
+	{
+		auto& MouseEvents = pWindow->GetMouse()->EventsForWindow;
+
+		while (MouseEvents.size() > 0)
+		{
+			auto ev = MouseEvents.front();
+			MouseEvents.pop();
+
+			for (auto& ElementPair : pWindow->UI_elements)
+			{
+				UI_Element* Element = ElementPair.second;
+
+				for (auto& Listener : Element->EventListeners)
+				{
+					Listener->ListenMouseEvents(Element, &ev, pWindow);
+				}
+			}
+		}
+
+		Sleep(10);
+	}
 }

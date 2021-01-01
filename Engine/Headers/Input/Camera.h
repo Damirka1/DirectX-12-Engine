@@ -9,9 +9,14 @@ typedef unsigned int UINT;
 class Camera
 {
 public:
+	enum class ProjectionType
+	{
+		Perspective,
+		Orthographic
+	};
 	
 	Engine_API Camera(std::pair<short, short> res, float FovInDegrees, float Near = 0.01f, float Far = 200.0f);
-	Engine_API Camera(std::pair<short, short> res, float Sensitivity = 0.01f, DirectX::XMFLOAT3 Pos = { 0.0f, 0.0f, 0.0f }, float Pitch = 0, float Yaw = 0,
+	Engine_API Camera(std::pair<short, short> res, ProjectionType Type = ProjectionType::Perspective, float Sensitivity = 0.01f, DirectX::XMFLOAT3 Pos = { 0.0f, 0.0f, 0.0f }, float Pitch = 0, float Yaw = 0,
 					  float FovInDegrees = 60.0f, float Near = 0.01f, float Far = 200.0f);
 
 	Engine_API DirectX::XMMATRIX& GetView() noexcept;
@@ -31,6 +36,7 @@ private:
 
 	// Projection.
 	DirectX::XMMATRIX Projection;
+	ProjectionType Type;
 	float Fov;
 	float Near, Far;
 

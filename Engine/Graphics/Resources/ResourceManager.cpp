@@ -130,8 +130,6 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDr
 
 void ResourceManager::InitializeResources(Window* pWindow)
 {
-	if (!cam)
-		throw std::exception("Camera is nullptr");
 
 	Graphics* pGraphics = pWindow->GetGraphics();
 	// Initialize Heap.
@@ -212,32 +210,44 @@ void ResourceManager::InitializeResources(Window* pWindow)
 	pGraphics->Initialize();
 }
 
-ResourceManager::ResourceManager(Window* pWindow, Camera* cam) noexcept
-	:
-	cam(cam)
+ResourceManager::ResourceManager(Window* pWindow) noexcept
 {
 	auto res = pWindow->GetGraphicsResolution();
 
-	UI_OrthographicsProjection = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)res.first, 0.0f, (float)res.second, 0.0f, 1.0f);
+	DefaultCamera = new Camera(res);
+	DefaultCameraUI = new Camera(res, Camera::ProjectionType::Orthographic);
 }
 
 const DirectX::XMMATRIX* ResourceManager::GetProjectionForUI() noexcept
 {
-	return &UI_OrthographicsProjection;
+	if (cameraUI)
+		return &cameraUI->GetProjection();
+	else
+		return &DefaultCameraUI->GetProjection();
 }
 
 const DirectX::XMMATRIX* ResourceManager::GetPerspectiveProjection() noexcept
 {
-	if(cam)
-		return &cam->GetProjection();
-	return nullptr;
+	if (camera)
+		return &camera->GetProjection();
+	else
+		return &DefaultCamera->GetProjection();
 }
 
 const DirectX::XMMATRIX* ResourceManager::GetView() noexcept
 {
-	if(cam)
-		return &cam->GetView();
-	return nullptr;
+	if (camera)
+		return &camera->GetView();
+	else
+		return &DefaultCamera->GetView();
+}
+
+const DirectX::XMMATRIX* ResourceManager::GetViewForUI() noexcept
+{
+	if (cameraUI)
+		return &cameraUI->GetView();
+	else
+		return &DefaultCameraUI->GetView();
 }
 
 void ResourceManager::SetCamera(Camera* cam) noexcept
@@ -245,25 +255,37 @@ void ResourceManager::SetCamera(Camera* cam) noexcept
 	if (!cam)
 		return;
 
-	this->cam = cam;
+	this->camera = cam;
+	InitCamera(&Resources);
+}
 
-	auto InitCamera = [&](std::unordered_map<std::string, PipeLineResources>& Resources)
+void ResourceManager::SetCameraForUI(Camera* cam) noexcept
+{
+	if (!cam)
+		return;
+
+	this->cameraUI = cam;
+	InitCamera(&UI_Resources);
+}
+
+ResourceManager::~ResourceManager()
+{
+	delete DefaultCamera;
+	delete DefaultCameraUI;
+}
+
+void ResourceManager::InitCamera(std::unordered_map<std::string, PipeLineResources>* Resources)
+{
+	for (auto& PSO : *Resources)
 	{
-		for (auto& PSO : Resources)
+		for (auto& RS : PSO.second.RootSignatures)
 		{
-			for (auto& RS : PSO.second.RootSignatures)
+			for (auto& Drawable : RS.second.DrawIndexed)
 			{
-				for (auto& Drawable : RS.second.DrawIndexed)
-				{
-					Drawable.second.InitCamera(this);
-				}
+				Drawable.second.InitCamera(this);
 			}
 		}
-	};
-
-	InitCamera(Resources);
-
-	InitCamera(UI_Resources);
+	}
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, const std::string& Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)

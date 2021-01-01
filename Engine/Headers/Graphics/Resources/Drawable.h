@@ -7,22 +7,27 @@
 #include "..\..\ResourceManager.h"
 #include "BindablesHeader.h"
 
+class ResourceManager;
+class FrameCommander;
 
 class Drawable
 {
-	friend class ResourceManager;
-	friend class FrameCommander;
+	friend ResourceManager;
+	friend FrameCommander;
 	friend class DrawableArray;
 protected:
-	Drawable() noexcept = default;
-	Drawable(ResourceManager* pRM) noexcept;
-	void Init(ResourceManager* pRM) noexcept;
+	Engine_API Drawable() noexcept = default;
+	Engine_API Drawable(ResourceManager* pRM) noexcept;
+	Engine_API void Init(ResourceManager* pRM) noexcept;
 
-	void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
+	Engine_API void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
 
-	void Bind(Graphics* pGraphics);
+	Engine_API void Bind(Graphics* pGraphics);
 
-	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
+	Engine_API void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
+
+public:
+	Engine_API DirectX::XMFLOAT3 GetPos();
 
 protected:
 	bool UI_element = false;

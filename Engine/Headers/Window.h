@@ -27,6 +27,7 @@ public:
 	Engine_API bool	IsExist() const noexcept;
 	Engine_API void	ProcessMessages() const;
 	Engine_API HWND	GetHWND() noexcept;
+	Engine_API void UpdateWindow() noexcept;
 
 	Engine_API std::pair<short, short> GetWindowResolution() const noexcept;
 	Engine_API std::pair<short, short> GetGraphicsResolution() const noexcept;
@@ -65,6 +66,7 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK StaticHandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) const noexcept;
+	static void HandleUIElements(Window* pWindow);
 
 private:
 	mutable bool Exist = false;
@@ -82,5 +84,8 @@ private:
 	Mouse* pMouse;
 
 	Timer* t;
+
+	// Handle thread.
+	HANDLE ThreadElements;
 };
 #endif

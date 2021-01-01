@@ -20,7 +20,7 @@ Mouse::Mouse(unsigned int QueueSize, bool UseRawInput)
 	}
 }
 
-std::optional<Mouse::MouseEvent> Mouse::GetEvent() noexcept
+std::optional<MouseEvent> Mouse::GetEvent() noexcept
 {
 	if (Events.size() > 0)
 	{
@@ -66,6 +66,13 @@ bool Mouse::IsCursorEnabled() noexcept
 void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept
 {
 	Window* const pWindow = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+	auto GetPos = [=]()
+	{
+		const auto res = pWindow->GetWindowResolution();
+		Pos = { static_cast<short>(lParam), -(static_cast<short>(lParam >> 16)) + res.second };
+	};
+
 	switch (msg)
 	{
 		case WM_ACTIVATE:
@@ -87,27 +94,32 @@ void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noe
 
 		case WM_MOUSEMOVE:
 		{
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
+			const auto res = pWindow->GetWindowResolution();
+			Pos = { static_cast<short>(lParam), -(static_cast<short>(lParam >> 16)) + res.second };
+			Events.emplace(MouseEvent::Type::Move, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::Move, Pos);
 			// cursorless exclusive gets first dibs
 			if (!CursorEnabled)
 			{
 				if (!CursorInWindow)
 				{
 					SetCapture(hWnd);
-					Events.emplace(MouseEvent::MouseType::Enter, Pos);
+					Events.emplace(MouseEvent::Type::EnterWindow, Pos);
+					EventsForWindow.emplace(MouseEvent::Type::EnterWindow, Pos);
 					CursorInWindow = true;
 					pWindow->HideCursor();
 				}
 				break;
 			}
-			const auto res = pWindow->GetWindowResolution();
+			
 			// in client region -> log move, and log enter + capture mouse (if not previously in window)
 			if (Pos.first >= 0 && Pos.first < res.first && Pos.second >= 0 && Pos.second < res.second)
 			{
 				if (!CursorInWindow)
 				{
 					SetCapture(hWnd);
-					Events.emplace(MouseEvent::MouseType::Enter, Pos);
+					Events.emplace(MouseEvent::Type::EnterWindow, Pos);
+					EventsForWindow.emplace(MouseEvent::Type::EnterWindow, Pos);
 					CursorInWindow = true;
 				}
 			}
@@ -118,7 +130,8 @@ void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noe
 				if (!(wParam & (MK_LBUTTON | MK_RBUTTON)))
 				{
 					ReleaseCapture();
-					Events.emplace(MouseEvent::MouseType::Leave, Pos);
+					Events.emplace(MouseEvent::Type::LeaveWindow, Pos);
+					EventsForWindow.emplace(MouseEvent::Type::LeaveWindow, Pos);
 					CursorInWindow = false;
 				}
 			}
@@ -126,39 +139,51 @@ void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noe
 		}
 
 		case WM_LBUTTONDOWN:
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
-			Events.emplace(MouseEvent::MouseType::L_Pressed, Pos);
+			SetForegroundWindow(hWnd);
+			if (!CursorEnabled)
+			{
+				pWindow->ConfineCursor();
+				pWindow->HideCursor();
+			}
+			GetPos();
+			Events.emplace(MouseEvent::Type::L_Pressed, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::L_Pressed, Pos);
 			break;
 		case WM_LBUTTONUP:
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
-			Events.emplace(MouseEvent::MouseType::L_Released, Pos);
+			GetPos();
+			Events.emplace(MouseEvent::Type::L_Released, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::L_Released, Pos);
 			break;
 		case WM_RBUTTONDOWN:
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
-			Events.emplace(MouseEvent::MouseType::R_Pressed, Pos);
+			GetPos();
+			Events.emplace(MouseEvent::Type::R_Pressed, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::R_Pressed, Pos);
 			break;
 		case WM_RBUTTONUP:
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
-			Events.emplace(MouseEvent::MouseType::R_Released, Pos);
+			GetPos();
+			Events.emplace(MouseEvent::Type::R_Released, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::R_Released, Pos);
 			break;
 		case WM_MBUTTONDOWN:
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
-			Events.emplace(MouseEvent::MouseType::WheelPressed, Pos);
+			GetPos();
+			Events.emplace(MouseEvent::Type::WheelPressed, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::WheelPressed, Pos);
 			break;
 		case WM_MBUTTONUP:
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
-			Events.emplace(MouseEvent::MouseType::WheelReleased, Pos);
+			GetPos();
+			Events.emplace(MouseEvent::Type::WheelReleased, Pos);
+			EventsForWindow.emplace(MouseEvent::Type::WheelReleased, Pos);
 			break;
 		
 		case WM_MOUSEWHEEL:
 		{
-			Pos = { static_cast<short>(lParam), static_cast<short>(lParam >> 16) };
 			short WheelCount = static_cast<short>(wParam >> 16) / 120;
 			if (static_cast<short>(wParam >> 16) > 0)
 			{
 				while (WheelCount != 0)
 				{
-					Events.emplace(MouseEvent::MouseType::WheelUp, Pos);
+					Events.emplace(MouseEvent::Type::WheelUp, Pos);
+					EventsForWindow.emplace(MouseEvent::Type::WheelUp, Pos);
 					WheelCount--;
 				}
 			}
@@ -166,7 +191,8 @@ void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noe
 			{
 				while (WheelCount != 0)
 				{
-					Events.emplace(MouseEvent::MouseType::WheelDown, Pos);
+					Events.emplace(MouseEvent::Type::WheelDown, Pos);
+					EventsForWindow.emplace(MouseEvent::Type::WheelDown, Pos);
 					WheelCount++;
 				}
 			}
@@ -233,48 +259,4 @@ void Mouse::PopQueueRawInput() noexcept
 {
 	while (RawInputEvents.size() > QueueSize)
 		RawInputEvents.pop();
-}
-
-Mouse::MouseEvent::MouseEvent() noexcept
-	:
-	t(Mouse::MouseEvent::MouseType::Undefined),
-	Pos(-1, -1)
-{
-}
-
-Mouse::MouseEvent::MouseEvent(MouseType Type, std::pair<short, short> Pos) noexcept
-	:
-	t(Type),
-	Pos(Pos)
-{
-}
-
-bool Mouse::MouseEvent::L_Pressed() noexcept
-{
-	return t == MouseType::L_Pressed ? true : false;
-}
-
-bool Mouse::MouseEvent::R_Pressed() noexcept
-{
-	return t == MouseType::R_Pressed ? true : false;
-}
-
-bool Mouse::MouseEvent::WheelDown() noexcept
-{
-	return t == MouseType::WheelDown ? true : false;
-}
-
-bool Mouse::MouseEvent::WheelUp() noexcept
-{
-	return t == MouseType::WheelUp? true : false;
-}
-
-bool Mouse::MouseEvent::WheelPressed() noexcept
-{
-	return t == MouseType::WheelPressed ? true : false;
-}
-
-std::pair<short, short> Mouse::MouseEvent::GetPos() noexcept
-{
-	return Pos;
 }

@@ -11,7 +11,7 @@ bool Keyboard::KeyIsPressed(const char KeyCode) noexcept
 	return keys[KeyCode];
 }
 
-std::optional<Keyboard::KeyEvent> Keyboard::GetEvent() noexcept
+std::optional<KeyEvent> Keyboard::GetEvent() noexcept
 {
 	if (Events.size() > 0)
 	{
@@ -49,14 +49,14 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) 
 	case WM_KEYDOWN:
 	{
 		keys[wParam] = true;
-		Events.emplace(static_cast<unsigned char>(wParam), Keyboard::KeyEvent::Type::Pressed);
+		Events.emplace(static_cast<unsigned char>(wParam), KeyEvent::Type::Pressed);
 		PopQueueEv();
 		return;
 	}
 	case WM_KEYUP:
 	{
 		keys[wParam] = false;
-		Events.emplace(static_cast<unsigned char>(wParam), Keyboard::KeyEvent::Type::Released);
+		Events.emplace(static_cast<unsigned char>(wParam), KeyEvent::Type::Released);
 		PopQueueEv();
 		return;
 	}
@@ -80,25 +80,4 @@ void Keyboard::PopQueueCh() noexcept
 void Keyboard::ClearState() noexcept
 {
 	Events = std::queue<KeyEvent>();
-}
-
-Keyboard::KeyEvent::KeyEvent() noexcept
-	:
-	Code(0),
-	t(Type::Undefined)
-{
-}
-
-Keyboard::KeyEvent::KeyEvent(unsigned char Code, Type type) noexcept
-	:
-	Code(Code),
-	t(type)
-{
-}
-
-bool Keyboard::KeyEvent::operator==(const char Key) noexcept
-{
-	if (t == Type::Pressed && Code == Key)
-		return true;
-	return false;
 }

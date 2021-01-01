@@ -8,29 +8,38 @@ Application::Application(HINSTANCE hInstance)
 	pWindow = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
 	Con << pWindow->GetGraphics()->GetInfo().c_str();
 	pWindow->Show();
-	// Camera needs to be initialized before resource manager initialization!
 	cam = new Camera(pWindow->GetGraphicsResolution());
 	cam->SetSensitivity(0.005f);
-	RM = new ResourceManager(pWindow, cam);
-	FC = new FrameCommander(pWindow, RM);
+	RM = new ResourceManager(pWindow);
+	FC = new FrameCommanderHWND(pWindow, RM);
 	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
+	pWindow->AddHandler(FC, "FC");
 	k = pWindow->GetKeyboard();
 	m = pWindow->GetMouse();
+	c = new Cube(RM, { 0.0f, 5.0f, 20.0f });
 	
-	r = new Rect(RM, "Rect", { 635.0f, 355.0f }, { 5, 5 });
-
-	// Random numbers for cube's position.
-	std::random_device rd;  // Will be used to obtain a seed for the random number engine
-	std::minstd_rand gen(rd());
-	std::uniform_real_distribution<float> disPosXY(-50.0f, 50.0f);
-	std::uniform_real_distribution<float> disPosZ(4.0f, 100.0f);
-
-	for (int i = 0; i < 64 * 64; i++)
+	r = new Rect(RM, "Rect", { 300, 300 }, { 50, 100 });
+	r->GetDefaultListener()->OnMouseEnter = [](UI_Element* This, Window* pWindow)
 	{
-		Cubes.push_back(new Cube(RM, DirectX::XMFLOAT3{ disPosXY(gen), disPosXY(gen), disPosZ(gen) }));
-	}
+		static_cast<Rect*>(This)->SetColor({ 1, 1, 1 });
+		pWindow->UpdateWindow();
+	};
+	r->GetDefaultListener()->OnMouseLeave = [](UI_Element* This, Window* pWindow)
+	{
+		static_cast<Rect*>(This)->SetColor({ 1.0f, 0.5f, 0.5f });
+		pWindow->UpdateWindow();
+	};
+	r->GetDefaultListener()->OnMouseClick = [](UI_Element* This, Window* pWindow)
+	{
+		MessageBoxW(nullptr, L"Hello world", L"Test", MB_OK);
+	};
 
+	pWindow->AddElement(r);
+	
 	RM->InitializeResources(pWindow);
+
+	RM->SetCamera(cam);
+	
 }
 
 void Application::Run()
@@ -40,64 +49,17 @@ void Application::Run()
 		static float color[3] = { 0.4f, 0.4f, 0.4f };
 
 		auto tm = pWindow->TimerMark();
-		{
-			DirectX::XMFLOAT3 Translation = { 0.0f, 0.0f, 0.0f };
 
-			if (k->KeyIsPressed(VK_SHIFT))
-				cam->SetSpeed(4.0f);
-			else
-				cam->SetSpeed(1.0f);
+		auto mPos = pWindow->GetMouse()->GetPos();
+		float x = mPos.first, y = mPos.second;
+		pWindow->SetWindowName(std::string("x: " + std::to_string(x) + " y:" + std::to_string(y)).c_str());
 
-			if (k->KeyIsPressed('W'))
-				Translation.z += 10.0f * tm;
-			if (k->KeyIsPressed('S'))
-				Translation.z -= 10.0f * tm;
-			if (k->KeyIsPressed('A'))
-				Translation.x -= 10.0f * tm;
-			if (k->KeyIsPressed('D'))
-				Translation.x += 10.0f * tm;
-			if (k->KeyIsPressed(VK_SPACE))
-				Translation.y += 10.0f * tm;
-			if (k->KeyIsPressed(VK_CONTROL))
-				Translation.y -= 10.0f * tm;
-
-			while (auto el = k->GetEvent())
-			{
-				auto& ev = el.value();
-
-				if (ev == VK_ESCAPE)
-				{
-					if (!m->IsCursorEnabled())
-					{
-						pWindow->EnableCursor();
-						m->DisableRawInput();
-					}
-					else
-					{
-						pWindow->DisableCursor();
-						m->EnableRawInput();
-					}
-				}
-			}
-			
-			if (!m->IsCursorEnabled())
-			{
-				while(const auto ev = m->GetRawData())
-						cam->Rotate((float)ev->dx, (float)ev->dy);
-			}
-
-			cam->Translate(Translation);
-		}
-		
-		for (Cube* obj : Cubes)
-		{
-			obj->Update();
-		}
-
+		c->Update();
 		pWindow->ProcessMessages();
-		FC->SetBackgroundColor(color[0], color[1], color[2]);
+		//FC->SetBackgroundColor(color[0], color[1], color[2]);
 		// Render.
-		FC->Render();
+		//FC->Render();
+		Sleep(1);
 	}
 }
 
@@ -107,9 +69,5 @@ Application::~Application()
 	delete FC;
 	delete RM;
 	delete r;
-
-	for (Cube* obj : Cubes)
-	{
-		delete obj;
-	}
+	delete c;
 }

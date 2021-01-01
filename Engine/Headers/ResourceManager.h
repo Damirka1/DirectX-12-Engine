@@ -12,6 +12,7 @@
 
 class Window;
 class Camera;
+class UICamera;
 
 class ResourceManager
 {
@@ -40,13 +41,19 @@ public:
 	Engine_API std::shared_ptr<Texture2D> CreateTexture2D(Drawable* pDrawable, const std::string& Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader = false);
 	Engine_API std::shared_ptr<Sampler> CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex) noexcept;
 	
-	Engine_API ResourceManager(Window* pWindow, Camera* cam = nullptr) noexcept;
+	Engine_API ResourceManager(Window* pWindow) noexcept;
 	Engine_API void InitializeResources(Window* pWindow);
 	Engine_API const DirectX::XMMATRIX* GetProjectionForUI() noexcept;
 	Engine_API const DirectX::XMMATRIX* GetPerspectiveProjection() noexcept;
 	Engine_API const DirectX::XMMATRIX* GetView() noexcept;
+	Engine_API const DirectX::XMMATRIX* GetViewForUI() noexcept;
 	Engine_API void SetCamera(Camera* cam) noexcept;
+	Engine_API void SetCameraForUI(Camera* cam) noexcept;
 
+	Engine_API ~ResourceManager();
+
+private:
+	void InitCamera(std::unordered_map<std::string, PipeLineResources>* Resources);
 
 private:
 	GlobalHeap Heap;
@@ -54,8 +61,14 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<Bindable>> Bindables;
 	std::unordered_map<std::string, PipeLineResources> Resources;
 	std::unordered_map<std::string, PipeLineResources> UI_Resources;
-	DirectX::XMMATRIX UI_OrthographicsProjection;
-	Camera* cam;
+	
+	// Default cameras.
+	Camera* DefaultCamera;
+	Camera* DefaultCameraUI;
+
+	// User's cameras.
+	Camera* camera = nullptr;
+	Camera* cameraUI = nullptr;
 };
 
 #endif

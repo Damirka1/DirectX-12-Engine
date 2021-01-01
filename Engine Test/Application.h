@@ -26,8 +26,8 @@ private:
 
 	Window* pWindow;
 	ResourceManager* RM;
-	FrameCommander* FC;
-	std::vector<Cube*> Cubes;
+	FrameCommanderHWND* FC;
+	Cube* c;
 	Rect* r;
 	Keyboard* k;
 	Mouse* m;

@@ -1,10 +1,9 @@
 #include "Rectangle.h"
 
 Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 Size) noexcept
+	:
+	UI_Element(pRM, Name, Pos, Size)
 {
-
-	Init(pRM, Name, Pos, Size);
-
 	struct VB
 	{
 		float x, y;
@@ -45,13 +44,17 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 
 	pBufferColor = pRM->CreateConstBuffer(this, &Color, sizeof(Color), 1, 0, 0);
 
-	Drawable::Pos = DirectX::XMFLOAT3(Pos.x, Pos.y, 0.0f);
-
-	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat2(&Pos)) * *pCamera.View * *pCamera.Projection);
+	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&DirectX::XMFLOAT3A(Pos.x, Pos.y, 0.0f))) * *pCamera.View * *pCamera.Projection);
 	pBufferProjection = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 }
 
 Rect::~Rect()
 {
+}
+
+void Rect::SetColor(DirectX::XMFLOAT3 Color)
+{
+	this->Color = Color;
+	pBufferColor->Update(&this->Color, sizeof(this->Color));
 }
 
