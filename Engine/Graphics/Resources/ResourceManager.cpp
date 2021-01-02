@@ -130,6 +130,7 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDr
 
 void ResourceManager::InitializeResources(Window* pWindow)
 {
+	pScriptManager = new ScriptManager(pWindow);
 
 	Graphics* pGraphics = pWindow->GetGraphics();
 	// Initialize Heap.
@@ -178,6 +179,8 @@ void ResourceManager::InitializeResources(Window* pWindow)
 					pArray->AddDrawable(Drawable);
 					pArray->SetVertexAndIndexBuffers(Drawable->pVertexBuffer, Drawable->pIndexBuffer);
 
+					// Add drawable to script manager.
+					pScriptManager->AddDrawable(Drawable);
 
 					if (Drawable->DescHeapIndex == -1)
 						continue;
@@ -208,6 +211,8 @@ void ResourceManager::InitializeResources(Window* pWindow)
 	Init(UI_Resources);
 
 	pGraphics->Initialize();
+
+	pScriptManager->StartListen();
 }
 
 ResourceManager::ResourceManager(Window* pWindow) noexcept
@@ -272,6 +277,7 @@ ResourceManager::~ResourceManager()
 {
 	delete DefaultCamera;
 	delete DefaultCameraUI;
+	delete pScriptManager;
 }
 
 void ResourceManager::InitCamera(std::unordered_map<std::string, PipeLineResources>* Resources)

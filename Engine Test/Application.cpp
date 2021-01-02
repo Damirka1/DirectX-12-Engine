@@ -3,11 +3,7 @@
 
 class Listener : public EventListener
 {
-	void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow)
-	{
-
-	}
-	void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow)
+	void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow) override
 	{
 		if (*pEvent == 'D')
 		{
@@ -78,7 +74,6 @@ Application::Application(HINSTANCE hInstance)
 			This->SetPos({ (float)MPos.first, (float)MPos.second, 0.0f });
 			This->Update();
 			pWindow->UpdateWindow();
-
 		}
 	};
 
@@ -102,14 +97,14 @@ void Application::Run()
 		float x = mPos.first, y = mPos.second;
 		pWindow->SetWindowName(std::string("x: " + std::to_string(x) + " y:" + std::to_string(y)).c_str());
 
-		while (auto el = pWindow->GetKeyboard()->GetEvent())
+		/*while (auto el = pWindow->GetKeyboard()->GetEvent())
 		{
 			auto ev = el.value();
 			for (auto& l : *c->GetEventListeners())
 			{
 				l->ListenKeyboardEvents(c, &ev, pWindow);
 			}
-		}
+		}*/
 
 		//c->Update();
 		pWindow->ProcessMessages();

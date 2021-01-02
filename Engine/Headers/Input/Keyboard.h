@@ -10,6 +10,7 @@
 
 class Keyboard : public MessageHandler
 {
+	friend class ScriptManager;
 	friend class Window;
 public:
 	Engine_API Keyboard(unsigned int QueueSize = 20) noexcept;

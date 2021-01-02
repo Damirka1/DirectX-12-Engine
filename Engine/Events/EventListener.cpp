@@ -80,4 +80,10 @@ void DefaultEventListener::ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEv
 {
 }
 
+void EventListener::ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow)
+{
+}
 
+void EventListener::ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow)
+{
+}

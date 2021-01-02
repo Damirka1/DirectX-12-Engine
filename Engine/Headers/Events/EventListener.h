@@ -9,13 +9,14 @@
 #include <functional>
 
 class Drawable;
+class Window;
 
 class EventListener
 {
-	friend class Window;
+	friend class ScriptManager;
 public:
-	virtual void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow) = 0;
-	virtual void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow) = 0;
+	Engine_API virtual void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow);
+	Engine_API virtual void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow);
 };
 
 

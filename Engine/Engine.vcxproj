@@ -182,6 +182,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Events\EventListener.cpp" />
     <ClCompile Include="Events\KeyboardEvents.cpp" />
     <ClCompile Include="Events\MouseEvents.cpp" />
+    <ClCompile Include="Events\ScriptManager.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\GraphicsException.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Buffers.cpp" />
@@ -209,6 +210,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Events\EventListener.h" />
     <ClInclude Include="Headers\Events\KeyboardEvents.h" />
     <ClInclude Include="Headers\Events\MouseEvents.h" />
+    <ClInclude Include="Headers\Events\ScriptManager.h" />
     <ClInclude Include="Headers\FrameCommander.h" />
     <ClInclude Include="Headers\Graphics.h" />
     <ClInclude Include="Headers\Graphics\d3dx12.h" />

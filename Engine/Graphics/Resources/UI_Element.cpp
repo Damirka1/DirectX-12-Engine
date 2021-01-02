@@ -14,7 +14,7 @@ void UI_Element::Init(ResourceManager* pRM, std::string ObjectName, DirectX::XMF
 	Drawable::UI_element = true;
 	Drawable::Init(pRM);
 
-	if (UseDefaultListener)
+	if (UseDefaultListener && (DefaultEvListIndex == -1))
 	{
 		EventListeners.push_back(new DefaultEventListener());
 		DefaultEvListIndex = int(EventListeners.size() - 1);

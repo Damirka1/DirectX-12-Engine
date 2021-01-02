@@ -17,24 +17,21 @@ class Drawable
 	friend FrameCommander;
 	friend class DrawableArray;
 	friend class UI_Element;
-	friend class Window;
+	friend class ScriptManager;
 
 protected:
 	Engine_API Drawable() noexcept = default;
 	Engine_API Drawable(ResourceManager* pRM) noexcept;
 	Engine_API void Init(ResourceManager* pRM) noexcept;
-
 	Engine_API void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
-
 	Engine_API void Bind(Graphics* pGraphics);
-
 	Engine_API void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
-	Engine_API void SetVisibility(bool Visible);
 
 public:
 	Engine_API DirectX::XMFLOAT3 GetPos();
 	Engine_API void SetPos(DirectX::XMFLOAT3 Pos);
 	Engine_API void Translate(DirectX::XMFLOAT3 T);
+	Engine_API void SetVisibility(bool Visible);
 
 	Engine_API void AddEventListener(EventListener* EvListener);
 	Engine_API const std::vector<EventListener*>* const GetEventListeners();

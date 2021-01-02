@@ -17,6 +17,7 @@ class Mouse;
 class Window
 {
 	friend class FrameCommanderHWND;
+	friend class ScriptManager;
 public:
 	Window() = delete;
 	Engine_API Window(HINSTANCE hInst, const wchar_t* WindowName, short Width = 800, short Height = 600, bool VSync = true);
@@ -71,7 +72,6 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK StaticHandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) const noexcept;
-	static void HandleUIElements(Window* pWindow);
 
 private:
 	mutable bool Exist = false;
@@ -92,8 +92,5 @@ private:
 	Mouse* pMouse;
 
 	Timer* t;
-
-	// Handle thread.
-	HANDLE ThreadElements;
 };
 #endif

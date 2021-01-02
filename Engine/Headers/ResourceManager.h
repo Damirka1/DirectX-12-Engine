@@ -5,6 +5,7 @@
 #include "Graphics\Resources\BindablesHeader.h"
 #include "Graphics\Resources\Drawable.h"
 #include "Graphics\Resources\DrawableArray.h"
+#include "Events\ScriptManager.h"
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -62,6 +63,8 @@ private:
 	std::unordered_map<std::string, PipeLineResources> Resources;
 	std::unordered_map<std::string, PipeLineResources> UI_Resources;
 	
+	ScriptManager* pScriptManager;
+
 	// Default cameras.
 	Camera* DefaultCamera;
 	Camera* DefaultCameraUI;

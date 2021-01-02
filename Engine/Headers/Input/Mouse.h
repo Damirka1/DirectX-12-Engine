@@ -11,6 +11,7 @@
 
 class Mouse : public MessageHandler
 {
+	friend class ScriptManager;
 	friend class Window;
 	struct RawData
 	{
