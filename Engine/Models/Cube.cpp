@@ -68,8 +68,7 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept
 
 	std::string RS_key = pRM->CreateRootSignature(this, PSO_key, RsLay);
 
-	Drawable::Pos = Pos;
-	pConstBuffer = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
+	
 
 	// Random numbers for rotation.
 	{
@@ -92,14 +91,17 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept
 		FaceColor[4] = { Color(gen), Color(gen), Color(gen), 1.0f };
 		FaceColor[5] = { Color(gen), Color(gen), Color(gen), 1.0f };
 
-
 		pConstBufferColors = pRM->CreateConstBuffer(this, &FaceColor, sizeof(FaceColor), 1, 0, 0);
+
+		Drawable::Pos = Pos;
+		Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationAxis({ ax,ay,az }, DirectX::XMConvertToRadians(angle)) * DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
+		pConstBuffer = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 	}
 }
 
-void Cube::Update(DirectX::XMFLOAT3 Translation)
+void Cube::Update()
 {
-	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationAxis({ ax,ay,az }, DirectX::XMConvertToRadians(angle)) * DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&Pos), DirectX::XMLoadFloat3(&Translation))) * *pCamera.View * *pCamera.Projection);
+	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationAxis({ ax,ay,az }, DirectX::XMConvertToRadians(angle)) * DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
 	pConstBuffer->Update(&Transformation, sizeof(Transformation));
 
 	angle += dAngle;

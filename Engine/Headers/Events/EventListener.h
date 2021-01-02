@@ -8,12 +8,14 @@
 #include "KeyboardEvents.h"
 #include <functional>
 
+class Drawable;
+
 class EventListener
 {
 	friend class Window;
 public:
-	virtual void ListenMouseEvents(UI_Element* pObject, MouseEvent* pEvent, Window* pWindow) = 0;
-	virtual void ListenKeyboardEvents(UI_Element* pObject, KeyEvent* pEvent, Window* pWindow) = 0;
+	virtual void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow) = 0;
+	virtual void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow) = 0;
 };
 
 
@@ -25,16 +27,19 @@ public:
 	std::function<void(UI_Element*, Window*)> OnMouseMove;
 	std::function<void(UI_Element*, Window*)> OnMouseEnter;
 	std::function<void(UI_Element*, Window*)> OnMouseLeave;
-	std::function<void(UI_Element*, Window*)> OnMouseClick;
-	std::function<void(UI_Element*, Window*)> OnMouseDoubleClick;
 	std::function<void(UI_Element*, Window*)> OnMouseScrollDown;
 	std::function<void(UI_Element*, Window*)> OnMouseScrollUp;
+	std::function<void(UI_Element*, Window*)> OnMouseDoubleClick;
+	std::function<void(UI_Element*, Window*)> OnMouseLbClick;
+	std::function<void(UI_Element*, Window*)> OnMouseLbUp;
 	std::function<void(UI_Element*, Window*)> OnMouseRbClick;
+	std::function<void(UI_Element*, Window*)> OnMouseRbUp;
 	std::function<void(UI_Element*, Window*)> OnMouseMbClick;
+	std::function<void(UI_Element*, Window*)> OnMouseMbUp;
 
 private:
-	virtual void ListenMouseEvents(UI_Element* pObject, MouseEvent* pEvent, Window* pWindow) override;
-	virtual void ListenKeyboardEvents(UI_Element* pObject, KeyEvent* pEvent, Window* pWindow) override;
+	virtual void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow) override;
+	virtual void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow) override;
 	
 };
 

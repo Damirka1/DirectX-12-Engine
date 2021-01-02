@@ -40,10 +40,52 @@ void Drawable::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::
 	pIndexBuffer = std::move(pIB);
 }
 
+void Drawable::SetVisibility(bool Visible)
+{
+	this->Visible = Visible;
+}
+
 DirectX::XMFLOAT3 Drawable::GetPos()
 {
 	return Pos;
 }
 
+void Drawable::SetPos(DirectX::XMFLOAT3 Pos)
+{
+	this->Pos = Pos;
+}
 
+void Drawable::Translate(DirectX::XMFLOAT3 T)
+{
+	Pos.x += T.x;
+	Pos.y += T.y;
+	Pos.z += T.z;
+}
+
+
+
+void Drawable::AddEventListener(EventListener* EvListener)
+{
+	EventListeners.push_back(EvListener);
+}
+
+const std::vector<EventListener*>* const Drawable::GetEventListeners()
+{
+	return &EventListeners;
+}
+
+void Drawable::operator+=(EventListener* EvListener)
+{
+	AddEventListener(EvListener);
+}
+
+void Drawable::operator=(EventListener* EvListener)
+{
+	EventListeners.clear();
+	EventListeners.push_back(EvListener);
+}
+
+void Drawable::Update()
+{
+}
 

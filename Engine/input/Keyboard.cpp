@@ -43,6 +43,7 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) 
 	case WM_CHAR:
 	{
 		Characters.push(static_cast<unsigned char>(wParam));
+		
 		PopQueueCh();
 		break;
 	}
@@ -50,6 +51,7 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) 
 	{
 		keys[wParam] = true;
 		Events.emplace(static_cast<unsigned char>(wParam), KeyEvent::Type::Pressed);
+		EventsForWindow.emplace(static_cast<unsigned char>(wParam), KeyEvent::Type::Pressed);
 		PopQueueEv();
 		return;
 	}
@@ -57,6 +59,7 @@ void Keyboard::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) 
 	{
 		keys[wParam] = false;
 		Events.emplace(static_cast<unsigned char>(wParam), KeyEvent::Type::Released);
+		EventsForWindow.emplace(static_cast<unsigned char>(wParam), KeyEvent::Type::Released);
 		PopQueueEv();
 		return;
 	}
@@ -79,5 +82,5 @@ void Keyboard::PopQueueCh() noexcept
 
 void Keyboard::ClearState() noexcept
 {
-	Events = std::queue<KeyEvent>();
+	EventsForWindow = Events = std::queue<KeyEvent>();
 }

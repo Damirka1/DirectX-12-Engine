@@ -10,6 +10,7 @@
 
 class Keyboard : public MessageHandler
 {
+	friend class Window;
 public:
 	Engine_API Keyboard(unsigned int QueueSize = 20) noexcept;
 	Engine_API bool KeyIsPressed(const char KeyCode) noexcept;
@@ -24,6 +25,7 @@ private:
 
 	std::bitset<256> keys;
 	std::queue<KeyEvent> Events;
+	std::queue<KeyEvent> EventsForWindow;
 	std::queue<char> Characters;
 	unsigned int QueueSize;
 };

@@ -71,6 +71,7 @@ private:
 	HANDLE pFenceEvent = nullptr;
 	ID3D12Fence* pFence = nullptr;
 	UINT64 FenceValues[FrameCount];
+	BYTE VSync = 1;
 
 
 	std::vector<ID3D12Resource*>* ListToRelease = nullptr;

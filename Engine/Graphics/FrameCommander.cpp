@@ -61,16 +61,28 @@ FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) no
 	:
 	FrameCommander(pWindow, pRM)
 {
+	pWindow->DisableVSync();
+	pWindow->SleepTime = 10;
 }
 
 void FrameCommanderHWND::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept
 {
+	Window* const pWindow = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	switch (msg)
 	{
+	case WM_SIZE:
+	{
+		if (wParam == SIZE_MINIMIZED)
+			pWindow->Visible = false;
+		else if (wParam == SIZE_RESTORED)
+			pWindow->Visible = true;
+		return;
+	}
 	case WM_PAINT:
-		Render();
-		break;
+		if(pWindow->Visible)
+			Render();
+		return;
 	default:
-		break;
+		return;
 	}
 }

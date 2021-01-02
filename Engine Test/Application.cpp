@@ -1,6 +1,43 @@
 #include "Application.h"
 #include <random>
 
+class Listener : public EventListener
+{
+	void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow)
+	{
+
+	}
+	void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow)
+	{
+		if (*pEvent == 'D')
+		{
+			pObject->Translate({ 0.2f, 0.0f, 0.0f });
+			pObject->Update();
+			pWindow->UpdateWindow();
+		}
+		else if (*pEvent == 'A')
+		{
+			pObject->Translate({ -0.2f, 0.0f, 0.0f });
+			pObject->Update();
+			pWindow->UpdateWindow();
+		}
+		else if (*pEvent == 'W')
+		{
+			pObject->Translate({ 0.0f, 0.2f, 0.0f });
+			pObject->Update();
+			pWindow->UpdateWindow();
+		}
+		else if (*pEvent == 'S')
+		{
+			pObject->Translate({ 0.0f, -0.2f, 0.0f });
+			pObject->Update();
+			pWindow->UpdateWindow();
+		}
+	}
+};
+
+static Listener* l = new Listener();
+
 Application::Application(HINSTANCE hInstance)
 	:
 	Con(L"DirectX 12 Console")
@@ -17,8 +54,9 @@ Application::Application(HINSTANCE hInstance)
 	k = pWindow->GetKeyboard();
 	m = pWindow->GetMouse();
 	c = new Cube(RM, { 0.0f, 5.0f, 20.0f });
+	c->AddEventListener(l);
 	
-	r = new Rect(RM, "Rect", { 300, 300 }, { 50, 100 });
+	r = new Rect(RM, "Rect", { 100, 100 }, { 100, 100 });
 	r->GetDefaultListener()->OnMouseEnter = [](UI_Element* This, Window* pWindow)
 	{
 		static_cast<Rect*>(This)->SetColor({ 1, 1, 1 });
@@ -29,9 +67,19 @@ Application::Application(HINSTANCE hInstance)
 		static_cast<Rect*>(This)->SetColor({ 1.0f, 0.5f, 0.5f });
 		pWindow->UpdateWindow();
 	};
-	r->GetDefaultListener()->OnMouseClick = [](UI_Element* This, Window* pWindow)
+	r->GetDefaultListener()->OnMouseMove = [](UI_Element* This, Window* pWindow)
 	{
-		MessageBoxW(nullptr, L"Hello world", L"Test", MB_OK);
+		auto* Mouse = pWindow->GetMouse();
+		if (Mouse->IsLbPressed())
+		{
+			auto ElPos = This->GetPos();
+			auto MPos = Mouse->GetPos();
+
+			This->SetPos({ (float)MPos.first, (float)MPos.second, 0.0f });
+			This->Update();
+			pWindow->UpdateWindow();
+
+		}
 	};
 
 	pWindow->AddElement(r);
@@ -54,12 +102,20 @@ void Application::Run()
 		float x = mPos.first, y = mPos.second;
 		pWindow->SetWindowName(std::string("x: " + std::to_string(x) + " y:" + std::to_string(y)).c_str());
 
-		c->Update();
+		while (auto el = pWindow->GetKeyboard()->GetEvent())
+		{
+			auto ev = el.value();
+			for (auto& l : *c->GetEventListeners())
+			{
+				l->ListenKeyboardEvents(c, &ev, pWindow);
+			}
+		}
+
+		//c->Update();
 		pWindow->ProcessMessages();
 		//FC->SetBackgroundColor(color[0], color[1], color[2]);
 		// Render.
 		//FC->Render();
-		Sleep(1);
 	}
 }
 
@@ -70,4 +126,5 @@ Application::~Application()
 	delete RM;
 	delete r;
 	delete c;
+	delete l;
 }

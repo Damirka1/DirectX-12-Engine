@@ -44,7 +44,7 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 
 	pBufferColor = pRM->CreateConstBuffer(this, &Color, sizeof(Color), 1, 0, 0);
 
-	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&DirectX::XMFLOAT3A(Pos.x, Pos.y, 0.0f))) * *pCamera.View * *pCamera.Projection);
+	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(Pos.x, Pos.y, 0.0f))) * *pCamera.View * *pCamera.Projection);
 	pBufferProjection = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 }
 
@@ -56,5 +56,11 @@ void Rect::SetColor(DirectX::XMFLOAT3 Color)
 {
 	this->Color = Color;
 	pBufferColor->Update(&this->Color, sizeof(this->Color));
+}
+
+void Rect::Update()
+{
+	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(Pos.x, Pos.y, 0.0f))) * *pCamera.View * *pCamera.Projection);
+	pBufferProjection->Update(&Transformation, sizeof(Transformation));
 }
 

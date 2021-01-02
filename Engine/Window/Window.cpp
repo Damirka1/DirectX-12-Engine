@@ -4,11 +4,13 @@
 #include "..\Headers\Input\Mouse.h"
 #include <exception>
 
-Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height)
+Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height, bool VSync)
 	:
 	hInst(hInst),
 	Width(Width),
 	Height(Height),
+	VSync(VSync),
+	Visible(false),
 	t(new Timer)
 {
 	WNDCLASSEX wc = { 0 };
@@ -72,6 +74,11 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	// Create Graphics.
 	pGraphics = new Graphics(pWindow, Width, Height);
 
+	if (VSync)
+		pGraphics->VSync = 1;
+	else
+		pGraphics->VSync = 0;
+
 	// Create input handlers.
 	pKeyboard = new Keyboard();
 	pMouse = new Mouse();
@@ -81,19 +88,20 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 
 	SetCursor(LoadCursorW(0, IDC_ARROW));
 
-
 	// Create thread for handle ui elements.
 	ThreadElements = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)this->HandleUIElements, this, NULL, nullptr);
 }
 
-Window::Window(const wchar_t* WindowName, short Width, short Height)
+Window::Window(const wchar_t* WindowName, short Width, short Height, bool VSync)
 	:
-	Window(GetModuleHandleW(nullptr), WindowName, Width, Height)
+	Window(GetModuleHandleW(nullptr), WindowName, Width, Height, VSync)
 {
 }
 
 Window::~Window()
 {
+	WaitForSingleObject(ThreadElements, INFINITE);
+	CloseHandle(ThreadElements);
 	delete t;
 	delete pGraphics;
 	delete pKeyboard;
@@ -108,11 +116,13 @@ void Window::SetWindowName(const char* Name) const noexcept
 void Window::Show() const noexcept
 {
 	ShowWindow(pWindow, SW_SHOWDEFAULT);
+	Visible = true;
 }
 
 void Window::Hide() const noexcept
 {
 	ShowWindow(pWindow, SW_HIDE);
+	Visible = false;
 }
 
 bool Window::IsExist() const noexcept
@@ -130,6 +140,7 @@ void Window::ProcessMessages() const
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
+	Sleep(SleepTime);
 }
 
 
@@ -141,6 +152,23 @@ HWND Window::GetHWND() noexcept
 void Window::UpdateWindow() noexcept
 {
 	SendMessageW(pWindow, WM_PAINT, 0, 0);
+}
+
+void Window::EnableVSync() noexcept
+{
+	VSync = true;
+	pGraphics->VSync = 1;
+}
+
+void Window::DisableVSync() noexcept
+{
+	VSync = false;
+	pGraphics->VSync = 0;
+}
+
+bool Window::IsEnableVSycn() const noexcept
+{
+	return VSync;
 }
 
 std::pair<short, short> Window::GetWindowResolution() const noexcept
@@ -321,20 +349,41 @@ void Window::HandleUIElements(Window* pWindow)
 {
 	while (pWindow->Exist)
 	{
-		auto& MouseEvents = pWindow->GetMouse()->EventsForWindow;
-
-		while (MouseEvents.size() > 0)
+		if (pWindow->Visible)
 		{
-			auto ev = MouseEvents.front();
-			MouseEvents.pop();
-
-			for (auto& ElementPair : pWindow->UI_elements)
+			// Process mouse events.
+			auto& MouseEvents = pWindow->pMouse->EventsForWindow;
+			while (MouseEvents.size() > 0)
 			{
-				UI_Element* Element = ElementPair.second;
+				auto ev = MouseEvents.front();
+				MouseEvents.pop();
 
-				for (auto& Listener : Element->EventListeners)
+				for (auto& ElementPair : pWindow->UI_elements)
 				{
-					Listener->ListenMouseEvents(Element, &ev, pWindow);
+					UI_Element* Element = ElementPair.second;
+
+					for (auto& Listener : Element->EventListeners)
+					{
+						Listener->ListenMouseEvents(Element, &ev, pWindow);
+					}
+				}
+			}
+
+			// Process keyboard events.
+			auto& KeyboardEvents = pWindow->pKeyboard->EventsForWindow;
+			while (KeyboardEvents.size() > 0)
+			{
+				auto ev = KeyboardEvents.front();
+				KeyboardEvents.pop();
+
+				for (auto& ElementPair : pWindow->UI_elements)
+				{
+					UI_Element* Element = ElementPair.second;
+
+					for (auto& Listener : Element->EventListeners)
+					{
+						Listener->ListenKeyboardEvents(Element, &ev, pWindow);
+					}
 				}
 			}
 		}

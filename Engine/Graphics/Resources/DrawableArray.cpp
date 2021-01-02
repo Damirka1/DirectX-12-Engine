@@ -19,8 +19,11 @@ void DrawableArray::DrawIndexed(Graphics* pGraphics)
 
 	for (Drawable* obj : pDrawables)
 	{
-		obj->Bind(pGraphics);
-		pCommandList->DrawIndexedInstanced(pIndexBuffer->IndeciesCount, 1, 0, 0, 0);
+		if (obj->Visible)
+		{
+			obj->Bind(pGraphics);
+			pCommandList->DrawIndexedInstanced(pIndexBuffer->IndeciesCount, 1, 0, 0, 0);
+		}
 	}
 }
 

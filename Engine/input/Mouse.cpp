@@ -62,6 +62,21 @@ bool Mouse::IsCursorEnabled() noexcept
 	return CursorEnabled;
 }
 
+bool Mouse::IsLbPressed() noexcept
+{
+	return Buttons[0];
+}
+
+bool Mouse::IsRbPressed() noexcept
+{
+	return Buttons[1];
+}
+
+bool Mouse::IsMbPressed() noexcept
+{
+	return Buttons[2];
+}
+
 
 void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept
 {
@@ -148,31 +163,37 @@ void Mouse::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noe
 			GetPos();
 			Events.emplace(MouseEvent::Type::L_Pressed, Pos);
 			EventsForWindow.emplace(MouseEvent::Type::L_Pressed, Pos);
+			Buttons[0] = true;
 			break;
 		case WM_LBUTTONUP:
 			GetPos();
 			Events.emplace(MouseEvent::Type::L_Released, Pos);
 			EventsForWindow.emplace(MouseEvent::Type::L_Released, Pos);
+			Buttons[0] = false;
 			break;
 		case WM_RBUTTONDOWN:
 			GetPos();
 			Events.emplace(MouseEvent::Type::R_Pressed, Pos);
 			EventsForWindow.emplace(MouseEvent::Type::R_Pressed, Pos);
+			Buttons[1] = true;
 			break;
 		case WM_RBUTTONUP:
 			GetPos();
 			Events.emplace(MouseEvent::Type::R_Released, Pos);
 			EventsForWindow.emplace(MouseEvent::Type::R_Released, Pos);
+			Buttons[1] = false;
 			break;
 		case WM_MBUTTONDOWN:
 			GetPos();
 			Events.emplace(MouseEvent::Type::WheelPressed, Pos);
 			EventsForWindow.emplace(MouseEvent::Type::WheelPressed, Pos);
+			Buttons[2] = true;
 			break;
 		case WM_MBUTTONUP:
 			GetPos();
 			Events.emplace(MouseEvent::Type::WheelReleased, Pos);
 			EventsForWindow.emplace(MouseEvent::Type::WheelReleased, Pos);
+			Buttons[2] = false;
 			break;
 		
 		case WM_MOUSEWHEEL:

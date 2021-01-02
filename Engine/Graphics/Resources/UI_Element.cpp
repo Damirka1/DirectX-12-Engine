@@ -21,21 +21,7 @@ void UI_Element::Init(ResourceManager* pRM, std::string ObjectName, DirectX::XMF
 	}
 }
 
-void UI_Element::AddEventListener(EventListener* EvListener)
-{
-	EventListeners.push_back(EvListener);
-}
 
-void UI_Element::operator+=(EventListener* EvListener)
-{
-	AddEventListener(EvListener);
-}
-
-void UI_Element::operator=(EventListener* EvListener)
-{
-	EventListeners.clear();
-	EventListeners.push_back(EvListener);
-}
 
 DefaultEventListener* UI_Element::GetDefaultListener()
 {
