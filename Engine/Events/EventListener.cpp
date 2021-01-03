@@ -87,3 +87,7 @@ void EventListener::ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Win
 void EventListener::ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow)
 {
 }
+
+void EventListener::Script(Drawable* pObject, Window* pWindow)
+{
+}

@@ -15,6 +15,9 @@ ScriptManager::~ScriptManager()
 {
 	WaitForSingleObject(ListenEvents, INFINITE);
 	CloseHandle(ListenEvents);
+
+	WaitForSingleObject(Scripts, INFINITE);
+	CloseHandle(Scripts);
 }
 
 void ScriptManager::AddDrawable(Drawable* pDrawable)
@@ -25,7 +28,7 @@ void ScriptManager::AddDrawable(Drawable* pDrawable)
 void ScriptManager::StartListen()
 {
 	ListenEvents = CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)ListenMouseAndKeyboardEvents, this, NULL, nullptr);
-
+	Scripts = CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)TreatScripts, this, NULL, nullptr);
 }
 
 void ScriptManager::ListenMouseAndKeyboardEvents(ScriptManager* This)
@@ -67,6 +70,22 @@ void ScriptManager::ListenMouseAndKeyboardEvents(ScriptManager* This)
 			}
 		}
 
+		// TO DO : dynamic calculation sleep time.
+		Sleep(10);
+	}
+}
+
+void ScriptManager::TreatScripts(ScriptManager* This)
+{
+	while (This->pWindow->Exist)
+	{
+		for (auto& Object : This->pDrawables)
+		{
+			for (auto& Listener : Object->EventListeners)
+			{
+				Listener->Script(Object, This->pWindow);
+			}
+		}
 		// TO DO : dynamic calculation sleep time.
 		Sleep(10);
 	}

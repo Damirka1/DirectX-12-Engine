@@ -17,6 +17,7 @@ class EventListener
 public:
 	Engine_API virtual void ListenMouseEvents(Drawable* pObject, MouseEvent* pEvent, Window* pWindow);
 	Engine_API virtual void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow);
+	Engine_API virtual void Script(Drawable* pObject, Window* pWindow);
 };
 
 

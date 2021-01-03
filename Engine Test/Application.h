@@ -27,10 +27,7 @@ private:
 	Window* pWindow;
 	ResourceManager* RM;
 	FrameCommanderHWND* FC;
-	Cube* c;
 	Rect* r;
-	Keyboard* k;
-	Mouse* m;
 	Camera* cam;
 };
 

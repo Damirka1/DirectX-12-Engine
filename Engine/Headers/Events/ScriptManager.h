@@ -18,7 +18,7 @@ public:
 
 private:
 	static void ListenMouseAndKeyboardEvents(ScriptManager* This);
-	//static void TreatScripts(ScriptManager* This);
+	static void TreatScripts(ScriptManager* This);
 
 private:
 	Window* pWindow;
@@ -26,7 +26,7 @@ private:
 
 	// Threads.
 	HANDLE ListenEvents;
-	HANDLE TreatScript;
+	HANDLE Scripts;
 };
 
 #endif

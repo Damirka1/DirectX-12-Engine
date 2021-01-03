@@ -3,36 +3,92 @@
 
 class Listener : public EventListener
 {
-	void ListenKeyboardEvents(Drawable* pObject, KeyEvent* pEvent, Window* pWindow) override
+	// Random numbers for cube's position.
+	std::random_device rd;  // Will be used to obtain a seed for the random number engine
+	std::minstd_rand gen;
+	std::uniform_real_distribution<float> dforx;
+	std::uniform_real_distribution<float> dfory;
+	std::uniform_real_distribution<float> Spawn;
+	float dx, dy;
+
+public:
+	Listener()
 	{
-		if (*pEvent == 'D')
+		gen = std::minstd_rand(rd());
+		dforx = std::uniform_real_distribution<float>(-0.05f, 0.05f);
+		dfory = std::uniform_real_distribution<float>(0.1f, 0.2f);
+		Spawn = std::uniform_real_distribution<float>(-2.0f, 2.0f);
+		dx = dforx(gen);
+		dy = dfory(gen);
+	}
+
+	void Script(Drawable* pObject, Window* pWindow) override
+	{
+		
+		if ((int)pObject->GetPos().y != 8)
 		{
-			pObject->Translate({ 0.2f, 0.0f, 0.0f });
+			pObject->Translate({ dx, dy, 0.0f });
 			pObject->Update();
-			pWindow->UpdateWindow();
+			//pWindow->UpdateWindow();
 		}
-		else if (*pEvent == 'A')
+		else
 		{
-			pObject->Translate({ -0.2f, 0.0f, 0.0f });
-			pObject->Update();
-			pWindow->UpdateWindow();
+			auto Pos = pObject->GetPos();
+			Pos.y = -4 + Spawn(gen);
+			Pos.x = 2 + Spawn(gen);
+			pObject->SetPos(Pos);
+			dx = dforx(gen);
+			dy = dfory(gen);
 		}
-		else if (*pEvent == 'W')
-		{
-			pObject->Translate({ 0.0f, 0.2f, 0.0f });
-			pObject->Update();
-			pWindow->UpdateWindow();
-		}
-		else if (*pEvent == 'S')
-		{
-			pObject->Translate({ 0.0f, -0.2f, 0.0f });
-			pObject->Update();
-			pWindow->UpdateWindow();
-		}
+
 	}
 };
 
-static Listener* l = new Listener();
+
+std::pair<float, float> Delta;
+bool CanMove = false;
+
+void Click(UI_Element* This, Window* pWindow)
+{
+	auto* Mouse = pWindow->GetMouse();
+	auto ElPos = This->GetPos();
+	auto MPos = Mouse->GetPos();
+
+	Delta.first = ElPos.x - MPos.first;
+	Delta.second = ElPos.y - MPos.second;
+	CanMove = true;
+}
+
+class MoveRect : public EventListener
+{
+	
+	void Script(Drawable* pObject, Window* pWindow) override
+	{
+		auto* Mouse = pWindow->GetMouse();
+		if (Mouse->IsLbPressed())
+		{
+			if (CanMove)
+			{
+				auto ElPos = pObject->GetPos();
+				auto MPos = Mouse->GetPos();
+
+				pObject->SetPos({ (float)MPos.first + Delta.first, (float)MPos.second + Delta.second, 0.0f });
+				pObject->Update();
+				//pWindow->UpdateWindow();
+			}
+		}
+		else
+			CanMove = false;
+	}
+
+};
+
+
+
+static const int Count = 30;
+static Listener* l[Count];
+static MoveRect* mr = new MoveRect();
+static Cube* c[Count];
 
 Application::Application(HINSTANCE hInstance)
 	:
@@ -46,36 +102,30 @@ Application::Application(HINSTANCE hInstance)
 	RM = new ResourceManager(pWindow);
 	FC = new FrameCommanderHWND(pWindow, RM);
 	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
-	pWindow->AddHandler(FC, "FC");
-	k = pWindow->GetKeyboard();
-	m = pWindow->GetMouse();
-	c = new Cube(RM, { 0.0f, 5.0f, 20.0f });
-	c->AddEventListener(l);
+	//pWindow->AddHandler(FC, "FC");
+
+	for (int i = 0; i < Count; i++)
+	{
+		c[i] = new Cube(RM, { 2.0f, -4.0f, 20.0f });
+		l[i] = new Listener();
+		c[i]->AddEventListener(l[i]);
+	}
 	
-	r = new Rect(RM, "Rect", { 100, 100 }, { 100, 100 });
+	r = new Rect(RM, "Rect", { 100, 100 }, { 50, 50 });
 	r->GetDefaultListener()->OnMouseEnter = [](UI_Element* This, Window* pWindow)
 	{
 		static_cast<Rect*>(This)->SetColor({ 1, 1, 1 });
-		pWindow->UpdateWindow();
+		//pWindow->UpdateWindow();
 	};
 	r->GetDefaultListener()->OnMouseLeave = [](UI_Element* This, Window* pWindow)
 	{
 		static_cast<Rect*>(This)->SetColor({ 1.0f, 0.5f, 0.5f });
-		pWindow->UpdateWindow();
+		//pWindow->UpdateWindow();
 	};
-	r->GetDefaultListener()->OnMouseMove = [](UI_Element* This, Window* pWindow)
-	{
-		auto* Mouse = pWindow->GetMouse();
-		if (Mouse->IsLbPressed())
-		{
-			auto ElPos = This->GetPos();
-			auto MPos = Mouse->GetPos();
+	r->GetDefaultListener()->OnMouseLbClick = Click;
+	r->AddEventListener(mr);
 
-			This->SetPos({ (float)MPos.first, (float)MPos.second, 0.0f });
-			This->Update();
-			pWindow->UpdateWindow();
-		}
-	};
+	
 
 	pWindow->AddElement(r);
 	
@@ -89,28 +139,14 @@ void Application::Run()
 {
 	while (pWindow->IsExist())
 	{
-		static float color[3] = { 0.4f, 0.4f, 0.4f };
-
-		auto tm = pWindow->TimerMark();
-
 		auto mPos = pWindow->GetMouse()->GetPos();
 		float x = mPos.first, y = mPos.second;
 		pWindow->SetWindowName(std::string("x: " + std::to_string(x) + " y:" + std::to_string(y)).c_str());
 
-		/*while (auto el = pWindow->GetKeyboard()->GetEvent())
-		{
-			auto ev = el.value();
-			for (auto& l : *c->GetEventListeners())
-			{
-				l->ListenKeyboardEvents(c, &ev, pWindow);
-			}
-		}*/
-
-		//c->Update();
 		pWindow->ProcessMessages();
-		//FC->SetBackgroundColor(color[0], color[1], color[2]);
+
 		// Render.
-		//FC->Render();
+		FC->Render();
 	}
 }
 
@@ -120,6 +156,11 @@ Application::~Application()
 	delete FC;
 	delete RM;
 	delete r;
-	delete c;
-	delete l;
+	delete cam;
+	delete mr;
+	for (int i = 0; i < Count; i++)
+	{
+		delete c[i];
+		delete l[i];
+	}
 }
