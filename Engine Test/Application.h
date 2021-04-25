@@ -10,6 +10,7 @@
 #include "..\Engine\Headers\Input\Keyboard.h"
 #include "..\Engine\Headers\Input\Mouse.h"
 #include "..\Engine\Headers\Input\Camera.h"
+#include "..\Engine\Headers\Model.h"
 
 #include "..\ConsoleDLL\Console.h"
 
@@ -26,12 +27,9 @@ private:
 
 	Window* pWindow;
 	ResourceManager* RM;
-	FrameCommander* FC;
-	std::vector<Cube*> Cubes;
-	Rect* r;
-	Keyboard* k;
-	Mouse* m;
+	FrameCommanderHWND* FC;
 	Camera* cam;
+	std::vector<Cube*> Cubes;
 };
 
 #endif

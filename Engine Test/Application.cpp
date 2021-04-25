@@ -8,16 +8,12 @@ Application::Application(HINSTANCE hInstance)
 	pWindow = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
 	Con << pWindow->GetGraphics()->GetInfo().c_str();
 	pWindow->Show();
-	// Camera needs to be initialized before resource manager initialization!
+	pWindow->GetMouse()->EnableRawInput();
 	cam = new Camera(pWindow->GetGraphicsResolution());
 	cam->SetSensitivity(0.005f);
-	RM = new ResourceManager(pWindow, cam);
-	FC = new FrameCommander(pWindow, RM);
-	FC->SetBackgroundColor(0.5f, 0.5f, 0.5f);
-	k = pWindow->GetKeyboard();
-	m = pWindow->GetMouse();
-	
-	r = new Rect(RM, "Rect", { 635.0f, 355.0f }, { 5, 5 });
+	RM = new ResourceManager(pWindow);
+	FC = new FrameCommanderHWND(pWindow, RM);
+	FC->SetBackgroundColor(0.2f, 0.2f, 0.2f);
 
 	// Random numbers for cube's position.
 	std::random_device rd;  // Will be used to obtain a seed for the random number engine
@@ -30,72 +26,68 @@ Application::Application(HINSTANCE hInstance)
 		Cubes.push_back(new Cube(RM, DirectX::XMFLOAT3{ disPosXY(gen), disPosXY(gen), disPosZ(gen) }));
 	}
 
+	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
+
 	RM->InitializeResources(pWindow);
+
+	RM->SetCamera(cam);
+	
 }
 
 void Application::Run()
 {
 	while (pWindow->IsExist())
 	{
-		static float color[3] = { 0.4f, 0.4f, 0.4f };
 
-		auto tm = pWindow->TimerMark();
+		pWindow->ProcessMessages();
+
+		auto kb = pWindow->GetKeyboard();
+
+		while (auto El = kb->GetEvent())
 		{
-			DirectX::XMFLOAT3 Translation = { 0.0f, 0.0f, 0.0f };
+			if (El == std::nullopt)
+				continue;
 
-			if (k->KeyIsPressed(VK_SHIFT))
-				cam->SetSpeed(4.0f);
-			else
-				cam->SetSpeed(1.0f);
+			auto Ev = El.value();
 
-			if (k->KeyIsPressed('W'))
-				Translation.z += 10.0f * tm;
-			if (k->KeyIsPressed('S'))
-				Translation.z -= 10.0f * tm;
-			if (k->KeyIsPressed('A'))
-				Translation.x -= 10.0f * tm;
-			if (k->KeyIsPressed('D'))
-				Translation.x += 10.0f * tm;
-			if (k->KeyIsPressed(VK_SPACE))
-				Translation.y += 10.0f * tm;
-			if (k->KeyIsPressed(VK_CONTROL))
-				Translation.y -= 10.0f * tm;
-
-			while (auto el = k->GetEvent())
-			{
-				auto& ev = el.value();
-
-				if (ev == VK_ESCAPE)
-				{
-					if (!m->IsCursorEnabled())
-					{
-						pWindow->EnableCursor();
-						m->DisableRawInput();
-					}
-					else
-					{
-						pWindow->DisableCursor();
-						m->EnableRawInput();
-					}
-				}
-			}
-			
-			if (!m->IsCursorEnabled())
-			{
-				while(const auto ev = m->GetRawData())
-						cam->Rotate((float)ev->dx, (float)ev->dy);
-			}
-
-			cam->Translate(Translation);
+			if (Ev == '1')
+				pWindow->DisableCursor();
+			else if (Ev == '2')
+				pWindow->EnableCursor();
 		}
-		
+
+		float speed = 1.0f;
+
+		if (kb->KeyIsPressed(VK_SHIFT))
+			speed = 10.0f;
+
+		if (kb->KeyIsPressed('W'))
+			cam->Translate({ 0.0f, 0.0f, 0.1f * speed });
+		if (kb->KeyIsPressed('S'))
+			cam->Translate({ 0.0f, 0.0f, -0.1f * speed });
+		if (kb->KeyIsPressed('D'))
+			cam->Translate({ 0.1f * speed, 0.0f, 0.0f });
+		if (kb->KeyIsPressed('A'))
+			cam->Translate({ -0.1f * speed , 0.0f, 0.0f });
+
+
+		auto ms = pWindow->GetMouse();
+		if (!ms->IsCursorEnabled())
+		{
+			while (auto El = ms->GetRawData())
+			{
+				if (El == std::nullopt)
+					continue;
+				auto delta = El.value();
+				cam->Rotate(delta.dx, delta.dy);
+			}
+		}
+
 		for (Cube* obj : Cubes)
 		{
 			obj->Update();
 		}
 
-		pWindow->ProcessMessages();
-		FC->SetBackgroundColor(color[0], color[1], color[2]);
 		// Render.
 		FC->Render();
 	}
@@ -106,7 +98,7 @@ Application::~Application()
 	delete pWindow;
 	delete FC;
 	delete RM;
-	delete r;
+	delete cam;
 
 	for (Cube* obj : Cubes)
 	{

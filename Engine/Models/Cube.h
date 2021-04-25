@@ -3,27 +3,19 @@
 #include "..\Headers\Graphics\Resources\Drawable.h"
 
 
-#include <DirectXMath.h>
-class ResourceManager;
-class Texture2D;
-class Sampler;
-
 class Cube : public Drawable
 {
 public:
 	Engine_API Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept;
-	Engine_API void Update(DirectX::XMFLOAT3 Translation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+	Engine_API void Update() override;
 	Engine_API ~Cube();
 
 private:
 	
-	struct FaceColors
-	{
-		float r, g, b, a;
-	} FaceColor[6];
 	float angle;
 	float dAngle;
 	float ax, ay, az;
+	DirectX::XMFLOAT4 Color;
 
 
 	std::shared_ptr<ConstantBuffer> pConstBuffer;

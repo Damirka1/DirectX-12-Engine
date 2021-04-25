@@ -6,26 +6,48 @@
 #include "Bindable.h"
 #include "..\..\ResourceManager.h"
 #include "BindablesHeader.h"
+#include "..\..\Events\EventListener.h"
 
+class ResourceManager;
+class FrameCommander;
+class DrawableArray;
+class UI_Element;
+class ScriptManager;
 
 class Drawable
 {
-	friend class ResourceManager;
-	friend class FrameCommander;
-	friend class DrawableArray;
+	friend ResourceManager;
+	friend FrameCommander;
+	friend DrawableArray;
+	friend UI_Element;
+	friend ScriptManager;
+
 protected:
-	Drawable() noexcept = default;
-	Drawable(ResourceManager* pRM) noexcept;
-	void Init(ResourceManager* pRM) noexcept;
+	Engine_API Drawable() noexcept;
+	Engine_API Drawable(ResourceManager* pRM) noexcept;
+	Engine_API void Init(ResourceManager* pRM) noexcept;
+	Engine_API void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
+	Engine_API void Bind(Graphics* pGraphics);
+	Engine_API void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
 
-	void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
+public:
+	Engine_API DirectX::XMFLOAT3 GetPos();
+	Engine_API void SetPos(DirectX::XMFLOAT3 Pos);
+	Engine_API void Translate(DirectX::XMFLOAT3 T);
+	Engine_API void SetVisibility(bool Visible);
 
-	void Bind(Graphics* pGraphics);
+	Engine_API void AddEventListener(EventListener* EvListener);
+	Engine_API void RemoveEventListener(EventListener* EvListener);
+	Engine_API const std::unordered_map<LONG_PTR, EventListener*>* const GetEventListeners();
 
-	void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
+	Engine_API void operator+=(EventListener* EvListener);
+	Engine_API void operator-=(EventListener* EvListener);
+	Engine_API void operator=(EventListener* EvListener);
+	Engine_API virtual void Update();
 
 protected:
 	bool UI_element = false;
+	bool Visible = true;
 
 	DirectX::XMMATRIX Transformation;
 	DirectX::XMFLOAT3 Pos;
@@ -48,6 +70,8 @@ private:
 	char DescHeapIndex = -1;
 	
 	std::string PSO_Key, RS_Key;
+
+	std::unordered_map<LONG_PTR, EventListener*> EventListeners;
 };
 
 #endif

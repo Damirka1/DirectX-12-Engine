@@ -1,15 +1,11 @@
 #include "..\Headers\FrameCommander.h"
 #include "..\Headers\Window.h"
 
-FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM, bool SetToWindow) noexcept
+FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept
 	:
 	pGraphics(pWindow->GetGraphics()),
 	pRM(pRM)
 {
-	if (SetToWindow)
-	{
-		// TO DO: set to window.
-	}
 }
 
 void FrameCommander::SetBackgroundColor(float r, float g, float b) noexcept
@@ -59,4 +55,27 @@ void FrameCommander::Render()
 	Render(pRM->UI_Resources);
 
 	pGraphics->Execute();
+}
+
+FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) noexcept
+	:
+	FrameCommander(pWindow, pRM)
+{
+	pWindow->DisableVSync();
+	pWindow->SleepTime = 1;
+}
+
+void FrameCommanderHWND::HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept
+{
+	Window* const pWindow = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+	switch (msg)
+	{
+	case WM_PAINT:
+		Render();
+		pWindow->UpdateInThisFrame = false;
+		return;
+	default:
+		return;
+	}
 }

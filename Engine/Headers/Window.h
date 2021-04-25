@@ -5,6 +5,7 @@
 #include "MessageHandler.h"
 #include <unordered_map>
 #include <unordered_set>
+#include <queue>
 
 #include "Header.h"
 #include "Timer.h"
@@ -13,13 +14,17 @@ class Graphics;
 class UI_Element;
 class Keyboard;
 class Mouse;
+class FrameCommanderHWND;
+class ScriptManager;
 
 class Window
 {
+	friend FrameCommanderHWND;
+	friend ScriptManager;
 public:
 	Window() = delete;
-	Engine_API Window(HINSTANCE hInst, const wchar_t* WindowName, short Width = 800, short Height = 600);
-	Engine_API Window(const wchar_t* WindowName, short Width = 800, short Height = 600);
+	Engine_API Window(HINSTANCE hInst, const wchar_t* WindowName, short Width = 800, short Height = 600, bool VSync = true);
+	Engine_API Window(const wchar_t* WindowName, short Width = 800, short Height = 600, bool VSync = true);
 	Engine_API ~Window();
 	Engine_API void	SetWindowName(const char* Name)	const noexcept;
 	Engine_API void	Show() const noexcept;
@@ -27,6 +32,11 @@ public:
 	Engine_API bool	IsExist() const noexcept;
 	Engine_API void	ProcessMessages() const;
 	Engine_API HWND	GetHWND() noexcept;
+	Engine_API void UpdateWindow() noexcept;
+
+	Engine_API void EnableVSync() noexcept;
+	Engine_API void DisableVSync() noexcept;
+	Engine_API bool IsEnableVSycn() const noexcept;
 
 	Engine_API std::pair<short, short> GetWindowResolution() const noexcept;
 	Engine_API std::pair<short, short> GetGraphicsResolution() const noexcept;
@@ -73,9 +83,14 @@ private:
 	HWND pWindow = nullptr;
 	HINSTANCE hInst = nullptr;
 	Graphics* pGraphics;
+	bool VSync;
+	BYTE SleepTime = 0;
+	mutable bool Visible;
 	
 	mutable std::unordered_map<std::string, MessageHandler*> MessageHandlers;
 	mutable std::unordered_map<std::string, UI_Element*> UI_elements;
+
+	mutable bool UpdateInThisFrame = false;
 
 	// Input
 	Keyboard* pKeyboard;

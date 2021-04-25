@@ -3,34 +3,15 @@
 #define KEYBOARD_HEADER
 #include "..\MessageHandler.h"
 #include "..\Header.h"
+#include "..\Events\KeyboardEvents.h"
 #include <bitset>
 #include <queue>
 #include <optional>
 
 class Keyboard : public MessageHandler
 {
-	class KeyEvent
-	{
-		friend Keyboard;
-		enum class Type
-		{
-			Pressed,
-			Released,
-			Undefined
-		};
-
-	public:
-		KeyEvent() noexcept;
-		KeyEvent(unsigned char Code, Type type) noexcept;
-		
-		Engine_API bool operator==(const char Key)  noexcept;
-
-	private:
-		unsigned char Code;
-		Type t;
-	};
-
-
+	friend class ScriptManager;
+	friend class Window;
 public:
 	Engine_API Keyboard(unsigned int QueueSize = 20) noexcept;
 	Engine_API bool KeyIsPressed(const char KeyCode) noexcept;
@@ -45,6 +26,7 @@ private:
 
 	std::bitset<256> keys;
 	std::queue<KeyEvent> Events;
+	std::queue<KeyEvent> EventsForWindow;
 	std::queue<char> Characters;
 	unsigned int QueueSize;
 };

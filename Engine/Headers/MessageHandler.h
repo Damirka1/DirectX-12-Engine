@@ -5,7 +5,8 @@
 
 class MessageHandler
 {
-public:
+	friend class Window;
+protected:
 	MessageHandler() = default;
 	MessageHandler(MessageHandler&) = delete;
 	virtual void CALLBACK HandleMsg(HWND& hWnd, UINT& msg, WPARAM& wParam, LPARAM& lParam) noexcept = 0;

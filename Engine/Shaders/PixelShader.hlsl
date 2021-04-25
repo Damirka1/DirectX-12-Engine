@@ -1,10 +1,9 @@
-cbuffer FaceColors
+cbuffer C
 {
-    float4 face_colors[6];
-};
+    float3 color;
+}
 
-
-float4 main(uint tid : SV_PrimitiveID) : SV_TARGET
+float4 main() : SV_TARGET
 {
-    return face_colors[tid / 2];
+    return float4(color.xyz, 1.0f);
 }

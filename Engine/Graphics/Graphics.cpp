@@ -327,7 +327,7 @@ void Graphics::Execute()
 
     // Present the frame.
     Error_Check(
-        pSwapChain->Present(1, 0)
+        pSwapChain->Present(VSync, 0)
     );
 
     MoveToNextFrame();

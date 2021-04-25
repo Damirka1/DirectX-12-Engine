@@ -4,11 +4,13 @@
 #include "..\Headers\Input\Mouse.h"
 #include <exception>
 
-Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height)
+Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height, bool VSync)
 	:
 	hInst(hInst),
 	Width(Width),
 	Height(Height),
+	VSync(VSync),
+	Visible(false),
 	t(new Timer)
 {
 	WNDCLASSEX wc = { 0 };
@@ -72,6 +74,11 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	// Create Graphics.
 	pGraphics = new Graphics(pWindow, Width, Height);
 
+	if (VSync)
+		pGraphics->VSync = 1;
+	else
+		pGraphics->VSync = 0;
+
 	// Create input handlers.
 	pKeyboard = new Keyboard();
 	pMouse = new Mouse();
@@ -82,9 +89,9 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	SetCursor(LoadCursorW(0, IDC_ARROW));
 }
 
-Window::Window(const wchar_t* WindowName, short Width, short Height)
+Window::Window(const wchar_t* WindowName, short Width, short Height, bool VSync)
 	:
-	Window(GetModuleHandleW(nullptr), WindowName, Width, Height)
+	Window(GetModuleHandleW(nullptr), WindowName, Width, Height, VSync)
 {
 }
 
@@ -104,11 +111,13 @@ void Window::SetWindowName(const char* Name) const noexcept
 void Window::Show() const noexcept
 {
 	ShowWindow(pWindow, SW_SHOWDEFAULT);
+	Visible = true;
 }
 
 void Window::Hide() const noexcept
 {
 	ShowWindow(pWindow, SW_HIDE);
+	Visible = false;
 }
 
 bool Window::IsExist() const noexcept
@@ -126,12 +135,39 @@ void Window::ProcessMessages() const
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
+	Sleep(SleepTime);
 }
 
 
 HWND Window::GetHWND() noexcept
 {
 	return pWindow;
+}
+
+void Window::UpdateWindow() noexcept
+{
+	if (!UpdateInThisFrame)
+	{
+		UpdateInThisFrame = true;
+		PostMessageW(pWindow, WM_PAINT, 0, 0);
+	}
+}
+
+void Window::EnableVSync() noexcept
+{
+	VSync = true;
+	pGraphics->VSync = 1;
+}
+
+void Window::DisableVSync() noexcept
+{
+	VSync = false;
+	pGraphics->VSync = 0;
+}
+
+bool Window::IsEnableVSycn() const noexcept
+{
+	return VSync;
 }
 
 std::pair<short, short> Window::GetWindowResolution() const noexcept

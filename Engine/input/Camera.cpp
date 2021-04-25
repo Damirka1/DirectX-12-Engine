@@ -7,11 +7,11 @@
 
 Camera::Camera(std::pair<short, short> res, float FovInDegrees, float Near, float Far)
 	:
-	Camera(res, 0.01f, {0.0f, 0.0f,0.0f}, 0, 0, FovInDegrees, Near, Far)
+	Camera(res, ProjectionType::Perspective, 0.01f, {0.0f, 0.0f,0.0f}, 0, 0, FovInDegrees, Near, Far)
 {
 }
 
-Camera::Camera(std::pair<short, short> res, float Sensitivity, DirectX::XMFLOAT3 Pos, float Pitch, float Yaw, float FovInDegrees, float Near, float Far)
+Camera::Camera(std::pair<short, short> res, ProjectionType Type, float Sensitivity, DirectX::XMFLOAT3 Pos, float Pitch, float Yaw, float FovInDegrees, float Near, float Far)
 	:
 	Pos(Pos),
 	Sensitivity(Sensitivity),
@@ -20,10 +20,14 @@ Camera::Camera(std::pair<short, short> res, float Sensitivity, DirectX::XMFLOAT3
 	Speed(1.0f),
 	Near(Near),
 	Far(Far),
-	Fov(FovInDegrees)
+	Fov(FovInDegrees),
+	Type(Type)
 {
-	Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(FovInDegrees), (float)res.first / (float)res.second, Near, Far);
-	
+	if (Type == ProjectionType::Perspective)
+		Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(FovInDegrees), (float)res.first / (float)res.second, Near, Far);
+	else if (Type == ProjectionType::Orthographic)
+		Projection = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, (float)res.first, 0.0f, (float)res.second, 0.0f, 1.0f);
+
 	UpdateView();
 }
 
@@ -91,11 +95,11 @@ void Camera::SetSensitivity(float Value) noexcept
 void Camera::UpdateView()
 {
 	const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	// apply the camera rotations to a base vector
+	// Apply the camera rotations to a base vector
 	const auto lookVector = DirectX::XMVector3Transform(forwardBaseVector,
 		DirectX::XMMatrixRotationRollPitchYaw(Pitch, Yaw, 0.0f)
 	);
-	// generate camera transform (applied to all objects to arrange them relative
+	// Generate camera transform (applied to all objects to arrange them relative
 	// to camera position/orientation in world) from cam position and direction
 	// camera "top" always faces towards +Y (cannot do a barrel roll)
 	const auto camPosition = DirectX::XMLoadFloat3(&Pos);
