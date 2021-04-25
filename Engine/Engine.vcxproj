@@ -140,6 +140,7 @@
     </FxCompile>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)DirectXTex.dll" "$(TargetDir)"
+copy "$(ProjectDir)assimp-vc140-mt.dll" "$(TargetDir)"
 if not exist "$(SolutionDir)Engine Test\Shaders" mkdir "$(SolutionDir)Engine Test\Shaders"
 copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Command>
     </PostBuildEvent>
@@ -185,6 +186,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)DirectXTex.dll" "$(TargetDir)"
+copy "$(ProjectDir)assimp-vc140-mt.dll" "$(TargetDir)"
 if not exist "$(SolutionDir)Engine Test\Shaders" mkdir "$(SolutionDir)Engine Test\Shaders"
 copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Command>
       <Message>Copy DirectXTex to output directory and copy compiled shader to engine test project</Message>
