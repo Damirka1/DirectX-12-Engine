@@ -217,6 +217,7 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="DirectXTex.lib" />
+    <Library Include="Assimp\bin\x64\assimp-vc140-mt.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DirectXTex.dll" />
