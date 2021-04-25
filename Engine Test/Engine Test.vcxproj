@@ -171,9 +171,6 @@ copy "$(ProjectDir)Shaders\" "$(TargetDir)Shaders\"</Command>
   <ItemGroup>
     <ClInclude Include="Application.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="DirectXTex.dll" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

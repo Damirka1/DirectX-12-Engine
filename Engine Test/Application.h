@@ -10,6 +10,7 @@
 #include "..\Engine\Headers\Input\Keyboard.h"
 #include "..\Engine\Headers\Input\Mouse.h"
 #include "..\Engine\Headers\Input\Camera.h"
+#include "..\Engine\Headers\Model.h"
 
 #include "..\ConsoleDLL\Console.h"
 
