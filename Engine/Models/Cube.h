@@ -6,9 +6,9 @@
 class Cube : public Drawable
 {
 public:
-	Engine_API Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept;
-	Engine_API void Update() override;
-	Engine_API ~Cube();
+	Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept;
+	void Update();
+	~Cube();
 
 private:
 	

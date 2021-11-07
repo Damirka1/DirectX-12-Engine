@@ -34,8 +34,8 @@ public:
 	ResourceManager() = delete;
 	ResourceManager(ResourceManager&) = delete;
 
-	Engine_API std::shared_ptr<VertexBuffer> CreateVertexBuffer(Drawable* pDrawable, const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, bool unique = false, unsigned int Slot = 0) noexcept;
-	Engine_API std::shared_ptr<IndexBuffer> CreateIndexBuffer(Drawable* pDrawable, const std::vector<unsigned int>& Indecies) noexcept;
+	Engine_API std::shared_ptr<VertexBuffer> CreateVertexBuffer(Drawable* pDrawable, const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, bool unique = false, unsigned int Slot = 0) noexcept;
+	Engine_API std::shared_ptr<IndexBuffer> CreateIndexBuffer(Drawable* pDrawable, std::vector<unsigned int>* Indecies) noexcept;
 	Engine_API std::string CreateRootSignature(Drawable* pDrawable, std::string& PSO_Key, RS_Layout& Lay) noexcept;
 	Engine_API std::string CreatePSO(PSO_Layout& pLay, VertexLayout& vLay, bool ForUI = false) noexcept;
 	Engine_API std::shared_ptr<ConstantBuffer> CreateConstBuffer(Drawable* pDrawable, const void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex) noexcept;
@@ -60,8 +60,9 @@ private:
 	GlobalHeap Heap;
 
 	std::unordered_map<std::string, std::shared_ptr<Bindable>> Bindables;
-	std::unordered_map<std::string, PipeLineResources> Resources;
-	std::unordered_map<std::string, PipeLineResources> UI_Resources;
+	std::unordered_map<std::string, std::shared_ptr<Resource>> Resources;
+	std::unordered_map<std::string, PipeLineResources> PSO_Drawables;
+	std::unordered_map<std::string, PipeLineResources> UI_PSO_Drawables;
 	
 	ScriptManager* pScriptManager;
 

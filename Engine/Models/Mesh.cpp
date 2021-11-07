@@ -4,7 +4,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-Mesh::Mesh(ResourceManager* pRM, const aiMesh& m, const aiMaterial& material, std::filesystem::path path, float scale)
+Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesystem::path path, float scale)
 	:
 	Drawable(pRM)
 {
@@ -16,67 +16,81 @@ Mesh::Mesh(ResourceManager* pRM, const aiMesh& m, const aiMaterial& material, st
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
 	Lay.AddElement("NormCoord", DXGI_FORMAT_R32G32B32_FLOAT);
 
-
 	std::string ShaderCode;
 	std::string RootPath = path.parent_path().string() + "\\";
+
+	bool diffuse = false;
 
 	// diffuse
 	{
 		aiString TexFileName;
 		bool hasAlpha = false;
-		if (material.GetTexture(aiTextureType_DIFFUSE, 0, &TexFileName) == aiReturn_SUCCESS)
+		if (material->GetTexture(aiTextureType_DIFFUSE, 0, &TexFileName) == aiReturn_SUCCESS)
 		{
 			ShaderCode += "Dif";
+			diffuse = true;
 			Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
 			RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 				.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
 			RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 				.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1);
 
-			pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0);
-			pRM->CreateDefaultSampler(this, 2, 0, 0);
+			AddResource(pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0));
+			AddResource(pRM->CreateDefaultSampler(this, 2, 0, 0));
 		}
 		else
 		{
-			material.Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(color));
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(color));
 			RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 				.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
-			pRM->CreateConstBuffer(this, &color, sizeof(color), 1, 0, 0);
+			AddResource(pRM->CreateConstBuffer(this, &color, sizeof(color), 1, 0, 0));
 		}
 	}
 
-	std::vector<float> Buffer;
-	std::vector<unsigned int> Indecies;
+	std::vector<FLOAT> Buffer;
+	std::vector<UINT> Indecies;
 
-	int i = 0, j = 0, k = 0;
-	while (true)
+	for (size_t i = 0, j = 0, k = 0; i < m->mNumVertices; i++, j++, k++)
 	{
-		Buffer.push_back(m.mVertices[i].x * scale);
-		Buffer.push_back(m.mVertices[i].y * scale);
-		Buffer.push_back(m.mVertices[i++].z * scale);
+		aiVector3D v = m->mVertices[i];
 
-		Buffer.push_back(m.mNormals[k].x);
-		Buffer.push_back(m.mNormals[k].y);
-		Buffer.push_back(m.mNormals[k++].z);
+		Buffer.push_back(v.x * scale);
+		Buffer.push_back(v.y * scale);
+		Buffer.push_back(v.z * scale);
 
-		Buffer.push_back(m.mTextureCoords[0][j].x);
-		Buffer.push_back(m.mTextureCoords[0][j++].y);
+		aiVector3D vn = m->mNormals[k];
+		Buffer.push_back(vn.x);
+		Buffer.push_back(vn.y);
+		Buffer.push_back(vn.z);
 
-		if (i == m.mNumVertices)
-			break;
-	}
-
-
-	for (int end = m.mNumFaces, i = 0; i < end; i++)
-	{
-		for (int end2 = m.mFaces[i].mNumIndices, j = 0; j < end2; j++)
+		if (diffuse)
 		{
-			Indecies.push_back(m.mFaces[i].mIndices[j]);
+			if (m->HasTextureCoords(0))
+			{
+				aiVector3D vt = m->mTextureCoords[0][j];
+				Buffer.push_back(vt.x);
+				Buffer.push_back(vt.y);
+			}
 		}
 	}
 
-	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, Buffer.data(), sizeof(float) * (3 + 2 + 3), sizeof(float) * (UINT)Buffer.size(), Lay),
-		pRM->CreateIndexBuffer(this, Indecies));
+	for (size_t i = 0; i < m->mNumFaces; i++)
+	{
+		aiFace face = m->mFaces[i];
+		if (face.mNumIndices == 3)
+		{
+			Indecies.push_back(face.mIndices[0]);
+			Indecies.push_back(face.mIndices[1]);
+			Indecies.push_back(face.mIndices[2]);
+		}
+		else
+			throw std::exception("Not triangulated mesh");
+	}
+	
+	int count = diffuse ? 3 + 3 + 2 : 3 + 3;
+
+	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, (unsigned int)m->mNumVertices),
+		pRM->CreateIndexBuffer(this, &Indecies));
 
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
@@ -86,7 +100,6 @@ Mesh::Mesh(ResourceManager* pRM, const aiMesh& m, const aiMaterial& material, st
 
 	std::string RS_key = pRM->CreateRootSignature(this, PSO_key, RsLay);
 
-	Drawable::Pos = { 0.0f, 0.0f, 10.0f };
 	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
 	pConstBuffer = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 

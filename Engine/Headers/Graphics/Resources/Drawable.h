@@ -27,6 +27,7 @@ protected:
 	Engine_API Drawable(ResourceManager* pRM) noexcept;
 	Engine_API void Init(ResourceManager* pRM) noexcept;
 	Engine_API void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
+	Engine_API void AddResource(std::shared_ptr<Resource> Resource) noexcept;
 	Engine_API void Bind(Graphics* pGraphics);
 	Engine_API void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
 
@@ -43,7 +44,7 @@ public:
 	Engine_API void operator+=(EventListener* EvListener);
 	Engine_API void operator-=(EventListener* EvListener);
 	Engine_API void operator=(EventListener* EvListener);
-	Engine_API virtual void Update();
+	//Engine_API virtual void Update();
 
 protected:
 	bool UI_element = false;
@@ -60,11 +61,12 @@ protected:
 
 private:
 	std::vector<std::shared_ptr<Bindable>> Bindables;
+	std::vector<std::shared_ptr<Resource>> Resources;
 
 	std::shared_ptr<VertexBuffer> pVertexBuffer;
 	std::shared_ptr<IndexBuffer> pIndexBuffer;
 
-	std::vector<std::shared_ptr<Bindable>> InitializeHeap_list;
+	std::vector<std::shared_ptr<Resource>> InitializeHeap_list;
 	std::vector<std::shared_ptr<Bindable>> InitializeCommon_list;
 	// Index of Descriptor heap.
 	char DescHeapIndex = -1;

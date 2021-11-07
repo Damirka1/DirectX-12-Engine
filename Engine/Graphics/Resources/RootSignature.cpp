@@ -21,9 +21,7 @@ void RootSignature::Initialize(Graphics* pGraphics)
     featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
 
     if (FAILED(pDevice->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
-    {
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
-    }
 
     // Create root parameters.
     UINT Count = static_cast<UINT>(Lay.Params.size());
@@ -31,7 +29,6 @@ void RootSignature::Initialize(Graphics* pGraphics)
 
     // Create ranges.
     std::vector<std::vector<CD3DX12_DESCRIPTOR_RANGE1>> pRanges;
-
 
     // First cycle for Parameters.
     for (UINT i = 0; i < Count; i++)

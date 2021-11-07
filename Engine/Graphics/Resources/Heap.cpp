@@ -69,7 +69,6 @@ void HeapDescriptorArray::InitializePointers(Graphics* pGraphics, CD3DX12_CPU_DE
         }
         pGPUCurr->Offset(Offset);
     }
-
 }
 
 void HeapDescriptorArray::Bind(Graphics* pGraphics)
@@ -77,7 +76,6 @@ void HeapDescriptorArray::Bind(Graphics* pGraphics)
     auto pCommandList = pGraphics->GetCommandList();
     for (size_t i = 0; i < Parameters.size(); i++)
         Parameters[i]->Bind(pCommandList);
-
 }
 
 CD3DX12_CPU_DESCRIPTOR_HANDLE HeapDescriptorArray::GetCPUHandle(UINT RootParam, UINT Range, UINT RangeIndex) noexcept
@@ -90,7 +88,6 @@ HeapDescriptorArray::~HeapDescriptorArray()
     for (auto& e : Parameters)
         delete e;
     Parameters.clear();
-
 }
 
 

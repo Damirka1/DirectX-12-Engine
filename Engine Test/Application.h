@@ -27,9 +27,9 @@ private:
 
 	Window* pWindow;
 	ResourceManager* RM;
-	FrameCommanderHWND* FC;
+	FrameCommander* FC;
 	Camera* cam;
-	std::vector<Cube*> Cubes;
+	std::vector<Model*> models;
 };
 
 #endif

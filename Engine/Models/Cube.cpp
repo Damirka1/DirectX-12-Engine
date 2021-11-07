@@ -48,8 +48,8 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept
 				6,5,0
 	};
 
-	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay),
-							 pRM->CreateIndexBuffer(this, indecies));
+	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay, 24),
+							 pRM->CreateIndexBuffer(this, &indecies));
 
 
 	PSO_Layout pLay(1);

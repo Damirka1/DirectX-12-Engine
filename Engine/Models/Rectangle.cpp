@@ -24,8 +24,8 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 				0,1,2, 2,3,0
 	};
 
-	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay),
-		pRM->CreateIndexBuffer(this, indecies));
+	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay, 8),
+		pRM->CreateIndexBuffer(this, &indecies));
 
 
 	PSO_Layout pLay(1);

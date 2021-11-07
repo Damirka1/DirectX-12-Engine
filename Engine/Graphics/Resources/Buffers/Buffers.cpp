@@ -46,7 +46,6 @@ void Buffer::Initialize(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_R
 	pCommandList->CopyBufferRegion(pBuffer, 0, pCopyBuffer, 0, DataSize);
 	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_COPY_DEST, state));
 
-
 	pGraphics->AddToRelease(pCopyBuffer);
 }
 
@@ -56,18 +55,21 @@ Buffer::~Buffer()
 	pBuffer = nullptr;
 }
 
-VertexBuffer::VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT Slot)
+VertexBuffer::VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT VertexCount, UINT Slot)
 	:
 	Slot(Slot),
 	DataSize(DataSize),
-	Stride(Stride)
+	Stride(Stride),
+	VertexCount(VertexCount)
 {
-	// Copy data.
-	this->pData = malloc(DataSize);
 	if (pData)
+	{
+		// Copy data.
+		this->pData = malloc(DataSize);
 		memcpy(this->pData, pData, DataSize);
+	}
 	else
-		throw std::exception();
+		throw std::exception("Invalid Vertex data pointer");
 }
 
 void VertexBuffer::Bind(Graphics* pGraphics)
@@ -84,7 +86,6 @@ void VertexBuffer::Initialize(Graphics* pGraphics)
 		VertexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
 		VertexView.StrideInBytes = Stride;
 		VertexView.SizeInBytes = DataSize;
-		VertexCount = DataSize / Stride;
 
 		key = "{location: " + std::to_string(VertexView.BufferLocation);
 		key += "; size: " + std::to_string(VertexView.SizeInBytes);
@@ -110,10 +111,10 @@ std::string VertexBuffer::GetKey() noexcept
 	return key;
 }
 
-IndexBuffer::IndexBuffer(const std::vector<unsigned int>& Indecies) noexcept
+IndexBuffer::IndexBuffer(std::vector<unsigned int>* Indecies) noexcept
 	:
-	IndeciesCount(static_cast<unsigned int>(Indecies.size())),
-	Indecies(Indecies)
+	IndeciesCount(static_cast<unsigned int>(Indecies->size())),
+	Indecies(*Indecies)
 {
 }
 
@@ -163,19 +164,14 @@ ConstantBuffer::ConstantBuffer(const void* pData, UINT DataSize)
 		throw std::exception("Null pointer in constant buffer");
 }
 
-void ConstantBuffer::Bind(Graphics* pGraphics)
-{
-	// Do nothing. Bind from heap.
-}
-
 void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
+	ID3D12Device8* pDevice = pGraphics->GetDevice();
+
+	UINT BufferSize = (DataSize + 255) & ~255;
+
 	if (!Initialized)
 	{
-		ID3D12Device8* pDevice = pGraphics->GetDevice();
-
-		UINT BufferSize = (DataSize + 255) & ~255;
-
 		// Create buffer
 		Error_Check(
 			pDevice->CreateCommittedResource(
@@ -187,15 +183,16 @@ void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE
 				IID_PPV_ARGS(&pBuffer))
 		);
 
-		// Describe and create a constant buffer view.
-		BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-		BufferView.SizeInBytes = BufferSize;
-		pDevice->CreateConstantBufferView(&BufferView, pHandle);
-
 		Update(pData, DataSize);
 
 		Initialized = true;
+
+		// Describe and create a constant buffer view.
+		BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
+		BufferView.SizeInBytes = BufferSize;
 	}
+
+	pDevice->CreateConstantBufferView(&BufferView, pHandle);
 }
 
 void ConstantBuffer::Update(const void* pData, UINT DataSize)

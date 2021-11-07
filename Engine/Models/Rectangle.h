@@ -6,10 +6,10 @@
 class Rect : public UI_Element
 {
 public:
-	Engine_API Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 Size) noexcept;
-	Engine_API ~Rect();
-	Engine_API void SetColor(DirectX::XMFLOAT3 Color);
-	void Update() override;
+	Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, DirectX::XMFLOAT2 Size) noexcept;
+	~Rect();
+	void SetColor(DirectX::XMFLOAT3 Color);
+	void Update();
 
 private:
 	std::shared_ptr<ConstantBuffer> pBufferColor;

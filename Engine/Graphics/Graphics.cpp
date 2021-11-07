@@ -72,12 +72,9 @@ Graphics::Graphics(HWND pWindow, short w, short h)
         // This will be used to print info.
         DeviceDesc = it->Desc;
 
-
         // Delete data.
         for (char i = 0; i < Devices.size(); i++)
-        {
             Devices[i].Adapter->Release();
-        }
         Devices.clear();
     }
 
@@ -271,7 +268,6 @@ void Graphics::Initialize()
         (*ListToRelease)[i] = nullptr;
     }
     ListToRelease->clear();
-
 
 }
 

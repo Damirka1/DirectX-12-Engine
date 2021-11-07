@@ -5,7 +5,7 @@
 #include "..\..\Error_Check.h"
 #include "..\..\d3dx12.h"
 #include "..\Bindable.h"
-
+#include "..\Resource.h"
 
 class Buffer
 {
@@ -20,14 +20,12 @@ protected:
 	ID3D12Resource* pCopyBuffer = nullptr;
 };
 
-
-
 class VertexBuffer : public Buffer, public Bindable
 {
 	friend class Drawable;
 	friend class DrawableArray;
 public:
-	VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT Slot = 0);
+	VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT VetexCount, UINT Slot = 0);
 	void Bind(Graphics* pGraphics) override;
 	void Initialize(Graphics* pGraphics) override;
 	~VertexBuffer() override;
@@ -37,19 +35,17 @@ public:
 private:
 	UINT Slot;
 	void* pData;
-	UINT Stride, DataSize;
+	UINT Stride, DataSize, VertexCount;
 	D3D12_VERTEX_BUFFER_VIEW VertexView;
-	unsigned int VertexCount;
 	std::string key;
 };
-
 
 class IndexBuffer : public Buffer, public Bindable
 {
 	friend class Drawable;
 	friend class DrawableArray;
 public:
-	IndexBuffer(const std::vector<unsigned int>& Indecies) noexcept;
+	IndexBuffer(std::vector<unsigned int>* Indecies) noexcept;
 	void Bind(Graphics* pGraphics) override;
 	void Initialize(Graphics* pGraphics) override;
 	~IndexBuffer() override;
@@ -63,14 +59,13 @@ private:
 	unsigned int IndeciesCount;
 };
 
-class ConstantBuffer : public Bindable
+class ConstantBuffer : public Resource
 {
 public:
 	ConstantBuffer(const void* pData, unsigned int DataSize);
-	void Bind(Graphics* pGraphics) override;
 	void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) override;
 	void Update(const void* pData, UINT DataSize);
-	~ConstantBuffer();
+	~ConstantBuffer() override;
 
 private:
 	ID3D12Resource* pBuffer = nullptr;

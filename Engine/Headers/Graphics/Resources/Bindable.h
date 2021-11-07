@@ -5,7 +5,7 @@
 
 class Bindable
 {
-	friend class ResourceManager;
+	
 public:
 	virtual void Bind(Graphics* pGraphics) = 0;
 	virtual void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
@@ -14,21 +14,9 @@ public:
 	{}
 	virtual ~Bindable()
 	{}
-	bool IsInitialized() noexcept
-	{
-		return Initialized;
-	}
-	
-protected:
-	void SetHeapIndex(UINT Table, UINT Range, UINT Index) noexcept
-	{
-		this->Table = Table;
-		this->Range = Range;
-		this->Index = Index;
-	}
 
+protected:
 	bool Initialized = false;
-	UINT Table = 0u, Range = 0u, Index = 0u;
 };
 
 #endif

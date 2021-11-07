@@ -43,16 +43,14 @@ void FrameCommander::Render()
 
 				// And finaly render objects.
 				for (auto& obj : RS.second.DrawIndexed)
-				{
 					obj.second.DrawIndexed(pGraphics);
-				}
 			}
 		}
 	};
 
-	Render(pRM->Resources);
+	Render(pRM->PSO_Drawables);
 
-	Render(pRM->UI_Resources);
+	Render(pRM->UI_PSO_Drawables);
 
 	pGraphics->Execute();
 }

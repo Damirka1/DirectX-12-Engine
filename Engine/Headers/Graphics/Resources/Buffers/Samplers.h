@@ -1,12 +1,11 @@
 #pragma once
 #ifndef SAMPLERS_HEADER
-#include "..\Bindable.h"
+#include "..\Resource.h"
 
-class Sampler : public Bindable
+class Sampler : public Resource
 {
 public:
 	Sampler(D3D12_SAMPLER_DESC* pDesc) noexcept;
-	void Bind(Graphics* pGraphics) override;
 	void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) override;
 	~Sampler() override;
 private:
