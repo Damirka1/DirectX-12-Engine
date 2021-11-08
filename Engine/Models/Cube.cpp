@@ -2,8 +2,6 @@
 #include <random>
 
 Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept
-	:
-	Drawable(pRM)
 {
 
 	struct VB
@@ -56,18 +54,16 @@ Cube::Cube(ResourceManager* pRM, DirectX::XMFLOAT3 Pos) noexcept
 	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader.cso"));
-	std::string PSO_key = pRM->CreatePSO(pLay, Lay);
-
-
+	
 	RS_Layout RsLay;
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_VERTEX)
 		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
-	std::string RS_key = pRM->CreateRootSignature(this, PSO_key, RsLay);
+	std::shared_ptr<PipelineStateObject> pPSO = pRM->CreatePipelineStateObject(pLay, Lay);
 
-	
+	SetPipelineStateObjectAndRootSignature(pPSO, pRM->CreateRootSignature(this, pPSO->GetKey(), RsLay));
 
 	// Random numbers for rotation.
 	{

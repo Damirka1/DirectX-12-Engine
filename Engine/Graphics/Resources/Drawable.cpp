@@ -1,28 +1,20 @@
-#include "..\..\Headers\Graphics\Resources\Drawable.h"
-#include "..\..\Headers\Graphics\Resources\BindablesHeader.h"
-
+#include "../../Headers/Graphics/Resources/Drawable.h"
+#include "../../Headers/Graphics/Resources/BindablesHeader.h"
+#include "../../Headers/Input/Camera.h"
 
 Drawable::Drawable() noexcept
 {
 }
 
-Drawable::Drawable(ResourceManager* pRM) noexcept
+Drawable::Drawable(Camera* cam) noexcept
 {
-	Init(pRM);
+	Init(cam);
 }
 
-void Drawable::Init(ResourceManager* pRM) noexcept
+void Drawable::Init(Camera* cam) noexcept
 {
-	if (UI_element)
-	{
-		pCamera.Projection = pRM->GetProjectionForUI();
-		pCamera.View = pRM->GetViewForUI();
-	}
-	else
-	{
-		pCamera.Projection = pRM->GetPerspectiveProjection();
-		pCamera.View = pRM->GetView();
-	}
+	pCamera.Projection = &cam->GetProjection();
+	pCamera.View = &cam->GetView();
 }
 
 void Drawable::AddBindable(std::shared_ptr<Bindable> Bindable) noexcept
@@ -45,6 +37,12 @@ void Drawable::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::
 {
 	pVertexBuffer = std::move(pVB);
 	pIndexBuffer = std::move(pIB);
+}
+
+void Drawable::SetPipelineStateObjectAndRootSignature(std::shared_ptr<PipelineStateObject> pPSO, std::shared_ptr<RootSignature> pRS) noexcept
+{
+	this->pPipelineStateObject = pPSO;
+	this->pRootSignature = pRS;
 }
 
 void Drawable::SetVisibility(bool Visible)
@@ -73,9 +71,7 @@ void Drawable::AddEventListener(EventListener* EvListener)
 {
 	const auto i = EventListeners.find(LONG_PTR(EvListener));
 	if (i == EventListeners.end())
-	{
 		EventListeners[LONG_PTR(EvListener)] = EvListener;
-	}
 }
 
 void Drawable::RemoveEventListener(EventListener* EvListener)
@@ -103,8 +99,4 @@ void Drawable::operator=(EventListener* EvListener)
 	EventListeners.clear();
 	EventListeners[LONG_PTR(EvListener)] = (EvListener);
 }
-
-//void Drawable::Update()
-//{
-//}
 

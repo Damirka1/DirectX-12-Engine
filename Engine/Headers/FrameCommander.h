@@ -13,13 +13,17 @@ public:
 	Engine_API FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept;
 	Engine_API void SetBackgroundColor(float r, float g, float b) noexcept;
 	Engine_API void ChangeBackgroundColor(float dr, float dg, float db) noexcept;
+	Engine_API void SetScene(Scene* pScene);
+	Engine_API void PrepareAllResources();
 	Engine_API void Render();
-	Engine_API ~FrameCommander() = default;
+	Engine_API ~FrameCommander();
 
 private:
 	Graphics* pGraphics;
-	ResourceManager* pRM;
-	float bg[3] = { 0.0f, 0.0f, 0.0f };
+	ResourceManager* pResourceManager;
+	ScriptManager* pScriptManager;
+	Scene* pScene;
+	DirectX::XMFLOAT3 BackgroundColor = { 0.0f, 0.0f, 0.0f };
 };
 
 

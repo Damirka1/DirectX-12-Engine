@@ -4,15 +4,16 @@
 
 #include "..\Engine\Headers\Window.h"
 #include "..\Engine\Headers\FrameCommander.h"
-#include "..\Engine\Models\Triangle.h"
-#include "..\Engine\Models\Cube.h"
-#include "..\Engine\Models\Rectangle.h"
-#include "..\Engine\Headers\Input\Keyboard.h"
-#include "..\Engine\Headers\Input\Mouse.h"
-#include "..\Engine\Headers\Input\Camera.h"
-#include "..\Engine\Headers\Model.h"
+#include "../Engine/Models/Triangle.h"
+#include "../Engine/Models/Cube.h"
+#include "../Engine/Models/Rectangle.h"
+#include "../Engine/Headers/Input/Keyboard.h"
+#include "../Engine/Headers/Input/Mouse.h"
+#include "../Engine/Headers/Input/Camera.h"
+#include "../Engine/Headers/Model.h"
+#include "../Engine/Headers/Scene/Scene.h"
 
-#include "..\ConsoleDLL\Console.h"
+#include "../ConsoleDLL/Console.h"
 
 
 class Application
@@ -26,9 +27,10 @@ private:
 	Console Con;
 
 	Window* pWindow;
-	ResourceManager* RM;
-	FrameCommander* FC;
-	Camera* cam;
+	ResourceManager* pResourceManager;
+	FrameCommander* pFrameCommander;
+	Scene* pScene;
+	Camera* pCamera;
 	std::vector<Model*> models;
 };
 

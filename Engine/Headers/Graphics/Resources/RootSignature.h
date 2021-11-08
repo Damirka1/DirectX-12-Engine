@@ -59,14 +59,20 @@ private:
 class RootSignature : public Bindable
 {
 	friend class PipelineStateObject;
+	friend class ResourceManager;
 public:
 	RootSignature(RS_Layout& Lay) noexcept;
 	void Initialize(Graphics* pGraphics);
 	void Bind(Graphics* pGraphics) override;
 	~RootSignature() override;
+	std::string GetKey();
+
+private:
+	void SetKey(std::string Key);
 
 private:
 	ID3D12RootSignature* pRootSignature = nullptr;
 	RS_Layout Lay;
+	std::string KeyCode;
 };
 #endif

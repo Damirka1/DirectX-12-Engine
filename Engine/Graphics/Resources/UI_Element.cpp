@@ -11,8 +11,8 @@ void UI_Element::Init(ResourceManager* pRM, std::string ObjectName, DirectX::XMF
 	this->ObjectName = ObjectName;
 	Drawable::Pos = DirectX::XMFLOAT3(Pos.x, Pos.y, 0.0f);
 	this->ActiveSize = ActiveSize;
-	Drawable::UI_element = true;
-	Drawable::Init(pRM);
+	//Drawable::UI_element = true;
+	//Drawable::Init(pRM);
 
 	if (UseDefaultListener && (DefaultEvListKey == -1))
 	{
@@ -21,8 +21,6 @@ void UI_Element::Init(ResourceManager* pRM, std::string ObjectName, DirectX::XMF
 		DefaultEvListKey = LONG_PTR(Listener);
 	}
 }
-
-
 
 DefaultEventListener* UI_Element::GetDefaultListener()
 {

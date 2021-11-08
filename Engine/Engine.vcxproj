@@ -235,6 +235,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Neither</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="Models\Rectangle.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
@@ -345,6 +346,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\MessageHandler.h" />
     <ClInclude Include="Headers\Model.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
+    <ClInclude Include="Headers\Scene\Scene.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />

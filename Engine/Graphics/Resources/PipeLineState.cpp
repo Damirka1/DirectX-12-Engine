@@ -169,6 +169,16 @@ PipelineStateObject::~PipelineStateObject()
 	pPipelineStateObject = nullptr;
 }
 
+std::string PipelineStateObject::GetKey() noexcept
+{
+	return KeyCode;
+}
+
+void PipelineStateObject::SetKey(std::string Key) noexcept
+{
+	this->KeyCode = Key;
+}
+
 void PipelineStateObject::ReadShader(std::string Path, D3D12_SHADER_BYTECODE* pDesc)
 {
 	BYTE* pData;

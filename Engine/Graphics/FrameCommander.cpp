@@ -1,58 +1,74 @@
-#include "..\Headers\FrameCommander.h"
-#include "..\Headers\Window.h"
+#include "../Headers/FrameCommander.h"
+#include "../Headers/Window.h"
+#include "../Headers/Scene/Scene.h"
 
 FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept
 	:
 	pGraphics(pWindow->GetGraphics()),
-	pRM(pRM)
+	pResourceManager(pRM)
 {
+	pScriptManager = new ScriptManager(pWindow);
 }
 
 void FrameCommander::SetBackgroundColor(float r, float g, float b) noexcept
 {
-	bg[0] = r;
-	bg[1] = g;
-	bg[2] = b;
+	BackgroundColor.x = r;
+	BackgroundColor.y = g;
+	BackgroundColor.z = b;
 }
 
 void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db) noexcept
 {
-	bg[0] += dr;
-	bg[1] += dg;
-	bg[2] += db;
+	BackgroundColor.x += dr;
+	BackgroundColor.y += dg;
+	BackgroundColor.z += db;
+}
+
+void FrameCommander::SetScene(Scene* pScene)
+{
+	if (pScene)
+		this->pScene = pScene;
+	else
+		throw std::exception("Scene was nullptr");
+}
+
+void FrameCommander::PrepareAllResources()
+{
+	if (pScene)
+		pResourceManager->InitializeResourcesOfScene(pScene);
+	else
+		throw std::exception("Set scene to frame commander befor preparetion");
 }
 
 void FrameCommander::Render()
 {
-	pGraphics->Setup(bg[0], bg[1], bg[2]);
+	pGraphics->Setup(BackgroundColor.x, BackgroundColor.y, BackgroundColor.z);
 
 	// Bind global heap.
-	pRM->Heap.Bind(pGraphics);
+	pResourceManager->Heap.Bind(pGraphics);
 
-	auto Render = [&](std::unordered_map<std::string, ResourceManager::PipeLineResources>& Resources)
+	// Bind pipelinestate object.
+	for (auto& PSO : pScene->DrawablesMap)
 	{
-		// Bind pipelinestate object.
-		for (auto& PSO : Resources)
+		PSO.second.pPipeLineStateObject->Bind(pGraphics);
+
+		// Bind rootsignatures.
+		for (auto& RS : PSO.second.RootSignatures)
 		{
-			PSO.second.pPipeLineStateObject->Bind(pGraphics);
+			RS.second.pRootSignature->Bind(pGraphics);
 
-			// Bind rootsignatures.
-			for (auto& RS : PSO.second.RootSignatures)
-			{
-				RS.second.pRootSignature->Bind(pGraphics);
-
-				// And finaly render objects.
-				for (auto& obj : RS.second.DrawIndexed)
-					obj.second.DrawIndexed(pGraphics);
-			}
+			// And finaly render objects.
+			for (auto& obj : RS.second.DrawIndexed)
+				obj.second.DrawIndexed(pGraphics);
 		}
-	};
-
-	Render(pRM->PSO_Drawables);
-
-	Render(pRM->UI_PSO_Drawables);
+	}
 
 	pGraphics->Execute();
+}
+
+FrameCommander::~FrameCommander()
+{
+	delete pScriptManager;
 }
 
 FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) noexcept

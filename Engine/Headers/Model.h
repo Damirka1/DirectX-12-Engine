@@ -5,6 +5,7 @@
 
 class Model
 {
+	friend class Scene;
 public:
 	Engine_API Model(ResourceManager* pRM, std::string ModelPath, float scale = 1.0f);
 	Engine_API void Update();

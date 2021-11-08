@@ -33,8 +33,8 @@ void DrawableArray::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, 
 	pIndexBuffer = pIB;
 }
 
-void DrawableArray::InitCamera(ResourceManager* pRM) noexcept
+void DrawableArray::InitCamera(Camera* cam) noexcept
 {
 	for (auto& Drawable : pDrawables)
-		Drawable->Init(pRM);
+		Drawable->Init(cam);
 }

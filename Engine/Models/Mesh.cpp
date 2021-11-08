@@ -5,8 +5,6 @@
 #include <assimp/postprocess.h>
 
 Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesystem::path path, float scale)
-	:
-	Drawable(pRM)
 {
 	RS_Layout RsLay;
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_VERTEX)
@@ -89,18 +87,18 @@ Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesyste
 	
 	int count = diffuse ? 3 + 3 + 2 : 3 + 3;
 
-	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, (unsigned int)m->mNumVertices),
+	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, (size_t)m->mNumVertices),
 		pRM->CreateIndexBuffer(this, &Indecies));
 
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader" + ShaderCode + ".cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
-	std::string PSO_key = pRM->CreatePSO(pLay, Lay);
 
-	std::string RS_key = pRM->CreateRootSignature(this, PSO_key, RsLay);
+	std::shared_ptr<PipelineStateObject> pPSO = pRM->CreatePipelineStateObject(pLay, Lay);
+	SetPipelineStateObjectAndRootSignature(pPSO, pRM->CreateRootSignature(this, pPSO->GetKey(), RsLay));
 
-	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
+	//Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
 	pConstBuffer = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 
 }

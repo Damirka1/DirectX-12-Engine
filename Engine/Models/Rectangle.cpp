@@ -27,12 +27,9 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, reinterpret_cast<void*>(vb), sizeof(VB), sizeof(vb), Lay, 8),
 		pRM->CreateIndexBuffer(this, &indecies));
 
-
 	PSO_Layout pLay(1);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\UI_VertexShader.cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\UI_PixelShader.cso"));
-	std::string PSO_key = pRM->CreatePSO(pLay, Lay, true);
-
 
 	RS_Layout RsLay;
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_VERTEX)
@@ -40,7 +37,8 @@ Rect::Rect(ResourceManager* pRM, std::string Name, DirectX::XMFLOAT2 Pos, Direct
 	RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 		.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
-	pRM->CreateRootSignature(this, PSO_key, RsLay);
+	std::shared_ptr<PipelineStateObject> pPSO = pRM->CreatePipelineStateObject(pLay, Lay);
+	SetPipelineStateObjectAndRootSignature(pPSO, pRM->CreateRootSignature(this, pPSO->GetKey(), RsLay));
 
 	pBufferColor = pRM->CreateConstBuffer(this, &Color, sizeof(Color), 1, 0, 0);
 

@@ -89,6 +89,16 @@ RootSignature::~RootSignature()
     pRootSignature = nullptr;
 }
 
+std::string RootSignature::GetKey()
+{
+    return KeyCode;
+}
+
+void RootSignature::SetKey(std::string Key)
+{
+    this->KeyCode = Key;
+}
+
 RS_Layout::RS_Layout(D3D12_ROOT_SIGNATURE_FLAGS F) noexcept
     :
     Flags(F)

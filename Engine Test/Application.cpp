@@ -9,18 +9,25 @@ Application::Application(HINSTANCE hInstance)
 	Con << pWindow->GetGraphics()->GetInfo().c_str();
 	pWindow->Show();
 	pWindow->GetMouse()->EnableRawInput();
-	cam = new Camera(pWindow->GetGraphicsResolution());
-	cam->SetSensitivity(0.005f);
-	RM = new ResourceManager(pWindow);
-	FC = new FrameCommander(pWindow, RM);
-	FC->SetBackgroundColor(0.2f, 0.2f, 0.2f);
+	pCamera = new Camera(pWindow->GetGraphicsResolution());
+	pCamera->SetSensitivity(0.005f);
+	pResourceManager = new ResourceManager(pWindow);
+	pFrameCommander = new FrameCommander(pWindow, pResourceManager);
+	pFrameCommander->SetBackgroundColor(0.2f, 0.2f, 0.2f);
+
+	pScene = new Scene();
+	pScene->SetCamera(pCamera);
+
+	models.push_back(new Model(pResourceManager, "C:\\Home\\Blender Models\\Characters\\Tiefling Rogue\\Obj\\Triefling Rogue.obj", 0.025f));
+	models[0]->SetPos({ -5.0f, -3.0f, 4.0f });
+	models.push_back(new Model(pResourceManager, "C:\\Home\\Blender Models\\Nissan S30\\Nissan S30.obj"));
+	pScene->AddModel(models[0]);
+	pScene->AddModel(models[1]);
 
 	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
-
-	RM->InitializeResources(pWindow);
-
-	RM->SetCamera(cam);
-	
+	pFrameCommander->SetScene(pScene);
+	pFrameCommander->PrepareAllResources();
+	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
 }
 
 void Application::Run()
@@ -50,13 +57,13 @@ void Application::Run()
 			speed = 10.0f;
 
 		if (kb->KeyIsPressed('W'))
-			cam->Translate({ 0.0f, 0.0f, 0.1f * speed });
+			pCamera->Translate({ 0.0f, 0.0f, 0.1f * speed });
 		if (kb->KeyIsPressed('S'))
-			cam->Translate({ 0.0f, 0.0f, -0.1f * speed });
+			pCamera->Translate({ 0.0f, 0.0f, -0.1f * speed });
 		if (kb->KeyIsPressed('D'))
-			cam->Translate({ 0.1f * speed, 0.0f, 0.0f });
+			pCamera->Translate({ 0.1f * speed, 0.0f, 0.0f });
 		if (kb->KeyIsPressed('A'))
-			cam->Translate({ -0.1f * speed , 0.0f, 0.0f });
+			pCamera->Translate({ -0.1f * speed , 0.0f, 0.0f });
 
 
 		auto ms = pWindow->GetMouse();
@@ -67,7 +74,7 @@ void Application::Run()
 				if (El == std::nullopt)
 					continue;
 				auto delta = El.value();
-				cam->Rotate(delta.dx, delta.dy);
+				pCamera->Rotate(delta.dx, delta.dy);
 			}
 		}
 
@@ -75,16 +82,17 @@ void Application::Run()
 			m->Update();
 
 		// Render.
-		FC->Render();
+		pFrameCommander->Render();
 	}
 }
 
 Application::~Application()
 {
 	delete pWindow;
-	delete FC;
-	delete RM;
-	delete cam;
+	delete pFrameCommander;
+	delete pResourceManager;
+	delete pCamera;
+	delete pScene;
 	for (Model* m : models)
 		delete m;
 }
