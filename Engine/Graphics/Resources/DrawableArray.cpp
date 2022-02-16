@@ -16,12 +16,13 @@ void DrawableArray::DrawIndexed(Graphics* pGraphics)
 	pVertexBuffer->Bind(pGraphics);
 	pIndexBuffer->Bind(pGraphics);
 	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
+	pHeap->Bind(pGraphics);
 
 	for (Drawable* obj : pDrawables)
 	{
 		if (obj->Visible)
 		{
-			obj->Bind(pGraphics);
+			//obj->Bind(pGraphics);
 			pCommandList->DrawIndexedInstanced(pIndexBuffer->IndeciesCount, 1, 0, 0, 0);
 		}
 	}

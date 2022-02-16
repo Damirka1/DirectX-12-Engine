@@ -29,11 +29,7 @@ protected:
 	Engine_API Drawable() noexcept;
 	Engine_API Drawable(Camera* cam) noexcept;
 	Engine_API void Init(Camera* cam) noexcept;
-	Engine_API void AddBindable(std::shared_ptr<Bindable> Bindable) noexcept;
 	Engine_API void AddResource(std::shared_ptr<Resource> Resource) noexcept;
-	Engine_API void Bind(Graphics* pGraphics);
-	Engine_API void SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept;
-	Engine_API void SetPipelineStateObjectAndRootSignature(std::shared_ptr<PipelineStateObject> pPSO, std::shared_ptr<RootSignature> pRS) noexcept;
 
 public:
 	Engine_API DirectX::XMFLOAT3 GetPos();
@@ -61,22 +57,11 @@ protected:
 		const DirectX::XMMATRIX* Projection;
 	} pCamera;
 
+	std::shared_ptr<DrawableArray> Array;
 private:
-	std::vector<std::shared_ptr<Bindable>> Bindables;
-	std::vector<std::shared_ptr<Resource>> Resources;
-
-	std::shared_ptr<VertexBuffer> pVertexBuffer;
-	std::shared_ptr<IndexBuffer> pIndexBuffer;
-
-	std::shared_ptr<PipelineStateObject> pPipelineStateObject;
-	std::shared_ptr<RootSignature> pRootSignature;
-
-	std::vector<std::shared_ptr<Resource>> InitializeHeap_list;
-	std::vector<std::shared_ptr<Bindable>> InitializeCommon_list;
-	// Index of Descriptor heap.
-	char DescHeapIndex = -1;
-
 	std::unordered_map<LONG_PTR, EventListener*> EventListeners;
+
+	std::vector<std::shared_ptr<Resource>> Resources;
 };
 
 #endif

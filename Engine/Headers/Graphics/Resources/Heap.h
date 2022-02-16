@@ -31,7 +31,7 @@ public:
 
 	void Bind(Graphics* pGraphics);
 
-	Engine_API ~GlobalHeap();
+	~GlobalHeap();
 
 private:
 	std::array<ID3D12DescriptorHeap*, 2> pHeaps;
@@ -71,25 +71,6 @@ class HeapDescriptorArray : public Bindable
 		UINT Size = 0u;
 		std::vector<Range> Ranges;
 	};
-
-	//class Constant : public RootParameter
-	//{
-	//public:
-	//	Constant(UINT Index, CD3DX12_GPU_DESCRIPTOR_HANDLE Offset)
-	//		:
-	//		RootParameter(Index, Offset)
-	//	{}
-	//	void Bind(ID3D12GraphicsCommandList* pCommandList) override;
-	//};
-	//class Range : public RootParameter
-	//{
-	//public:
-	//	Range(UINT Index, CD3DX12_GPU_DESCRIPTOR_HANDLE Offset)
-	//		:
-	//		RootParameter(Index, Offset)
-	//	{}
-	//	void Bind(ID3D12GraphicsCommandList* pCommandList) override;
-	//};
 
 	class DescriptorTable : public RootParameter
 	{

@@ -18,13 +18,15 @@ Application::Application(HINSTANCE hInstance)
 	pScene = new Scene();
 	pScene->SetCamera(pCamera);
 
-	models.push_back(new Model(pResourceManager, "C:\\Home\\Blender Models\\Characters\\Tiefling Rogue\\Obj\\Triefling Rogue.obj", 0.025f));
+	models.push_back(new Model(pResourceManager, "C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", 2.0f));
 	models[0]->SetPos({ -5.0f, -3.0f, 4.0f });
-	models.push_back(new Model(pResourceManager, "C:\\Home\\Blender Models\\Nissan S30\\Nissan S30.obj"));
 	pScene->AddModel(models[0]);
+
+	models.push_back(new Model(pResourceManager, "C:\\Home\\Graphics Projects\\3d models\\123\\obj\\kindred.obj"));
 	pScene->AddModel(models[1]);
 
 	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
+	Con << L"\n";
 	pFrameCommander->SetScene(pScene);
 	pFrameCommander->PrepareAllResources();
 	Con << std::to_wstring(pWindow->TimerPeek()).c_str();

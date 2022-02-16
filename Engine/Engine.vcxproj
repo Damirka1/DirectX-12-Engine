@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -216,7 +216,6 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="input\Camera.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
-    <ClCompile Include="Models\Cube.cpp" />
     <ClCompile Include="Models\Mesh.cpp" />
     <ClCompile Include="Models\Model.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -234,7 +233,6 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Neither</FavorSizeOrSpeed>
     </ClCompile>
-    <ClCompile Include="Models\Rectangle.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
     <ClCompile Include="Window\Window.cpp" />
@@ -350,9 +348,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />
-    <ClInclude Include="Models\Cube.h" />
     <ClInclude Include="Headers\Mesh.h" />
-    <ClInclude Include="Models\Rectangle.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\PixelShaderDif.hlsl">

@@ -63,16 +63,10 @@
     <ClCompile Include="Graphics\FrameCommander.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Models\Cube.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\Resources\DrawableArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Resources\UI_Element.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Models\Rectangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="input\Camera.cpp">
@@ -173,9 +167,6 @@
     <ClInclude Include="Headers\FrameCommander.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Models\Cube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Graphics\Resources\DrawableArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -183,9 +174,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Graphics\Resources\UI_Element.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Models\Rectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\MathUtilities.h">

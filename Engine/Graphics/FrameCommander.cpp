@@ -35,7 +35,7 @@ void FrameCommander::SetScene(Scene* pScene)
 void FrameCommander::PrepareAllResources()
 {
 	if (pScene)
-		pResourceManager->InitializeResourcesOfScene(pScene);
+		pResourceManager->InitializeResources(pScene);
 	else
 		throw std::exception("Set scene to frame commander befor preparetion");
 }
@@ -59,7 +59,7 @@ void FrameCommander::Render()
 
 			// And finaly render objects.
 			for (auto& obj : RS.second.DrawIndexed)
-				obj.second.DrawIndexed(pGraphics);
+				obj.second->DrawIndexed(pGraphics);
 		}
 	}
 

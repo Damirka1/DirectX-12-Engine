@@ -33,15 +33,15 @@ Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesyste
 			RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 				.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1);
 
-			AddResource(pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0));
-			AddResource(pRM->CreateDefaultSampler(this, 2, 0, 0));
+			//AddResource(pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0));
+			//AddResource(pRM->CreateDefaultSampler(this, 2, 0, 0));
 		}
 		else
 		{
 			material->Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(color));
 			RsLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 				.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
-			AddResource(pRM->CreateConstBuffer(this, &color, sizeof(color), 1, 0, 0));
+			//AddResource(pRM->CreateConstBuffer(this, &color, sizeof(color), 1, 0, 0));
 		}
 	}
 
@@ -87,20 +87,33 @@ Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesyste
 	
 	int count = diffuse ? 3 + 3 + 2 : 3 + 3;
 
-	SetVertexAndIndexBuffers(pRM->CreateVertexBuffer(this, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, (size_t)m->mNumVertices),
-		pRM->CreateIndexBuffer(this, &Indecies));
+	pRM->CreateVIBuffers(this, &Indecies, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
 
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader" + ShaderCode + ".cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
 
-	std::shared_ptr<PipelineStateObject> pPSO = pRM->CreatePipelineStateObject(pLay, Lay);
-	SetPipelineStateObjectAndRootSignature(pPSO, pRM->CreateRootSignature(this, pPSO->GetKey(), RsLay));
+	pRM->CreatePSRS(this, pLay, RsLay, Lay);
 
 	//Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
 	pConstBuffer = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
 
+	// diffuse
+	{
+		aiString TexFileName;
+		bool hasAlpha = false;
+		if (material->GetTexture(aiTextureType_DIFFUSE, 0, &TexFileName) == aiReturn_SUCCESS)
+		{
+			AddResource(pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0));
+			AddResource(pRM->CreateDefaultSampler(this, 2, 0, 0));
+		}
+		else
+		{
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(color));
+			AddResource(pRM->CreateConstBuffer(this, &color, sizeof(color), 1, 0, 0));
+		}
+	}
 }
 
 void Mesh::Update()

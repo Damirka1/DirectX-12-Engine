@@ -3,17 +3,16 @@
 
 void Scene::AddDrawable(Drawable* pDrawable)
 {
-	std::string PSOKey = pDrawable->pPipelineStateObject->GetKey();
-	std::string RSKey = pDrawable->pRootSignature->GetKey();
+	std::shared_ptr<DrawableArray> Array = pDrawable->Array;
 
-	std::shared_ptr<PipelineStateObject> pPipelineStateObject = pDrawable->pPipelineStateObject;
-	std::shared_ptr<RootSignature> pRootSignature = pDrawable->pRootSignature;
+	std::string PSOKey = Array->pPipelineStateObject->GetKey();
+	std::string RSKey = Array->pRootSignature->GetKey();
 
-	DrawablesMap[PSOKey].pPipeLineStateObject = pPipelineStateObject;
-	DrawablesMap[PSOKey].RootSignatures[RSKey].pRootSignature = pRootSignature;
+	DrawablesMap[PSOKey].pPipeLineStateObject = Array->pPipelineStateObject;
+	DrawablesMap[PSOKey].RootSignatures[RSKey].pRootSignature = Array->pRootSignature;
 
 	DrawablesMap[PSOKey].RootSignatures[RSKey]
-		.pDrawablesToInitialize.push_back(pDrawable);
+		.DrawIndexed[Array->key] = Array;
 }
 
 void Scene::AddModel(Model* pModel)
@@ -36,7 +35,7 @@ void Scene::InitCamera()
 		for (auto& PSO : DrawablesMap)
 			for (auto& RS : PSO.second.RootSignatures)
 				for (auto& Drawable : RS.second.DrawIndexed)
-					Drawable.second.InitCamera(pCamera);
+					Drawable.second->InitCamera(pCamera);
 	else
 		throw std::exception("No camera in Scene");
 }

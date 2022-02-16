@@ -17,32 +17,9 @@ void Drawable::Init(Camera* cam) noexcept
 	pCamera.View = &cam->GetView();
 }
 
-void Drawable::AddBindable(std::shared_ptr<Bindable> Bindable) noexcept
-{
-	Bindables.push_back(std::move(Bindable));
-}
-
 Engine_API void Drawable::AddResource(std::shared_ptr<Resource> Resource) noexcept
 {
 	Resources.push_back(std::move(Resource));
-}
-
-void Drawable::Bind(Graphics* pGraphics)
-{
-	for (std::shared_ptr<Bindable>& e : Bindables)
-		e->Bind(pGraphics);
-}
-
-void Drawable::SetVertexAndIndexBuffers(std::shared_ptr<VertexBuffer> pVB, std::shared_ptr<IndexBuffer> pIB) noexcept
-{
-	pVertexBuffer = std::move(pVB);
-	pIndexBuffer = std::move(pIB);
-}
-
-void Drawable::SetPipelineStateObjectAndRootSignature(std::shared_ptr<PipelineStateObject> pPSO, std::shared_ptr<RootSignature> pRS) noexcept
-{
-	this->pPipelineStateObject = pPSO;
-	this->pRootSignature = pRS;
 }
 
 void Drawable::SetVisibility(bool Visible)

@@ -23,8 +23,7 @@ class Scene
 		struct RootSignatureResources
 		{
 			std::shared_ptr<RootSignature> pRootSignature;
-			std::unordered_map<std::string, DrawableArray> DrawIndexed;
-			std::vector<Drawable*> pDrawablesToInitialize;
+			std::unordered_map<std::string, std::shared_ptr<DrawableArray>> DrawIndexed;
 		};
 	public:
 		std::shared_ptr<PipelineStateObject> pPipeLineStateObject;
