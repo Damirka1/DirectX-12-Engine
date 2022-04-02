@@ -195,6 +195,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Console\Console.cpp" />
     <ClCompile Include="Events\EventListener.cpp" />
     <ClCompile Include="Events\KeyboardEvents.cpp" />
     <ClCompile Include="Events\MouseEvents.cpp" />
@@ -313,7 +314,9 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Assimp\include\assimp\version.h" />
     <ClInclude Include="Assimp\include\assimp\Vertex.h" />
     <ClInclude Include="Assimp\include\assimp\XMLTools.h" />
+    <ClInclude Include="Console\Console.h" />
     <ClInclude Include="Headers\DirectXTex.h" />
+    <ClInclude Include="Headers\EngineCore.h" />
     <ClInclude Include="Headers\Events\EventListener.h" />
     <ClInclude Include="Headers\Events\KeyboardEvents.h" />
     <ClInclude Include="Headers\Events\MouseEvents.h" />
@@ -342,13 +345,16 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Input\Mouse.h" />
     <ClInclude Include="Headers\MathUtilities.h" />
     <ClInclude Include="Headers\MessageHandler.h" />
-    <ClInclude Include="Headers\Model.h" />
+    <ClInclude Include="Headers\Scene\Model.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
+    <ClInclude Include="Headers\Scene\Actor.h" />
+    <ClInclude Include="Headers\Scene\Character.h" />
+    <ClInclude Include="Headers\Scene\Pawn.h" />
     <ClInclude Include="Headers\Scene\Scene.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />
-    <ClInclude Include="Headers\Mesh.h" />
+    <ClInclude Include="Headers\Scene\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\PixelShaderDif.hlsl">

@@ -1,4 +1,4 @@
-#include "..\Headers\Model.h"
+#include "../Headers/Scene/Model.h"
 #include <sstream>
 
 #include "assimp/Importer.hpp"
@@ -28,6 +28,9 @@ Model::Model(ResourceManager* pRM, std::string ModelPath, float scale)
 
 Engine_API void Model::Update()
 {
+	if (!Meshes[0]->IsReady())
+		return;
+
 	for (Mesh* m : Meshes)
 		m->Update();
 }

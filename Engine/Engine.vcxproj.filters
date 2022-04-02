@@ -93,6 +93,9 @@
     <ClCompile Include="Scene\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Console\Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Buffers.h">
@@ -191,10 +194,10 @@
     <ClInclude Include="Headers\Events\ScriptManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Model.h">
+    <ClInclude Include="Headers\Scene\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Mesh.h">
+    <ClInclude Include="Headers\Scene\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assimp\include\assimp\Compiler\poppack1.h">
@@ -426,6 +429,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Scene\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Scene\Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Scene\Character.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Scene\Pawn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\EngineCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Console\Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

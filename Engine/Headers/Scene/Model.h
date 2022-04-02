@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/Resources/Drawable.h"
+#include "../Graphics/Resources/Drawable.h"
 #include "Mesh.h"
 
 class Model

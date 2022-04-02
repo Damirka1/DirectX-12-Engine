@@ -38,7 +38,14 @@ public:
 	}
 	void InitCamera(Camera* cam) noexcept;
 
+	bool IsReady() noexcept;
+
 private:
+	void SetReady(bool Ready) noexcept;
+
+private:
+	bool Ready = false;
+
 	std::shared_ptr<VertexBuffer> pVertexBuffer;
 	std::shared_ptr<IndexBuffer> pIndexBuffer;
 

@@ -20,13 +20,14 @@ class Graphics
 public:
 	Engine_API Graphics(HWND pWindow, short Width = 800, short Height = 600);
 	Engine_API ~Graphics();
+	Engine_API void SetupInit();
 	Engine_API void Initialize();
 
 	Engine_API void Setup(float R, float G, float B, float A = 1.0f);
 	Engine_API void Execute();
 	Engine_API std::wstring GetInfo() noexcept;
 
-	ID3D12Device8* GetDevice() noexcept;
+	ID3D12Device9* GetDevice() noexcept;
 	ID3D12GraphicsCommandList6* GetCommandList() noexcept;
 
 	void AddToRelease(ID3D12Resource*& pResource) noexcept;
@@ -49,16 +50,16 @@ private:
 
 	// Graphics basic units.
 	IDXGISwapChain4* pSwapChain = nullptr;
-	ID3D12Device8* pDevice = nullptr;
+	ID3D12Device9* pDevice = nullptr;
 	ID3D12GraphicsCommandList6* pCommandList = nullptr;
 	ID3D12CommandQueue* pCommandQueue = nullptr;
-	ID3D12Resource* pRenderTargets[FrameCount];
+	ID3D12Resource2* pRenderTargets[FrameCount];
 	ID3D12CommandAllocator* pCommandAllocators[FrameCount];
 	ID3D12DescriptorHeap* pRTV_Heap = nullptr;
 	UINT RTV_Size = 0;
 
 	// DepthStencil buffers.
-	ID3D12Resource* pDepthStencilBuffer;
+	ID3D12Resource2* pDepthStencilBuffer;
 	ID3D12DescriptorHeap* pdsDescriptorHeap;
 	DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
@@ -69,7 +70,7 @@ private:
 	// Synchronization info.
 	UINT FrameIndex = 0u;
 	HANDLE pFenceEvent = nullptr;
-	ID3D12Fence* pFence = nullptr;
+	ID3D12Fence1* pFence = nullptr;
 	UINT64 FenceValues[FrameCount];
 	BYTE VSync = 1;
 

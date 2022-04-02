@@ -2,6 +2,7 @@
 #ifndef SCRIPTMANAGER_HEADER
 #define SCRIPTMANAGER_HEADER
 #include "EventListener.h"
+#include "../Header.h"
 
 class Drawable;
 class Window;
@@ -9,10 +10,10 @@ class Window;
 class ScriptManager
 {
 public:
-	ScriptManager(Window* pWindow);
-	~ScriptManager();
+	Engine_API ScriptManager(Window* pWindow);
+	Engine_API ~ScriptManager();
 
-	void AddDrawable(Drawable* pDrawable);
+	Engine_API void AddDrawable(Drawable* pDrawable);
 
 	void StartListen();
 

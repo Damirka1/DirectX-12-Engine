@@ -1,4 +1,4 @@
-#include "../Headers/Mesh.h"
+#include "../Headers/Scene/Mesh.h"
 
 #include "assimp/Importer.hpp"
 #include <assimp/scene.h>
@@ -87,14 +87,12 @@ Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesyste
 	
 	int count = diffuse ? 3 + 3 + 2 : 3 + 3;
 
-	pRM->CreateVIBuffers(this, &Indecies, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
-
 	PSO_Layout pLay(1);
 	pLay.DepthState(true);
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader" + ShaderCode + ".cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
 
-	pRM->CreatePSRS(this, pLay, RsLay, Lay);
+	pRM->CreateAllMeshResources(this, &Indecies, Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices, 0, pLay, RsLay, Lay);
 
 	//Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * *pCamera.View * *pCamera.Projection);
 	pConstBuffer = pRM->CreateConstBuffer(this, &Transformation, sizeof(Transformation), 0, 0, 0);
@@ -105,7 +103,7 @@ Mesh::Mesh(ResourceManager* pRM, aiMesh* m, aiMaterial* material, std::filesyste
 		bool hasAlpha = false;
 		if (material->GetTexture(aiTextureType_DIFFUSE, 0, &TexFileName) == aiReturn_SUCCESS)
 		{
-			AddResource(pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0));
+			AddResource(pRM->CreateTexture2D(this, RootPath + TexFileName.C_Str(), 1, 0, 0, true));
 			AddResource(pRM->CreateDefaultSampler(this, 2, 0, 0));
 		}
 		else

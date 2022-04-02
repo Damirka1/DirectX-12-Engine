@@ -1,19 +1,14 @@
 #pragma once
 #ifndef APPLICATION_HEADER
 #define APPLICATION_HEADER
-
-#include "..\Engine\Headers\Window.h"
-#include "..\Engine\Headers\FrameCommander.h"
-#include "../Engine/Models/Triangle.h"
-#include "../Engine/Models/Cube.h"
-#include "../Engine/Models/Rectangle.h"
+#include "../Engine/Headers/EngineCore.h"
+#include "../Engine/Headers/Input/Camera.h"
 #include "../Engine/Headers/Input/Keyboard.h"
 #include "../Engine/Headers/Input/Mouse.h"
-#include "../Engine/Headers/Input/Camera.h"
-#include "../Engine/Headers/Model.h"
+
 #include "../Engine/Headers/Scene/Scene.h"
 
-#include "../ConsoleDLL/Console.h"
+
 
 
 class Application
@@ -24,14 +19,14 @@ public:
 	~Application();
 
 private:
-	Console Con;
+	EngineCore* Core;
 
-	Window* pWindow;
-	ResourceManager* pResourceManager;
-	FrameCommander* pFrameCommander;
-	Scene* pScene;
+	std::shared_ptr<Keyboard> kb;
+	std::shared_ptr<Mouse> ms;
+	std::shared_ptr<Scene> pScene;
+
 	Camera* pCamera;
-	std::vector<Model*> models;
+	std::vector<std::shared_ptr<Model>> models;
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include "../Headers/Scene/Scene.h"
-#include "../Headers/Model.h"
+#include "../Headers/Scene/Model.h"
 
 void Scene::AddDrawable(Drawable* pDrawable)
 {
@@ -15,10 +15,14 @@ void Scene::AddDrawable(Drawable* pDrawable)
 		.DrawIndexed[Array->key] = Array;
 }
 
-void Scene::AddModel(Model* pModel)
+void Scene::AddModel(std::shared_ptr<Model> pModel)
 {
 	for (Mesh* m : pModel->Meshes)
+	{
+		if (pCamera)
+			m->Init(pCamera);
 		AddDrawable(m);
+	}
 }
 
 void Scene::SetCamera(Camera* cam)

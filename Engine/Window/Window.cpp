@@ -10,8 +10,7 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	Width(Width),
 	Height(Height),
 	VSync(VSync),
-	Visible(false),
-	t(new Timer)
+	Visible(false)
 {
 	WNDCLASSEX wc = { 0 };
 	wc.cbSize = sizeof(wc);
@@ -80,11 +79,11 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 		pGraphics->VSync = 0;
 
 	// Create input handlers.
-	pKeyboard = new Keyboard();
-	pMouse = new Mouse();
+	pKeyboard = std::make_shared<Keyboard>();
+	pMouse = std::make_shared<Mouse>();
 
-	AddHandler(pKeyboard, "KeyBoard");
-	AddHandler(pMouse, "Mouse");
+	AddHandler(&*pKeyboard, "Keyboard");
+	AddHandler(&*pMouse, "Mouse");
 
 	SetCursor(LoadCursorW(0, IDC_ARROW));
 }
@@ -97,10 +96,7 @@ Window::Window(const wchar_t* WindowName, short Width, short Height, bool VSync)
 
 Window::~Window()
 {
-	delete t;
 	delete pGraphics;
-	delete pKeyboard;
-	delete pMouse;
 }
 
 void Window::SetWindowName(const char* Name) const noexcept
@@ -180,16 +176,6 @@ std::pair<short, short> Window::GetGraphicsResolution() const noexcept
 	return pGraphics->GetResolution();
 }
 
-float Window::TimerPeek() const noexcept
-{
-	return t->Peek();
-}
-
-float Window::TimerMark() const noexcept
-{
-	return t->Mark();
-}
-
 bool Window::AddHandler(MessageHandler* ptr, const char* Name) noexcept
 {
 	const auto i = MessageHandlers.find(Name);
@@ -238,12 +224,12 @@ const Graphics* Window::GetGraphics() const noexcept
 	return pGraphics;
 }
 
-const Keyboard* Window::GetKeyboard() const noexcept
+std::shared_ptr<const Keyboard> Window::GetKeyboard() const noexcept
 {
 	return pKeyboard;
 }
 
-const Mouse* Window::GetMouse() const noexcept
+std::shared_ptr<const Mouse> Window::GetMouse() const noexcept
 {
 	return pMouse;
 }
@@ -253,12 +239,12 @@ Graphics* Window::GetGraphics() noexcept
 	return pGraphics;
 }
 
-Keyboard* Window::GetKeyboard() noexcept
+std::shared_ptr<Keyboard> Window::GetKeyboard() noexcept
 {
 	return pKeyboard;
 }
 
-Mouse* Window::GetMouse() noexcept
+std::shared_ptr<Mouse> Window::GetMouse() noexcept
 {
 	return pMouse;
 }

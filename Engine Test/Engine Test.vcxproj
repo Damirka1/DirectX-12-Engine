@@ -161,9 +161,6 @@ copy "$(ProjectDir)Shaders\" "$(TargetDir)Shaders\"</Command>
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConsoleDLL\ConsoleDLL.vcxproj">
-      <Project>{4d32cdff-67d9-4f58-9338-ca1c90092b6f}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Engine\Engine.vcxproj">
       <Project>{59c25476-0162-499f-afc7-553d446d11d3}</Project>
     </ProjectReference>

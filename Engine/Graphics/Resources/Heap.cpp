@@ -118,11 +118,13 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE HeapDescriptorArray::RootParameter::Range::GetCPUH
 void GlobalHeap::Add_CBV_SHR_UAV_Desc(UINT Count) noexcept
 {
     CBV_SHR_UAV_Desc_count += Count;
+    NeedUpdate = true;
 }
 
 void GlobalHeap::Add_Samplers_Desc(UINT Count) noexcept
 {
     SAMPLERS_Desc_count += Count;
+    NeedUpdate = true;
 }
 
 void GlobalHeap::Initialize(Graphics* pGraphics)
@@ -163,6 +165,7 @@ void GlobalHeap::Initialize(Graphics* pGraphics)
     }
 
     Initialized = true;
+    NeedUpdate = false;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE GlobalHeap::GetCPUStartPtr() noexcept
@@ -198,6 +201,22 @@ bool GlobalHeap::isHeapForSamplersInitialized() noexcept
 void GlobalHeap::Bind(Graphics* pGraphics)
 {
     pGraphics->GetCommandList()->SetDescriptorHeaps(ActiveHeaps, pHeaps.data());
+}
+
+void GlobalHeap::Clear(Graphics* pGraphics)
+{
+    if (Initialized)
+    {
+        pHeaps[0]->Release();
+        pHeaps[1]->Release();
+        Initialized = false;
+        ActiveHeaps = 0;
+    }
+}
+
+bool GlobalHeap::IsNeedUpdate()
+{
+    return NeedUpdate;
 }
 
 GlobalHeap::~GlobalHeap()

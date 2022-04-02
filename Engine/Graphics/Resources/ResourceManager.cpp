@@ -93,8 +93,25 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDr
 	return bind;
 }
 
+// How it's work
+/*
+	if we want to upload something on gpu heap on running engine,
+	we clear all heap state to upload new big one with new preallocated heaps
+
+
+*/
+
 void ResourceManager::InitializeResources(Scene* pScene)
 {
+	if (!Heap.IsNeedUpdate())
+	{
+		pGraphics->Initialize();
+		return;
+	}
+
+	// Clear Heap.
+	Heap.Clear(pGraphics);
+
 	// Initialize Heap.
 	Heap.Initialize(pGraphics);
 
@@ -130,13 +147,14 @@ void ResourceManager::InitializeResources(Scene* pScene)
 			CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = Heap->GetCPUHandle(El->Table, El->Range, El->Index);
 			El->Initialize(pGraphics, Ptr);
 		}
-		Array.second->InitList.clear();
+		//Array.second->InitList.clear();
 		Array.second->pPipelineStateObject->Initialize(pGraphics, Array.second->pRootSignature.get());
+		Array.second->SetReady(true);
 	}
 
 	pGraphics->Initialize();
 
-	DrArraysToInit.clear();
+	//DrArraysToInit.clear();
 
 	// First initialize RootSignatures and PipeLineStateObjects.
 	//for (auto& PSO : pScene->DrawablesMap)
@@ -192,7 +210,9 @@ ResourceManager::~ResourceManager()
 {
 }
 
-Engine_API void ResourceManager::CreateVIBuffers(Drawable* pDrawable, std::vector<unsigned int>* Indecies, const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot)
+void ResourceManager::CreateAllMeshResources(Drawable* pDrawable, std::vector<unsigned int>* Indecies, 
+	const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot,
+	PSO_Layout& PL, RS_Layout& RL, VertexLayout& VL)
 {
 	using namespace std::string_literals;
 	std::string VBkey = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}" + "#"s + "{" + "#"s + std::to_string(((float*)pData)[0]) + "#"s
@@ -207,16 +227,17 @@ Engine_API void ResourceManager::CreateVIBuffers(Drawable* pDrawable, std::vecto
 		std::shared_ptr<VertexBuffer> VB = CreateVertexBuffer(&VBkey, pData, Stride, DataSize, Lay, VertexCount, Slot);
 		std::shared_ptr<IndexBuffer> IB = CreateIndexBuffer(&IBkey, std::move(Indecies));
 		pDrawable->Array = std::make_shared<DrawableArray>(VB, IB, key);
+
+		std::shared_ptr<PipelineStateObject> PSO = CreatePipelineStateObject(PL, VL);
+		std::shared_ptr<RootSignature> RS = CreateRootSignature(pDrawable->Array, PSO->GetKey(), RL);
+
+		pDrawable->Array->SetPSRS(PSO, RS);
 		pDrawable->Array->AddDrawable(pDrawable);
 		DrArraysToInit[key] = pDrawable->Array;
-	}
-}
 
-Engine_API void ResourceManager::CreatePSRS(Drawable* pDrawable, PSO_Layout& PL, RS_Layout& RL, VertexLayout& VL)
-{
-	std::shared_ptr<PipelineStateObject> PSO = CreatePipelineStateObject(PL, VL);
-	std::shared_ptr<RootSignature> RS = CreateRootSignature(pDrawable->Array, PSO->GetKey(), RL);
-	pDrawable->Array->SetPSRS(PSO, RS);
+	}
+	else
+		Drawables[key]->AddDrawable(pDrawable);
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, const std::string& Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)

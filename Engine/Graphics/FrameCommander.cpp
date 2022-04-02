@@ -7,7 +7,6 @@ FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept
 	pGraphics(pWindow->GetGraphics()),
 	pResourceManager(pRM)
 {
-	pScriptManager = new ScriptManager(pWindow);
 }
 
 void FrameCommander::SetBackgroundColor(float r, float g, float b) noexcept
@@ -24,7 +23,7 @@ void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db) noexcep
 	BackgroundColor.z += db;
 }
 
-void FrameCommander::SetScene(Scene* pScene)
+void FrameCommander::SetScene(std::shared_ptr<Scene> pScene)
 {
 	if (pScene)
 		this->pScene = pScene;
@@ -32,10 +31,15 @@ void FrameCommander::SetScene(Scene* pScene)
 		throw std::exception("Scene was nullptr");
 }
 
-void FrameCommander::PrepareAllResources()
+void FrameCommander::SetupInit()
+{
+	pGraphics->SetupInit();
+}
+
+void FrameCommander::InitializeResources()
 {
 	if (pScene)
-		pResourceManager->InitializeResources(pScene);
+		pResourceManager->InitializeResources(&*pScene);
 	else
 		throw std::exception("Set scene to frame commander befor preparetion");
 }
@@ -68,7 +72,6 @@ void FrameCommander::Render()
 
 FrameCommander::~FrameCommander()
 {
-	delete pScriptManager;
 }
 
 FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) noexcept

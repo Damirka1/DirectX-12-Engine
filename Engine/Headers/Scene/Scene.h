@@ -35,7 +35,7 @@ public:
 	Engine_API Scene(Scene&) = delete;
 	Engine_API ~Scene() = default;
 	Engine_API void AddDrawable(Drawable* pDrawable);
-	Engine_API void AddModel(Model* pModel);
+	Engine_API void AddModel(std::shared_ptr<Model> pModel);
 	Engine_API void SetCamera(Camera* pCam);
 
 private:
@@ -44,7 +44,7 @@ private:
 private:
 	std::unordered_map<std::string, PipeLineResources> DrawablesMap;
 
-	Camera* pCamera;
+	Camera* pCamera = nullptr;
 };
 
 #endif

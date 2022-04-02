@@ -34,8 +34,9 @@ public:
 
 	// New load system
 
-	Engine_API void CreateVIBuffers(Drawable* pDrawable, std::vector<unsigned int>* Indecies, const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot = 0);
-	Engine_API void CreatePSRS(Drawable* pDrawable, PSO_Layout& PL, RS_Layout& RL, VertexLayout& VL);
+	Engine_API void CreateAllMeshResources(Drawable* pDrawable, std::vector<unsigned int>* Indecies,
+		const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot,
+		PSO_Layout& PL, RS_Layout& RL, VertexLayout& VL);
 
 private:
 	Graphics* pGraphics;

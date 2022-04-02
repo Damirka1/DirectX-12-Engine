@@ -39,3 +39,14 @@ void DrawableArray::InitCamera(Camera* cam) noexcept
 	for (auto& Drawable : pDrawables)
 		Drawable->Init(cam);
 }
+
+bool DrawableArray::IsReady() noexcept
+{
+	return Ready;
+}
+
+void DrawableArray::SetReady(bool Ready) noexcept
+{
+	for (Drawable* obj : pDrawables)
+		obj->Ready = Ready;
+}

@@ -27,6 +27,11 @@ void Drawable::SetVisibility(bool Visible)
 	this->Visible = Visible;
 }
 
+bool Drawable::IsReady()
+{
+	return Ready;
+}
+
 DirectX::XMFLOAT3 Drawable::GetPos()
 {
 	return Pos;

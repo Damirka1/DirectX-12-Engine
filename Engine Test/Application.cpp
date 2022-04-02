@@ -2,43 +2,53 @@
 #include <random>
 
 Application::Application(HINSTANCE hInstance)
-	:
-	Con(L"DirectX 12 Console")
 {
-	pWindow = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
-	Con << pWindow->GetGraphics()->GetInfo().c_str();
-	pWindow->Show();
-	pWindow->GetMouse()->EnableRawInput();
-	pCamera = new Camera(pWindow->GetGraphicsResolution());
-	pCamera->SetSensitivity(0.005f);
-	pResourceManager = new ResourceManager(pWindow);
-	pFrameCommander = new FrameCommander(pWindow, pResourceManager);
-	pFrameCommander->SetBackgroundColor(0.2f, 0.2f, 0.2f);
+	Core = new EngineCore(hInstance);
+	Core->PrintGraphicsInfoToConsole();
+	Core->ShowWindow();
 
-	pScene = new Scene();
+	kb = Core->GetKeyboardInput();
+	ms = Core->GetMouseInput();
+
+	ms->EnableRawInput();
+
+	pCamera = new Camera(std::make_pair<short, short>(1280, 720));
+	pCamera->SetSensitivity(0.005f);
+
+	Core->SetBackgroundColor(0.2f, 0.2f, 0.2f);
+
+	pScene = Core->CreateScene();
 	pScene->SetCamera(pCamera);
 
-	models.push_back(new Model(pResourceManager, "C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", 2.0f));
+	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 2.0f));
 	models[0]->SetPos({ -5.0f, -3.0f, 4.0f });
 	pScene->AddModel(models[0]);
-
-	models.push_back(new Model(pResourceManager, "C:\\Home\\Graphics Projects\\3d models\\123\\obj\\kindred.obj"));
+	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test2", 3.0f));
+	models[1]->SetPos({ 5.0f, -3.0f, 4.0f });
 	pScene->AddModel(models[1]);
 
-	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
-	Con << L"\n";
-	pFrameCommander->SetScene(pScene);
-	pFrameCommander->PrepareAllResources();
-	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
+	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\123\\obj\\kindred.obj", "Test3"));
+	pScene->AddModel(models[2]);
+	Core->SetCurrentScene(pScene);
+	Core->PrepareDX();
 }
 
 void Application::Run()
 {
-	while (pWindow->IsExist())
+	bool add = false;
+	while (Core->WindowIsExist())
 	{
-		pWindow->ProcessMessages();
+		Core->SetupJobs();
 
-		auto kb = pWindow->GetKeyboard();
+		if (add)
+		{
+			models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 1.0f));
+			models[3]->SetPos({ -5.0f, -3.0f, -4.0f });
+			pScene->AddModel(models[3]);
+			add = false;
+		}
+
+		
 
 		while (auto El = kb->GetEvent())
 		{
@@ -48,9 +58,14 @@ void Application::Run()
 			auto Ev = El.value();
 
 			if (Ev == '1')
-				pWindow->DisableCursor();
+				Core->DisableCursor();
 			else if (Ev == '2')
-				pWindow->EnableCursor();
+				Core->EnableCursor();
+			else if (Ev == '3')
+			{
+				add = true;
+			}
+
 		}
 
 		float speed = 1.0f;
@@ -67,8 +82,6 @@ void Application::Run()
 		if (kb->KeyIsPressed('A'))
 			pCamera->Translate({ -0.1f * speed , 0.0f, 0.0f });
 
-
-		auto ms = pWindow->GetMouse();
 		if (!ms->IsCursorEnabled())
 		{
 			while (auto El = ms->GetRawData())
@@ -80,21 +93,16 @@ void Application::Run()
 			}
 		}
 
-		for (Model* m : models)
+		for (auto m : models)
 			m->Update();
 
-		// Render.
-		pFrameCommander->Render();
+		Core->ExecuteJobs();
+
 	}
 }
 
 Application::~Application()
 {
-	delete pWindow;
-	delete pFrameCommander;
-	delete pResourceManager;
+	delete Core;
 	delete pCamera;
-	delete pScene;
-	for (Model* m : models)
-		delete m;
 }

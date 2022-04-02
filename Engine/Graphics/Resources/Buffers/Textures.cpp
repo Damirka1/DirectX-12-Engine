@@ -11,7 +11,7 @@ Texture2D::Texture2D(std::unique_ptr<DirectX::ScratchImage> pImage, D3D12_RESOUR
 
 void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
-	ID3D12Device8* pDevice = pGraphics->GetDevice();
+	ID3D12Device9* pDevice = pGraphics->GetDevice();
 
 	if (!Initialized)
 	{

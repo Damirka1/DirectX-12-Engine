@@ -37,6 +37,8 @@ public:
 	Engine_API void Translate(DirectX::XMFLOAT3 T);
 	Engine_API void SetVisibility(bool Visible);
 
+	Engine_API bool IsReady();
+
 	Engine_API void AddEventListener(EventListener* EvListener);
 	Engine_API void RemoveEventListener(EventListener* EvListener);
 	Engine_API const std::unordered_map<LONG_PTR, EventListener*>* const GetEventListeners();
@@ -47,6 +49,7 @@ public:
 
 protected:
 	bool Visible = true;
+	bool Ready = false;
 
 	DirectX::XMMATRIX Transformation;
 	DirectX::XMFLOAT3 Pos;

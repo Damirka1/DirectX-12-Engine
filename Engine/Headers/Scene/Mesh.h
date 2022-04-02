@@ -1,5 +1,5 @@
 #pragma once
-#include "../Headers/Graphics/Resources/Drawable.h"
+#include "../Graphics/Resources/Drawable.h"
 #include <filesystem>
 #include <DirectXMath.h>
 

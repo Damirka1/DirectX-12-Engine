@@ -7,7 +7,7 @@ Buffer::Buffer(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_S
 
 void Buffer::Initialize(Graphics* pGraphics, void* pData, UINT DataSize, D3D12_RESOURCE_STATES state)
 {
-	ID3D12Device8* pDevice = pGraphics->GetDevice();
+	ID3D12Device9* pDevice = pGraphics->GetDevice();
 	ID3D12GraphicsCommandList6* pCommandList = pGraphics->GetCommandList();
 
 	// Create read only buffer.
@@ -66,6 +66,8 @@ VertexBuffer::VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT V
 	{
 		// Copy data.
 		this->pData = malloc(DataSize);
+		if (!this->pData)
+			throw std::exception("Not enough memory");
 		memcpy(this->pData, pData, DataSize);
 	}
 	else
@@ -166,7 +168,7 @@ ConstantBuffer::ConstantBuffer(const void* pData, UINT DataSize)
 
 void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
-	ID3D12Device8* pDevice = pGraphics->GetDevice();
+	ID3D12Device9* pDevice = pGraphics->GetDevice();
 
 	UINT BufferSize = (DataSize + 255) & ~255;
 

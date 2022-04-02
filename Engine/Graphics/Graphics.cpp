@@ -251,8 +251,23 @@ Graphics::~Graphics()
     pdsDescriptorHeap = nullptr;
 }
 
+void Graphics::SetupInit()
+{
+    Error_Check(
+        pCommandAllocators[FrameIndex]->Reset()
+    );
+
+    Error_Check(
+        pCommandList->Reset(pCommandAllocators[FrameIndex], nullptr)
+    );
+}
+
 void Graphics::Initialize()
 {
+    // TODO: change type of command list to COMMAND_LIST_TYPE_COPY
+
+
+
     // Close command list.
     pCommandList->Close();
 
@@ -329,7 +344,7 @@ void Graphics::Execute()
     MoveToNextFrame();
 }
 
-ID3D12Device8* Graphics::GetDevice() noexcept
+ID3D12Device9* Graphics::GetDevice() noexcept
 {
     return pDevice;
 }

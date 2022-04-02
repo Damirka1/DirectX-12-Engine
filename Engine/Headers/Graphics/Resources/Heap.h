@@ -31,6 +31,11 @@ public:
 
 	void Bind(Graphics* pGraphics);
 
+	// TODO: make thread safe!
+	void Clear(Graphics* pGraphics);
+
+	bool IsNeedUpdate();
+
 	~GlobalHeap();
 
 private:
@@ -41,8 +46,12 @@ private:
 	bool Initialized = false;
 	bool HeapCBVInitialized = false;
 	bool HeapSamplersInitialized = false;
+	bool NeedUpdate = false;
 };
 
+
+
+// TODO: move to another file
 class HeapDescriptorArray : public Bindable
 {
 	class RootParameter

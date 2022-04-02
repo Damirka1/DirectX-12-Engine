@@ -1,12 +1,13 @@
 #pragma once
 #include <chrono>
+#include "Header.h"
 
 class Timer
 {
 public:
-	Timer() noexcept;
-	float Mark() noexcept;
-	float Peek() const noexcept;
+	Engine_API Timer() noexcept;
+	Engine_API float Mark() noexcept;
+	Engine_API float Peek() const noexcept;
 private:
 	std::chrono::steady_clock::time_point last;
 };
