@@ -108,6 +108,15 @@
     <ClCompile Include="Graphics\Resources\UI_Element.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Resources\Heap\Descriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Resources\Heap\DescriptorHeapArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Resources\Heap\DescriptorsGlobalHeap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Buffers.h">
@@ -471,6 +480,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Graphics\Resources\UI_Element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorsGlobalHeap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorHeapArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\Resources\Heap\Descriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

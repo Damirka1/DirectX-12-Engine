@@ -8,7 +8,7 @@ class Sampler : public Resource
 public:
 	Sampler(D3D12_SAMPLER_DESC* pDesc) noexcept;
 	void Bind(Graphics* pGraphics);
-	void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) override;
+	void Initialize(Graphics* pGraphics) override;
 	~Sampler() override;
 private:
 	D3D12_SAMPLER_DESC pDesc;

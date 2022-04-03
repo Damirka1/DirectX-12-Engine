@@ -27,7 +27,7 @@ class VertexBuffer : public Buffer, public Resource
 public:
 	VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT VetexCount, UINT Slot = 0);
 	void Bind(Graphics* pGraphics) override;
-	void Initialize(Graphics* pGraphics);
+	void Initialize(Graphics* pGraphics) override;
 	~VertexBuffer() override;
 	unsigned int GetVertexCount() noexcept;
 	std::string GetKey() noexcept;
@@ -47,7 +47,7 @@ class IndexBuffer : public Buffer, public Resource
 public:
 	IndexBuffer(std::vector<unsigned int>* Indecies) noexcept;
 	void Bind(Graphics* pGraphics) override;
-	void Initialize(Graphics* pGraphics);
+	void Initialize(Graphics* pGraphics) override;
 	~IndexBuffer() override;
 	unsigned int GetIndeciesCount() noexcept;
 	std::string GetKey() noexcept;
@@ -64,7 +64,7 @@ class ConstantBuffer : public Resource
 public:
 	ConstantBuffer(const void* pData, unsigned int DataSize);
 	void Bind(Graphics* pGraphics) override;
-	void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) override;
+	void Initialize(Graphics* pGraphics) override;
 	void Update(const void* pData, UINT DataSize);
 	~ConstantBuffer() override;
 

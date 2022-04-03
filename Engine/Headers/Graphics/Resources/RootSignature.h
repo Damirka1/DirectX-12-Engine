@@ -65,7 +65,7 @@ class RootSignature : public Resource
 	friend class ResourceManager;
 public:
 	RootSignature(RS_Layout& Lay) noexcept;
-	void Initialize(Graphics* pGraphics);
+	void Initialize(Graphics* pGraphics) override;
 	void Bind(Graphics* pGraphics) override;
 	~RootSignature();
 	std::string GetKey();

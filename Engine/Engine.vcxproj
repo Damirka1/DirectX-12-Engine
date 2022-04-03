@@ -209,6 +209,9 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Resources\DrawableArrayMesh.cpp" />
     <ClCompile Include="Graphics\Resources\DrawableMesh.cpp" />
     <ClCompile Include="Graphics\Resources\Heap.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap\Descriptor.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap\DescriptorHeapArray.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap\DescriptorsGlobalHeap.cpp" />
     <ClCompile Include="Graphics\Resources\PipeLineState.cpp" />
     <ClCompile Include="Graphics\Resources\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Resources\RootSignature.cpp" />
@@ -331,6 +334,9 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
     <ClInclude Include="Headers\Graphics\GraphicsException.h" />
     <ClInclude Include="Headers\Graphics\Resources\Bindable.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap\Descriptor.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorHeapArray.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorsGlobalHeap.h" />
     <ClInclude Include="Headers\Graphics\Resources\Drawable.h" />
     <ClInclude Include="Headers\Graphics\Resources\DrawableArray.h" />
     <ClInclude Include="Headers\Graphics\Resources\DrawableArrayMesh.h" />

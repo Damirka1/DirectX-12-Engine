@@ -56,8 +56,8 @@ class PipelineStateObject : public Resource
 {
 	friend class ResourceManager;
 public:
-	PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept;
-	void Initialize(Graphics* pGraphics, RootSignature* pRS);
+	PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay, std::shared_ptr<RootSignature> pRootSignature) noexcept;
+	void Initialize(Graphics* pGraphics) override;
 	void Bind(Graphics* pGraphics) override;
 	~PipelineStateObject();
 	std::string GetKey() noexcept;
@@ -65,6 +65,8 @@ public:
 private:
 	void SetKey(std::string Key) noexcept;
 	void ReadShader(std::string Path, D3D12_SHADER_BYTECODE* pDesc);
+
+	std::shared_ptr<RootSignature> pRootSignature;
 
 	ID3D12PipelineState* pPipelineStateObject;
 	PSO_Layout P_Lay;

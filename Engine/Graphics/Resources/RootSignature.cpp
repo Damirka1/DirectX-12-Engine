@@ -7,7 +7,9 @@
 RootSignature::RootSignature(RS_Layout& Lay) noexcept
     :
     Lay(Lay)
-{}
+{
+    Name = "RootSignature";
+}
 
 void RootSignature::Initialize(Graphics* pGraphics)
 {

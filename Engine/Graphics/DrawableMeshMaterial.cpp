@@ -53,8 +53,8 @@ std::shared_ptr<MeshMaterial> MeshMaterial::GetDefaultMaterial(ResourceManager* 
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader" + ShaderCode + ".cso"));
 	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
 
-	StaticMaterial->pPipelineStateObject = pRM->CreatePipelineStateObject(pLay, VLay);
 	StaticMaterial->pRootSignature = pRM->CreateRootSignature(RLay);
+	StaticMaterial->pPipelineStateObject = pRM->CreatePipelineStateObject(pLay, VLay, StaticMaterial->pRootSignature);
 
 	return StaticMaterial;
 }

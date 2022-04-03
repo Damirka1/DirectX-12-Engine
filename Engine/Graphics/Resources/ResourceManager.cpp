@@ -4,15 +4,14 @@
 #include "../../Headers/Utility.h"
 #include "../../Headers/Scene/Scene.h"
 
-#include "../../Headers/Graphics/Resources/Heap.h"
 #include "../../Headers/Graphics/Resources/ResourceHeader.h"
 #include "../../Headers/Graphics/Resources/DrawableMesh.h"
 #include "../../Headers/Graphics/Resources/DrawableMeshMaterial.h"
 
 ResourceManager::ResourceManager(Window* pWindow) noexcept
-	:
-	pGraphics(pWindow->GetGraphics())
 {
+	pGraphics = pWindow->GetGraphics();
+	Heap.Initialize(pGraphics);
 }
 
 std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
@@ -21,59 +20,63 @@ std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pD
 	std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}" + "#"s + "{" + "#"s + std::to_string(((float*)pData)[0]) + "#"s
 		+ std::to_string(((float*)pData)[1]) + "#"s + std::to_string(((float*)pData)[3]) + "}";
 
-	const auto i = VertexBuffers.find(key);
-	if (i == VertexBuffers.end())
+	const auto i = BaseResources.find(key);
+	if (i == BaseResources.end())
 	{
 		auto res = std::make_shared<VertexBuffer>(pData, Stride, DataSize, VertexCount, Slot);
-		VertexBuffers[key] = res;
+		BaseResources[key] = res;
+		ToInit.push_back(res);
 		return res;
 	}
-	return i->second;
+	return std::static_pointer_cast<VertexBuffer>(i->second);
 }
 
 std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(std::vector<unsigned int>* Indecies) noexcept
 {
 	using namespace std::string_literals;
 	std::string key = typeid(IndexBuffer).name() + "#"s + std::to_string(Indecies->size()) + "{" + std::to_string((*Indecies)[0]) + "#"s + std::to_string((*Indecies)[1]) + "#"s + std::to_string((*Indecies)[2]) + "}";
-	const auto i = IndexBuffers.find(key);
-	if (i == IndexBuffers.end())
+	const auto i = BaseResources.find(key);
+	if (i == BaseResources.end())
 	{
 		auto res = std::make_shared<IndexBuffer>(std::move(Indecies));
-		IndexBuffers[key] = res;
+		BaseResources[key] = res;
+		ToInit.push_back(res);
 		return res;
 	}
-	return i->second;
+	return std::static_pointer_cast<IndexBuffer>(i->second);
 }
 
 std::shared_ptr<RootSignature> ResourceManager::CreateRootSignature(RS_Layout& Lay) noexcept
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(RootSignature).name() + "#"s + Lay.GetCode();
-	const auto i = RootSignatures.find(key);
+	const auto i = BaseResources.find(key);
 	
-	if (i == RootSignatures.end())
+	if (i == BaseResources.end())
 	{
 		auto res = std::make_shared<RootSignature>(Lay);
 		res->SetKey(key);
-		RootSignatures[key] = res;
+		BaseResources[key] = res;
+		res->Initialize(pGraphics);
 		return res;
 	}
-	return i->second;
+	return std::static_pointer_cast<RootSignature>(i->second);
 }
 
-std::shared_ptr<PipelineStateObject> ResourceManager::CreatePipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept
+std::shared_ptr<PipelineStateObject> ResourceManager::CreatePipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay, std::shared_ptr<RootSignature> pRootSignature) noexcept
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay.GetCode();
-	const auto i = PipelineStateObjects.find(key);
-	if (i == PipelineStateObjects.end())
+	const auto i = BaseResources.find(key);
+	if (i == BaseResources.end())
 	{
-		auto res = std::make_shared<PipelineStateObject>(pLay, vLay);
+		auto res = std::make_shared<PipelineStateObject>(pLay, vLay, pRootSignature);
 		res->SetKey(key);
-		PipelineStateObjects[key] = res;
+		BaseResources[key] = res;
+		ToInit.push_back(res);
 		return res;
 	}
-	return i->second;
+	return std::static_pointer_cast<PipelineStateObject>(i->second);
 }
 
 std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(const void* pData, unsigned int DataSize, UINT Index) noexcept
@@ -82,108 +85,47 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(const void* p
 	res->SetHeapIndex(Index);
 
 	// Increment desc count.
-	Heap.Add_CBV_SHR_UAV_Desc(1);
+	Heap.IncrementDescCountForCbvSrvUav();
 
 	ConstBuffers.push_back(res);
 
 	return res;
 }
 
-// How it's work
-/*
-	if we want to upload something on gpu heap on running engine,
-	we clear all heap state to upload new big one with new preallocated heaps
-
-
-*/
-
 void ResourceManager::InitializeResources(Scene* pScene)
 {
-	if (!Heap.IsNeedUpdate())
+	if (Heap.IsNeedUpdateHeap0())
 	{
-		pGraphics->Initialize();
-		return;
+		Heap.UpdateHeap0(pGraphics);
+
+		for (auto& rs : HeapResources)
+		{
+			Heap.SetResource(rs.second);
+			ToInit.push_back(rs.second);
+		}
+
+		for (auto& cb : ConstBuffers)
+		{
+			Heap.SetResource(cb);
+			ToInit.push_back(cb);
+		}
 	}
 
-	// Clear Heap.
-	Heap.Clear(pGraphics);
-
-	// Initialize Heap.
-	Heap.Initialize(pGraphics);
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStart;
-	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStart;
-	if (Heap.isHeapForCbvInitialized())
+	if (Heap.IsNeedUpdateHeap1())
 	{
-		pCPUStart = CD3DX12_CPU_DESCRIPTOR_HANDLE(Heap.GetCPUStartPtr());
-		pGPUStart = CD3DX12_GPU_DESCRIPTOR_HANDLE(Heap.GetGPUStartPtr());
+		Heap.UpdateHeap1(pGraphics);
+
+		for (auto& s : Samplers)
+		{
+			Heap.SetSampler(s.second);
+			ToInit.push_back(s.second);
+		}
 	}
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE pCPUStartSamplers;
-	CD3DX12_GPU_DESCRIPTOR_HANDLE pGPUStartSamplers;
-	if (Heap.isHeapForSamplersInitialized())
-	{
-		pCPUStartSamplers = CD3DX12_CPU_DESCRIPTOR_HANDLE(Heap.GetCPUStartPtrForSAMPLERS());
-		pGPUStartSamplers = CD3DX12_GPU_DESCRIPTOR_HANDLE(Heap.GetGPUStartPtrForSAMPLERS());
-	}
+	for (auto& res : ToInit)
+		res->Initialize(pGraphics);
 
-	for (auto& rs : RootSignatures)
-		rs.second->Initialize(pGraphics);
-	for (auto& pso : PipelineStateObjects)
-		pso.second->Initialize(pGraphics, RootSignatures.begin()->second.get());
-	for (auto& vb : VertexBuffers)
-		vb.second->Initialize(pGraphics);
-	for (auto& ib : IndexBuffers)
-		ib.second->Initialize(pGraphics);
-
-	auto pDevice = pGraphics->GetDevice();
-	UINT IncrementSizeCbv = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	UINT IncrementSizeSmp = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
-
-	for (auto& rs : Resources)
-	{
-		rs.second->Initialize(pGraphics, pCPUStart);
-		rs.second->pGpuHandle = pGPUStart;
-		pCPUStart.Offset(IncrementSizeCbv);
-		pGPUStart.Offset(IncrementSizeCbv);
-	}
-
-	for (auto& cb : ConstBuffers)
-	{
-		cb->Initialize(pGraphics, pCPUStart);
-		cb->pGpuHandle = pGPUStart;
-		pCPUStart.Offset(IncrementSizeCbv);
-		pGPUStart.Offset(IncrementSizeCbv);
-	}
-
-	for (auto& s : Samplers)
-	{
-		s.second->Initialize(pGraphics, pCPUStartSamplers);
-		s.second->pGpuHandle = pGPUStartSamplers;
-		pCPUStartSamplers.Offset(IncrementSizeSmp);
-		pGPUStartSamplers.Offset(IncrementSizeSmp);
-	}
-
-	//for (auto& Array : DrArraysToInit)
-	//{
-	//	Array.second->pRootSignature->Initialize(pGraphics);
-	//	Array.second->pVertexBuffer->Initialize(pGraphics);
-	//	Array.second->pIndexBuffer->Initialize(pGraphics);
-
-	//	if (!Array.second->pHeap)
-	//		continue;
-
-	//	auto Heap = Array.second->pHeap;
-	//	Heap->InitializePointers(pGraphics, pCPUStart, pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
-	//	for (auto& El : Array.second->InitList)
-	//	{
-	//		CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = Heap->GetCPUHandle(El->Table, El->Range, El->Index);
-	//		El->Initialize(pGraphics, Ptr);
-	//	}
-	//	//Array.second->InitList.clear();
-	//	Array.second->pPipelineStateObject->Initialize(pGraphics, Array.second->pRootSignature.get());
-	//	Array.second->SetReady(true);
-	//}
+	ToInit.clear();
 
 	pGraphics->Initialize();
 
@@ -196,8 +138,8 @@ ResourceManager::~ResourceManager()
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader)
 {
-	const auto i = Resources.find(Path);
-	if (i == Resources.end())
+	const auto i = HeapResources.find(Path);
+	if (i == HeapResources.end())
 	{
 		// Load image from file.
 		std::unique_ptr<DirectX::ScratchImage> img = std::make_unique<DirectX::ScratchImage>();
@@ -220,16 +162,15 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(const std::string& P
 		textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 
 		// Create texture pointer.
-		auto bind = std::make_shared<Texture2D>(std::move(img), &textureDesc, OnlyPixelShader);
-		bind->SetHeapIndex(Index);
-		Resources[Path] = bind;
+		auto res = std::make_shared<Texture2D>(std::move(img), &textureDesc, OnlyPixelShader);
+		res->SetHeapIndex(Index);
+		HeapResources[Path] = res;
 
 		// Increment desc count.
-		Heap.Add_CBV_SHR_UAV_Desc(1);
+		Heap.IncrementDescCountForCbvSrvUav();
 
-		return bind;
+		return res;
 	}
-	// Add to initialize list for setting descriptors.
 	return std::static_pointer_cast<Texture2D>(i->second);
 }
 
@@ -259,7 +200,7 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexc
 		res->SetHeapIndex(Index);
 
 		// Increment desc count.
-		Heap.Add_Samplers_Desc(1);
+		Heap.IncrementDescCoutForSamplers();
 
 		Samplers[key] = res;
 		return res;

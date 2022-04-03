@@ -62,6 +62,7 @@ VertexBuffer::VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT V
 	Stride(Stride),
 	VertexCount(VertexCount)
 {
+	Name = "VertexBuffer";
 	if (pData)
 	{
 		// Copy data.
@@ -118,6 +119,7 @@ IndexBuffer::IndexBuffer(std::vector<unsigned int>* Indecies) noexcept
 	IndeciesCount(static_cast<unsigned int>(Indecies->size())),
 	Indecies(*Indecies)
 {
+	Name = "IndexBuffer";
 }
 
 void IndexBuffer::Bind(Graphics* pGraphics)
@@ -164,17 +166,17 @@ ConstantBuffer::ConstantBuffer(const void* pData, UINT DataSize)
 {
 	if (!pData)
 		throw std::exception("Null pointer in constant buffer");
+	Name = "ConstantBuffer";
 }
 
 void ConstantBuffer::Bind(Graphics* pGraphics)
 {
-	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Index, pGpuHandle);
+	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Index, pDescriptor->GetGpuHandle());
 }
 
-void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
+void ConstantBuffer::Initialize(Graphics* pGraphics)
 {
 	ID3D12Device9* pDevice = pGraphics->GetDevice();
-
 	UINT BufferSize = (DataSize + 255) & ~255;
 
 	if (!Initialized)
@@ -191,15 +193,14 @@ void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE
 		);
 
 		Update(pData, DataSize);
-
 		Initialized = true;
-
-		// Describe and create a constant buffer view.
-		BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
-		BufferView.SizeInBytes = BufferSize;
 	}
 
-	pDevice->CreateConstantBufferView(&BufferView, pHandle);
+	// Describe and create a constant buffer view.
+	BufferView.BufferLocation = pBuffer->GetGPUVirtualAddress();
+	BufferView.SizeInBytes = BufferSize;
+
+	pDevice->CreateConstantBufferView(&BufferView, pDescriptor->GetCpuHandle());
 }
 
 void ConstantBuffer::Update(const void* pData, UINT DataSize)
