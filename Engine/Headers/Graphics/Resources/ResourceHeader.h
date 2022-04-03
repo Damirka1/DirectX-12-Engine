@@ -1,6 +1,6 @@
 #pragma once
-#ifndef BINDABLESLIST_HEADER
-#define BINDABLESLIST_HEADER
+#ifndef RESOURCESLIST_HEADER
+#define RESOURCESLIST_HEADER
 #include "Buffers/Buffers.h"
 #include "Buffers/Textures.h"
 #include "Buffers/Samplers.h"

@@ -1,6 +1,8 @@
 #include "..\..\Headers\Graphics\Resources\PipeLineState.h"
+#include "..\..\Headers\Graphics\Resources\Resource.h"
 #include "..\..\Headers\Utility.h"
 #include "..\..\Headers\Graphics\Error_Check.h"
+#include "../../Headers/Graphics.h"
 
 
 PSO_Layout::PSO_Layout(unsigned int RTC, unsigned int SmpCount) noexcept

@@ -1,10 +1,20 @@
 #pragma once
 #ifndef ENGINE_HEADER
 #define ENGINE_HEADER
-#include "../Console/Console.h"
+#include "Window.h"
+#include "Graphics.h"
 #include "ResourceManager.h"
 #include "FrameCommander.h"
-#include "Scene/Model.h"
+//#include "Events/ScriptManager.h"
+#include "../Console/Console.h"
+
+#include "Timer.h"
+#include "Input/Camera.h"
+#include "Input/Mouse.h"
+#include "Input/Keyboard.h"
+
+
+#include "Scene/Components/StaticMeshComponent.h"
 
 
 class EngineCore
@@ -125,16 +135,16 @@ public:
 
 	// TODO: finish memory load system!
 	// TODO: make this func thread safe!
-	std::shared_ptr<Model> LoadModel(std::string Path, std::string Tag, float Scale = 1.0f)
+	std::shared_ptr<StaticMeshComponent> LoadModel(std::string Path, std::string Tag, float Scale = 1.0f)
 	{
-		std::shared_ptr<Model> _Model = std::make_shared<Model>(_ResourceManager, Path, Scale);
+		std::shared_ptr<StaticMeshComponent> _Model = std::make_shared<StaticMeshComponent>(_ResourceManager, Path, Scale);
 		// TODO: add tag to model
 
 		return _Model;
 	}
 
 	void RemoveModelByTag(std::string Tag);
-	void RemoveModelByPtr(std::shared_ptr<Model> Model);
+	//void RemoveModelByPtr(std::shared_ptr<Model> Model);
 
 
 
@@ -154,7 +164,7 @@ public:
 		delete _Window;
 		delete _ResourceManager;
 		delete _FrameCommander;
-		delete _ScriptManager;
+		//delete _ScriptManager;
 		delete _Timer;
 	}
 
@@ -164,7 +174,7 @@ private:
 		Window* _Window;
 		ResourceManager* _ResourceManager;
 		FrameCommander* _FrameCommander;
-		ScriptManager* _ScriptManager;
+		//ScriptManager* _ScriptManager;
 
 		Timer* _Timer;
 
@@ -178,7 +188,6 @@ private:
 		// Objects:
 		// TODO: don't forget to add els to this vectors
 		std::vector<std::shared_ptr<Scene>> _Scenes;
-		std::vector<std::shared_ptr<Model>> _Models;
 
 
 		// TODO: make jobs system

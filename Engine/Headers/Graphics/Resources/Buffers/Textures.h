@@ -8,6 +8,7 @@ class Texture2D : public Resource
 {
 public:
 	Texture2D(std::unique_ptr<DirectX::ScratchImage> pImage, D3D12_RESOURCE_DESC* pDesc, bool OnlyPixelShader = false) noexcept;
+	void Bind(Graphics* pGraphics) override;
 	void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) override;
 	~Texture2D() override;
 

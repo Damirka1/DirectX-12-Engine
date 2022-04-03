@@ -1,5 +1,4 @@
 #include "../../Headers/Graphics/Resources/Drawable.h"
-#include "../../Headers/Graphics/Resources/BindablesHeader.h"
 #include "../../Headers/Input/Camera.h"
 
 Drawable::Drawable() noexcept

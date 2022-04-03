@@ -1,7 +1,8 @@
 #pragma once
 #ifndef PIPELINESTATEOBJECT_HEADER
 #define PIPELINESTATEOBJECT_HEADER
-#include "Bindable.h"
+
+#include "Resource.h"
 
 class PSO_Layout
 {
@@ -51,14 +52,14 @@ private:
 #include "VertexLayout.h"
 #include "RootSignature.h"
 
-class PipelineStateObject : public Bindable
+class PipelineStateObject : public Resource
 {
 	friend class ResourceManager;
 public:
 	PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept;
 	void Initialize(Graphics* pGraphics, RootSignature* pRS);
 	void Bind(Graphics* pGraphics) override;
-	~PipelineStateObject() override;
+	~PipelineStateObject();
 	std::string GetKey() noexcept;
 
 private:

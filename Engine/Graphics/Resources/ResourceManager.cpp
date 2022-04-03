@@ -4,93 +4,89 @@
 #include "../../Headers/Utility.h"
 #include "../../Headers/Scene/Scene.h"
 
+#include "../../Headers/Graphics/Resources/Heap.h"
+#include "../../Headers/Graphics/Resources/ResourceHeader.h"
+#include "../../Headers/Graphics/Resources/DrawableMesh.h"
+#include "../../Headers/Graphics/Resources/DrawableMeshMaterial.h"
+
 ResourceManager::ResourceManager(Window* pWindow) noexcept
 	:
 	pGraphics(pWindow->GetGraphics())
 {
 }
 
-std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(std::string* key, const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
+std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
 {
-	const auto i = Bindables.find(*key);
-	if (i == Bindables.end())
+	using namespace std::string_literals;
+	std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}" + "#"s + "{" + "#"s + std::to_string(((float*)pData)[0]) + "#"s
+		+ std::to_string(((float*)pData)[1]) + "#"s + std::to_string(((float*)pData)[3]) + "}";
+
+	const auto i = VertexBuffers.find(key);
+	if (i == VertexBuffers.end())
 	{
-		auto bind = std::make_shared<VertexBuffer>(pData, Stride, DataSize, VertexCount, Slot);
-		Bindables[*key] = bind;
-		return bind;
+		auto res = std::make_shared<VertexBuffer>(pData, Stride, DataSize, VertexCount, Slot);
+		VertexBuffers[key] = res;
+		return res;
 	}
-	return std::static_pointer_cast<VertexBuffer>(i->second);
+	return i->second;
 }
 
-std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(std::string* key, std::vector<unsigned int>* Indecies) noexcept
+std::shared_ptr<IndexBuffer> ResourceManager::CreateIndexBuffer(std::vector<unsigned int>* Indecies) noexcept
 {
-	
-	const auto i = Bindables.find(*key);
-	if (i == Bindables.end())
+	using namespace std::string_literals;
+	std::string key = typeid(IndexBuffer).name() + "#"s + std::to_string(Indecies->size()) + "{" + std::to_string((*Indecies)[0]) + "#"s + std::to_string((*Indecies)[1]) + "#"s + std::to_string((*Indecies)[2]) + "}";
+	const auto i = IndexBuffers.find(key);
+	if (i == IndexBuffers.end())
 	{
-		auto bind = std::make_shared<IndexBuffer>(std::move(Indecies));
-		Bindables[*key] = bind;
-		return bind;
+		auto res = std::make_shared<IndexBuffer>(std::move(Indecies));
+		IndexBuffers[key] = res;
+		return res;
 	}
-	return std::static_pointer_cast<IndexBuffer>(i->second);
+	return i->second;
 }
 
-std::shared_ptr<RootSignature> ResourceManager::CreateRootSignature(std::shared_ptr<DrawableArray> pArray, std::string& PSO_Key, RS_Layout& Lay) noexcept
+std::shared_ptr<RootSignature> ResourceManager::CreateRootSignature(RS_Layout& Lay) noexcept
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(RootSignature).name() + "#"s + Lay.GetCode();
-	const auto i = Bindables.find(key);
+	const auto i = RootSignatures.find(key);
 	
-	std::shared_ptr<RootSignature> bind;
-
-	if (i == Bindables.end())
+	if (i == RootSignatures.end())
 	{
-		bind = std::make_shared<RootSignature>(Lay);
-		bind->SetKey(key);
-		Bindables[key] = bind;
+		auto res = std::make_shared<RootSignature>(Lay);
+		res->SetKey(key);
+		RootSignatures[key] = res;
+		return res;
 	}
-	else
-		bind = std::static_pointer_cast<RootSignature>(i->second);
-
-	// If heap is not exists.
-	if (!pArray->pHeap)
-	{
-		// Create heap.
-		std::shared_ptr<HeapDescriptorArray> pHeap = std::make_shared<HeapDescriptorArray>();
-		// Initialize.
-		pHeap->Initialize(Lay);
-		// Insert in the beggining of bindables.
-		pArray->pHeap = pHeap;
-	}
-	
-	return bind;
+	return i->second;
 }
 
 std::shared_ptr<PipelineStateObject> ResourceManager::CreatePipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept
 {
 	using namespace std::string_literals;
 	const std::string key = typeid(PipelineStateObject).name() + "#"s + pLay.GetCode() + "#"s + vLay.GetCode();
-	const auto i = Bindables.find(key);
-	if (i == Bindables.end())
+	const auto i = PipelineStateObjects.find(key);
+	if (i == PipelineStateObjects.end())
 	{
-		auto bind = std::make_shared<PipelineStateObject>(pLay, vLay);
-		bind->SetKey(key);
-		Bindables[key] = bind;
-		return bind;
+		auto res = std::make_shared<PipelineStateObject>(pLay, vLay);
+		res->SetKey(key);
+		PipelineStateObjects[key] = res;
+		return res;
 	}
-	return std::static_pointer_cast<PipelineStateObject>(i->second);
+	return i->second;
 }
 
-std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(Drawable* pDrawable, const void* pData, unsigned int DataSize, UINT RootParam, UINT Range, UINT RangeIndex) noexcept
+std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(const void* pData, unsigned int DataSize, UINT Index) noexcept
 {
-	auto bind = std::make_shared<ConstantBuffer>(pData, DataSize);
-	bind->SetHeapIndex(RootParam, Range, RangeIndex);
+	auto res = std::make_shared<ConstantBuffer>(pData, DataSize);
+	res->SetHeapIndex(Index);
 
 	// Increment desc count.
 	Heap.Add_CBV_SHR_UAV_Desc(1);
 
-	pDrawable->Array->InitList.push_back(bind);
-	return bind;
+	ConstBuffers.push_back(res);
+
+	return res;
 }
 
 // How it's work
@@ -131,116 +127,74 @@ void ResourceManager::InitializeResources(Scene* pScene)
 		pGPUStartSamplers = CD3DX12_GPU_DESCRIPTOR_HANDLE(Heap.GetGPUStartPtrForSAMPLERS());
 	}
 
-	for (auto& Array : DrArraysToInit)
+	for (auto& rs : RootSignatures)
+		rs.second->Initialize(pGraphics);
+	for (auto& pso : PipelineStateObjects)
+		pso.second->Initialize(pGraphics, RootSignatures.begin()->second.get());
+	for (auto& vb : VertexBuffers)
+		vb.second->Initialize(pGraphics);
+	for (auto& ib : IndexBuffers)
+		ib.second->Initialize(pGraphics);
+
+	auto pDevice = pGraphics->GetDevice();
+	UINT IncrementSizeCbv = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	UINT IncrementSizeSmp = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
+	for (auto& rs : Resources)
 	{
-		Array.second->pRootSignature->Initialize(pGraphics);
-		Array.second->pVertexBuffer->Initialize(pGraphics);
-		Array.second->pIndexBuffer->Initialize(pGraphics);
-
-		if (!Array.second->pHeap)
-			continue;
-
-		auto Heap = Array.second->pHeap;
-		Heap->InitializePointers(pGraphics, pCPUStart, pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
-		for (auto& El : Array.second->InitList)
-		{
-			CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = Heap->GetCPUHandle(El->Table, El->Range, El->Index);
-			El->Initialize(pGraphics, Ptr);
-		}
-		//Array.second->InitList.clear();
-		Array.second->pPipelineStateObject->Initialize(pGraphics, Array.second->pRootSignature.get());
-		Array.second->SetReady(true);
+		rs.second->Initialize(pGraphics, pCPUStart);
+		rs.second->pGpuHandle = pGPUStart;
+		pCPUStart.Offset(IncrementSizeCbv);
+		pGPUStart.Offset(IncrementSizeCbv);
 	}
+
+	for (auto& cb : ConstBuffers)
+	{
+		cb->Initialize(pGraphics, pCPUStart);
+		cb->pGpuHandle = pGPUStart;
+		pCPUStart.Offset(IncrementSizeCbv);
+		pGPUStart.Offset(IncrementSizeCbv);
+	}
+
+	for (auto& s : Samplers)
+	{
+		s.second->Initialize(pGraphics, pCPUStartSamplers);
+		s.second->pGpuHandle = pGPUStartSamplers;
+		pCPUStartSamplers.Offset(IncrementSizeSmp);
+		pGPUStartSamplers.Offset(IncrementSizeSmp);
+	}
+
+	//for (auto& Array : DrArraysToInit)
+	//{
+	//	Array.second->pRootSignature->Initialize(pGraphics);
+	//	Array.second->pVertexBuffer->Initialize(pGraphics);
+	//	Array.second->pIndexBuffer->Initialize(pGraphics);
+
+	//	if (!Array.second->pHeap)
+	//		continue;
+
+	//	auto Heap = Array.second->pHeap;
+	//	Heap->InitializePointers(pGraphics, pCPUStart, pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
+	//	for (auto& El : Array.second->InitList)
+	//	{
+	//		CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = Heap->GetCPUHandle(El->Table, El->Range, El->Index);
+	//		El->Initialize(pGraphics, Ptr);
+	//	}
+	//	//Array.second->InitList.clear();
+	//	Array.second->pPipelineStateObject->Initialize(pGraphics, Array.second->pRootSignature.get());
+	//	Array.second->SetReady(true);
+	//}
 
 	pGraphics->Initialize();
 
-	//DrArraysToInit.clear();
-
-	// First initialize RootSignatures and PipeLineStateObjects.
-	//for (auto& PSO : pScene->DrawablesMap)
-	//{
-	//	for (auto& RS : PSO.second.RootSignatures)
-	//	{
-	//		RS.second.pRootSignature->Initialize(pGraphics);
-
-	//		// Initialize bindables in drawables.
-	//		for (auto& Drawable : RS.second.pDrawablesToInitialize)
-	//		{
-	//			// Initialize common things (vertex, index buffers and so on).
-	//			for (auto& Common : Drawable->InitializeCommon_list)
-	//				Common->Initialize(pGraphics);
-
-	//			Drawable->InitializeCommon_list.clear();
-
-	//			// Now add drawable to array. The same drawable will be bind vertex and index buffers only once.
-	//			std::string key = Drawable->pVertexBuffer->GetKey() + Drawable->pIndexBuffer->GetKey();
-	//			DrawableArray* pArray = &RS.second.DrawIndexed[key];
-	//			pArray->AddDrawable(Drawable);
-	//			pArray->SetVertexAndIndexBuffers(Drawable->pVertexBuffer, Drawable->pIndexBuffer);
-
-	//			if (Drawable->DescHeapIndex == -1)
-	//				continue;
-
-	//			// Set pointers to descriptor array.
-	//			auto HeapDesc = std::static_pointer_cast<HeapDescriptorArray>(Drawable->Bindables[Drawable->DescHeapIndex]);
-
-	//			HeapDesc->InitializePointers(pGraphics, pCPUStart,
-	//				pGPUStart, pCPUStartSamplers, pGPUStartSamplers);
-
-	//			// Initialize heap elements in drawables.
-	//			for (auto& HeapEl : Drawable->InitializeHeap_list)
-	//			{
-	//				CD3DX12_CPU_DESCRIPTOR_HANDLE Ptr = HeapDesc->GetCPUHandle(HeapEl->Table, HeapEl->Range, HeapEl->Index);
-	//				HeapEl->Initialize(pGraphics, Ptr);
-	//			}
-	//			Drawable->InitializeHeap_list.clear();
-	//		}
-
-	//		RS.second.pDrawablesToInitialize.clear();
-	//	}
-	//	PSO.second.pPipeLineStateObject->Initialize(pGraphics, PSO.second.RootSignatures.begin()->second.pRootSignature.get());
-	//}
-
-	//pGraphics->Initialize();
-
-	pScene->InitCamera();
+	//pScene->InitCamera();
 }
 
 ResourceManager::~ResourceManager()
 {
 }
 
-void ResourceManager::CreateAllMeshResources(Drawable* pDrawable, std::vector<unsigned int>* Indecies, 
-	const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot,
-	PSO_Layout& PL, RS_Layout& RL, VertexLayout& VL)
-{
-	using namespace std::string_literals;
-	std::string VBkey = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}" + "#"s + "{" + "#"s + std::to_string(((float*)pData)[0]) + "#"s
-		+ std::to_string(((float*)pData)[1]) + "#"s + std::to_string(((float*)pData)[3]) + "}";
-
-	std::string IBkey = typeid(IndexBuffer).name() + "#"s + std::to_string(Indecies->size()) + "{" + std::to_string((*Indecies)[0]) + "#"s + std::to_string((*Indecies)[1]) + "#"s + std::to_string((*Indecies)[2]) + "}";
-
-	std::string key = VBkey + IBkey;
-
-	if (Drawables.find(key) == Drawables.end())
-	{
-		std::shared_ptr<VertexBuffer> VB = CreateVertexBuffer(&VBkey, pData, Stride, DataSize, Lay, VertexCount, Slot);
-		std::shared_ptr<IndexBuffer> IB = CreateIndexBuffer(&IBkey, std::move(Indecies));
-		pDrawable->Array = std::make_shared<DrawableArray>(VB, IB, key);
-
-		std::shared_ptr<PipelineStateObject> PSO = CreatePipelineStateObject(PL, VL);
-		std::shared_ptr<RootSignature> RS = CreateRootSignature(pDrawable->Array, PSO->GetKey(), RL);
-
-		pDrawable->Array->SetPSRS(PSO, RS);
-		pDrawable->Array->AddDrawable(pDrawable);
-		DrArraysToInit[key] = pDrawable->Array;
-
-	}
-	else
-		Drawables[key]->AddDrawable(pDrawable);
-}
-
-std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable, const std::string& Path, UINT RootParam, UINT Range, UINT RangeIndex, bool OnlyPixelShader)
+std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader)
 {
 	const auto i = Resources.find(Path);
 	if (i == Resources.end())
@@ -267,31 +221,24 @@ std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(Drawable* pDrawable,
 
 		// Create texture pointer.
 		auto bind = std::make_shared<Texture2D>(std::move(img), &textureDesc, OnlyPixelShader);
-		bind->SetHeapIndex(RootParam, Range, RangeIndex);
+		bind->SetHeapIndex(Index);
 		Resources[Path] = bind;
 
 		// Increment desc count.
 		Heap.Add_CBV_SHR_UAV_Desc(1);
 
-		pDrawable->Array->InitList.push_back(bind);
 		return bind;
 	}
-
 	// Add to initialize list for setting descriptors.
-	auto bind = std::static_pointer_cast<Texture2D>(i->second);
-	// Increment desc count.
-	Heap.Add_CBV_SHR_UAV_Desc(1);
-	pDrawable->Array->InitList.push_back(bind);
-
-	return bind;
+	return std::static_pointer_cast<Texture2D>(i->second);
 }
 
-std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(Drawable* pDrawable, UINT RootParam, UINT Range, UINT RangeIndex) noexcept
+std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexcept
 {
 	std::string key = "DEFAULT SAMPLER";
-	const auto i = Resources.find(key);
+	const auto i = Samplers.find(key);
 
-	if (i == Resources.end())
+	if (i == Samplers.end())
 	{
 		D3D12_SAMPLER_DESC sampler;
 		sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
@@ -308,22 +255,16 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(Drawable* pDrawab
 		sampler.MinLOD = 0.0f;
 		sampler.MaxLOD = D3D12_FLOAT32_MAX;
 
-		auto bind = std::make_shared<Sampler>(&sampler);
-		bind->SetHeapIndex(RootParam, Range, RangeIndex);
+		auto res = std::make_shared<Sampler>(&sampler);
+		res->SetHeapIndex(Index);
 
 		// Increment desc count.
 		Heap.Add_Samplers_Desc(1);
 
-		pDrawable->Array->InitList.push_back(bind);
-		Resources[key] = bind;
-		return bind;
+		Samplers[key] = res;
+		return res;
 	}
 
-	auto bind = std::static_pointer_cast<Sampler>(i->second);
-	// Increment desc count.
-	Heap.Add_Samplers_Desc(1);
-	pDrawable->Array->InitList.push_back(bind);
-
-	return bind;
+	return std::static_pointer_cast<Sampler>(i->second);
 }
 

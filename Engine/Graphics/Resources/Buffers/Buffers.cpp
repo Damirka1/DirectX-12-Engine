@@ -166,6 +166,11 @@ ConstantBuffer::ConstantBuffer(const void* pData, UINT DataSize)
 		throw std::exception("Null pointer in constant buffer");
 }
 
+void ConstantBuffer::Bind(Graphics* pGraphics)
+{
+	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Index, pGpuHandle);
+}
+
 void ConstantBuffer::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
 	ID3D12Device9* pDevice = pGraphics->GetDevice();

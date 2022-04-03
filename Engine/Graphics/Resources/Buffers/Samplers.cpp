@@ -6,6 +6,11 @@ Sampler::Sampler(D3D12_SAMPLER_DESC* pDesc) noexcept
 {
 }
 
+void Sampler::Bind(Graphics* pGraphics)
+{
+	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Index, pGpuHandle);
+}
+
 void Sampler::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
 	pGraphics->GetDevice()->CreateSampler(&pDesc, pHandle);

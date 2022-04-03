@@ -9,6 +9,11 @@ Texture2D::Texture2D(std::unique_ptr<DirectX::ScratchImage> pImage, D3D12_RESOUR
 {
 }
 
+void Texture2D::Bind(Graphics* pGraphics)
+{
+	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Index, pGpuHandle);
+}
+
 void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
 {
 	ID3D12Device9* pDevice = pGraphics->GetDevice();
@@ -57,6 +62,8 @@ void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHa
 	srvDesc.Format = pDesc.Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, pHandle);
 }
 

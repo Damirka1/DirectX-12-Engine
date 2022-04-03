@@ -32,6 +32,11 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> VertexLayout::GetDesc() noexcept
 	return desc;
 }
 
+size_t VertexLayout::GetSize() noexcept
+{
+	return elements.size();
+}
+
 VertexLayout::Element::Element(std::string Name, DXGI_FORMAT f, unsigned int SemanticIndex, unsigned int InputSlot, D3D12_INPUT_CLASSIFICATION IC) noexcept
 	:
 	Name(Name),

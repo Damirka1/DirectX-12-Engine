@@ -51,21 +51,24 @@ void FrameCommander::Render()
 	// Bind global heap.
 	pResourceManager->Heap.Bind(pGraphics);
 
-	// Bind pipelinestate object.
-	for (auto& PSO : pScene->DrawablesMap)
-	{
-		PSO.second.pPipeLineStateObject->Bind(pGraphics);
+	//// Bind pipelinestate object.
+	//for (auto& PSO : pScene->DrawablesMap)
+	//{
+	//	PSO.second.pPipeLineStateObject->Bind(pGraphics);
 
-		// Bind rootsignatures.
-		for (auto& RS : PSO.second.RootSignatures)
-		{
-			RS.second.pRootSignature->Bind(pGraphics);
+	//	// Bind rootsignatures.
+	//	for (auto& RS : PSO.second.RootSignatures)
+	//	{
+	//		RS.second.pRootSignature->Bind(pGraphics);
 
-			// And finaly render objects.
-			for (auto& obj : RS.second.DrawIndexed)
-				obj.second->DrawIndexed(pGraphics);
-		}
-	}
+	//		// And finaly render objects.
+	//		for (auto& obj : RS.second.DrawArrayIndexed)
+	//			obj.second->DrawIndexed(pGraphics);
+	//	}
+	//}
+
+	for (auto& m : pScene->Models)
+		m->Draw(pGraphics);
 
 	pGraphics->Execute();
 }

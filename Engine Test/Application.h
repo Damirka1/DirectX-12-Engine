@@ -7,6 +7,7 @@
 #include "../Engine/Headers/Input/Mouse.h"
 
 #include "../Engine/Headers/Scene/Scene.h"
+#include "../Engine/Headers/Scene/Components/StaticMeshComponent.h"
 
 
 
@@ -26,7 +27,7 @@ private:
 	std::shared_ptr<Scene> pScene;
 
 	Camera* pCamera;
-	std::vector<std::shared_ptr<Model>> models;
+	std::vector<std::shared_ptr<StaticMeshComponent>> models;
 };
 
 #endif

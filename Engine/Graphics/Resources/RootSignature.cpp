@@ -1,7 +1,7 @@
-#include "..\..\Headers\Graphics\Resources\RootSignature.h"
-#include "..\..\Headers\Graphics\d3dx12.h"
-#include "..\..\Headers\Graphics\Error_Check.h"
-#include "..\..\Headers\Graphics\Resources\Heap.h"
+#include "../../Headers/Graphics/Resources/RootSignature.h"
+#include "../../Headers/Graphics/d3dx12.h"
+#include "../../Headers/Graphics/Error_Check.h"
+#include "../../Headers/Graphics/Resources/Resource.h"
 #include <array>
 
 RootSignature::RootSignature(RS_Layout& Lay) noexcept

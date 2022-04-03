@@ -28,6 +28,7 @@ Application::Application(HINSTANCE hInstance)
 	pScene->AddModel(models[1]);
 
 	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\123\\obj\\kindred.obj", "Test3"));
+	models[2]->SetPos({ 0.0, 0.0f, 0.0f });
 	pScene->AddModel(models[2]);
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
@@ -35,20 +36,12 @@ Application::Application(HINSTANCE hInstance)
 
 void Application::Run()
 {
+	static float z = 0.0f;
+	static int index = 0;
 	bool add = false;
 	while (Core->WindowIsExist())
 	{
 		Core->SetupJobs();
-
-		if (add)
-		{
-			models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 1.0f));
-			models[3]->SetPos({ -5.0f, -3.0f, -4.0f });
-			pScene->AddModel(models[3]);
-			add = false;
-		}
-
-		
 
 		while (auto El = kb->GetEvent())
 		{
@@ -94,10 +87,19 @@ void Application::Run()
 		}
 
 		for (auto m : models)
-			m->Update();
+			m->Update(pCamera);
+
+		if (add)
+		{
+			models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 1.0f));
+			models[3 + index]->SetPos({ -5.0f, -3.0f, -4.0f + z });
+			pScene->AddModel(models[3 + index]);
+			add = false;
+			z += 5.0f;
+			index++;
+		}
 
 		Core->ExecuteJobs();
-
 	}
 }
 

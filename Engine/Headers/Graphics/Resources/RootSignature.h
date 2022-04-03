@@ -1,7 +1,10 @@
 #pragma once
 #ifndef ROOTSIGNATURE_HEADER
 #define ROOTSIGNATURE_HEADER
-#include "Bindable.h"
+
+#include <string>
+#include "../../Graphics.h"
+#include "Resource.h"
 
 class HeapDescriptorArray;
 
@@ -56,7 +59,7 @@ private:
 };
 
 
-class RootSignature : public Bindable
+class RootSignature : public Resource
 {
 	friend class PipelineStateObject;
 	friend class ResourceManager;
@@ -64,7 +67,7 @@ public:
 	RootSignature(RS_Layout& Lay) noexcept;
 	void Initialize(Graphics* pGraphics);
 	void Bind(Graphics* pGraphics) override;
-	~RootSignature() override;
+	~RootSignature();
 	std::string GetKey();
 
 private:

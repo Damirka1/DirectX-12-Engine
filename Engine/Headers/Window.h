@@ -16,12 +16,12 @@ class UI_Element;
 class Keyboard;
 class Mouse;
 class FrameCommanderHWND;
-class ScriptManager;
+//class ScriptManager;
 
 class Window
 {
 	friend FrameCommanderHWND;
-	friend ScriptManager;
+	//friend ScriptManager;
 public:
 	Window() = delete;
 	Engine_API Window(HINSTANCE hInst, const wchar_t* WindowName, short Width = 800, short Height = 600, bool VSync = true);
@@ -46,9 +46,9 @@ public:
 	Engine_API bool	AddHandler(MessageHandler* ptr, const char* Name) noexcept;
 	Engine_API bool	RemoveHandler(const char* Name) noexcept;
 
-					// Add UI elements to the window.						 
-	Engine_API void	AddElement(UI_Element* pElement);
-	Engine_API void	RemoveElement(UI_Element* pElement) noexcept;
+	//				// Add UI elements to the window.						 
+	//Engine_API void	AddElement(UI_Element* pElement);
+	//Engine_API void	RemoveElement(UI_Element* pElement) noexcept;
 																						 
 	Engine_API const Graphics*	GetGraphics() const noexcept;
 	Engine_API		 Graphics*	GetGraphics() noexcept;

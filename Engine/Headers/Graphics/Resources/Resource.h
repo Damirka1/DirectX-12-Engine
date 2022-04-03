@@ -6,21 +6,29 @@
 class Resource
 {
 	friend class ResourceManager;
+public:
+	virtual void Bind(Graphics* pGraphics)
+	{
 
+	};
 protected:
-	virtual void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) = 0;
+	virtual void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
+	{
+
+	};
 
 	virtual ~Resource(){}
 
-	void SetHeapIndex(UINT Table, UINT Range, UINT Index) noexcept
+	void SetHeapIndex(UINT Index) noexcept
 	{
-		this->Table = Table;
-		this->Range = Range;
 		this->Index = Index;
 	}
 
 	bool Initialized = false;
-	UINT Table = 0u, Range = 0u, Index = 0u;
+	UINT Index = 0u;
+
+	D3D12_GPU_DESCRIPTOR_HANDLE pGpuHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE pCpuHandle;
 };
 
 #endif

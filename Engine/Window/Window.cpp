@@ -2,6 +2,7 @@
 #include "..\Headers\Graphics\Resources\UI_Element.h"
 #include "..\Headers\Input\Keyboard.h"
 #include "..\Headers\Input\Mouse.h"
+#include "..\Headers\Graphics.h"
 #include <exception>
 
 Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height, bool VSync)
@@ -198,26 +199,26 @@ bool Window::RemoveHandler(const char* Name) noexcept
 	return false;
 }
 
-void Window::AddElement(UI_Element* pElement)
-{
-	if (pElement)
-	{
-		auto i = UI_elements.find(pElement->ObjectName);
-
-		if (i == UI_elements.end())
-		{
-			UI_elements[pElement->ObjectName] = pElement;
-		}
-		else
-			throw std::exception((std::string("Element with name: ") + pElement->ObjectName + " already exsist").c_str());
-	}
-}
-
-void Window::RemoveElement(UI_Element* pElement) noexcept
-{
-	if(pElement)
-		UI_elements.erase(pElement->ObjectName);
-}
+//void Window::AddElement(UI_Element* pElement)
+//{
+//	if (pElement)
+//	{
+//		auto i = UI_elements.find(pElement->ObjectName);
+//
+//		if (i == UI_elements.end())
+//		{
+//			UI_elements[pElement->ObjectName] = pElement;
+//		}
+//		else
+//			throw std::exception((std::string("Element with name: ") + pElement->ObjectName + " already exsist").c_str());
+//	}
+//}
+//
+//void Window::RemoveElement(UI_Element* pElement) noexcept
+//{
+//	if(pElement)
+//		UI_elements.erase(pElement->ObjectName);
+//}
 
 const Graphics* Window::GetGraphics() const noexcept
 {
