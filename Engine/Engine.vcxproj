@@ -204,12 +204,15 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\GraphicsException.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Buffers.cpp" />
+    <ClCompile Include="Graphics\Resources\Drawable.cpp" />
+    <ClCompile Include="Graphics\Resources\DrawableArray.cpp" />
     <ClCompile Include="Graphics\Resources\DrawableArrayMesh.cpp" />
     <ClCompile Include="Graphics\Resources\DrawableMesh.cpp" />
     <ClCompile Include="Graphics\Resources\Heap.cpp" />
     <ClCompile Include="Graphics\Resources\PipeLineState.cpp" />
     <ClCompile Include="Graphics\Resources\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Resources\RootSignature.cpp" />
+    <ClCompile Include="Graphics\Resources\UI_Element.cpp" />
     <ClCompile Include="Graphics\Resources\VertexLayout.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Textures.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
@@ -327,6 +330,9 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\d3dx12.h" />
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
     <ClInclude Include="Headers\Graphics\GraphicsException.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Bindable.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Drawable.h" />
+    <ClInclude Include="Headers\Graphics\Resources\DrawableArray.h" />
     <ClInclude Include="Headers\Graphics\Resources\DrawableArrayMesh.h" />
     <ClInclude Include="Headers\Graphics\Resources\ResourceHeader.h" />
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Buffers.h" />
@@ -338,6 +344,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\Resources\PipeLineState.h" />
     <ClInclude Include="Headers\Graphics\Resources\Resource.h" />
     <ClInclude Include="Headers\Graphics\Resources\RootSignature.h" />
+    <ClInclude Include="Headers\Graphics\Resources\UI_Element.h" />
     <ClInclude Include="Headers\Graphics\Resources\VertexLayout.h" />
     <ClInclude Include="Headers\Header.h" />
     <ClInclude Include="Headers\Input\Camera.h" />
