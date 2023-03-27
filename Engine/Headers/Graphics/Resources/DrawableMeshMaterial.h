@@ -20,7 +20,7 @@ class MeshMaterial
 {
 public:
 	MeshMaterial() = default;
-	MeshMaterial(ResourceManager* pRM, aiMaterial* mat);
+	MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string RootPath, VertexLayout& VLay);
 
 	void Bind(Graphics* pGraphics);
 
@@ -31,5 +31,5 @@ private:
 	std::shared_ptr<RootSignature> pRootSignature;
 
 	std::vector<std::shared_ptr<Resource>> Resources;
-	
+	DirectX::XMFLOAT3 color;
 };

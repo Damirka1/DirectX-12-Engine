@@ -8,6 +8,7 @@
 #include "../../Headers/Graphics/Resources/DrawableMesh.h"
 #include "../../Headers/Graphics/Resources/DrawableMeshMaterial.h"
 
+
 ResourceManager::ResourceManager(Window* pWindow) noexcept
 {
 	pGraphics = pWindow->GetGraphics();
@@ -101,13 +102,13 @@ void ResourceManager::InitializeResources(Scene* pScene)
 		for (auto& rs : HeapResources)
 		{
 			Heap.SetResource(rs.second);
-			ToInit.push_back(rs.second);
+			rs.second->Initialize(pGraphics);
 		}
 
 		for (auto& cb : ConstBuffers)
 		{
 			Heap.SetResource(cb);
-			ToInit.push_back(cb);
+			cb->Initialize(pGraphics);
 		}
 	}
 
@@ -118,7 +119,7 @@ void ResourceManager::InitializeResources(Scene* pScene)
 		for (auto& s : Samplers)
 		{
 			Heap.SetSampler(s.second);
-			ToInit.push_back(s.second);
+			s.second->Initialize(pGraphics);
 		}
 	}
 

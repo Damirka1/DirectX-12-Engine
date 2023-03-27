@@ -12,7 +12,7 @@ Application::Application(HINSTANCE hInstance)
 
 	ms->EnableRawInput();
 
-	pCamera = new Camera(std::make_pair<short, short>(1280, 720));
+	pCamera = new Camera(std::make_pair<short, short>(1920, 1080));
 	pCamera->SetSensitivity(0.005f);
 
 	Core->SetBackgroundColor(0.2f, 0.2f, 0.2f);
@@ -20,7 +20,7 @@ Application::Application(HINSTANCE hInstance)
 	pScene = Core->CreateScene();
 	pScene->SetCamera(pCamera);
 
-	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 2.0f));
+	/*models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 2.0f));
 	models[0]->SetPos({ -5.0f, -3.0f, 4.0f });
 	pScene->AddModel(models[0]);
 	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test2", 3.0f));
@@ -29,7 +29,12 @@ Application::Application(HINSTANCE hInstance)
 
 	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\123\\obj\\kindred.obj", "Test3"));
 	models[2]->SetPos({ 0.0, 0.0f, 0.0f });
-	pScene->AddModel(models[2]);
+	pScene->AddModel(models[2]);*/
+
+	models.push_back(Core->CreatePlane());
+	pScene->AddModel(models.back());
+	spheres.push_back(Core->CreateSphere());
+	pScene->AddModel(spheres.back());
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
 }
@@ -89,11 +94,25 @@ void Application::Run()
 		for (auto m : models)
 			m->Update(pCamera);
 
+		for (auto m : spheres)
+			m->UpdateBody(pCamera);
+
+		for (auto m : cubes)
+			m->UpdateBody(pCamera);
+
 		if (add)
 		{
-			models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 1.0f));
-			models[3 + index]->SetPos({ -5.0f, -3.0f, -4.0f + z });
-			pScene->AddModel(models[3 + index]);
+			auto s = Core->CreateSphere();
+			s->AddForce({2.2f, 0.0f, 20.0f});
+			spheres.push_back(s);
+			pScene->AddModel(s);
+
+			auto c = Core->CreateCube();
+			//c->AddForce({ 2.2f, 0.0f, 20.0f });
+			cubes.push_back(c);
+			pScene->AddModel(c);
+
+
 			add = false;
 			z += 5.0f;
 			index++;

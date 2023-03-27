@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <filesystem>
 
 #include "../../Input/Camera.h"
 
@@ -15,7 +16,7 @@ class MeshMaterial;
 class DrawableMesh
 {
 public:
-	DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, float scale = 1.0f);
+	DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale = 1.0f);
 
 	void BindMaterial(Graphics* pGraphics);
 

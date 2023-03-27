@@ -8,14 +8,16 @@
 #include <assimp/postprocess.h>
 
 StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string ModelPath, float scale)
+	:
+	Pos({0.0, 0.0, 0.0})
 {
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(ModelPath.c_str(),
-		aiProcess_Triangulate |
+		//aiProcess_Triangulate |
 		//aiProcess_JoinIdenticalVertices |
-		aiProcess_ConvertToLeftHanded |
-		aiProcess_GenNormals |
-		aiProcess_CalcTangentSpace
+		aiProcess_ConvertToLeftHanded //|
+		//aiProcess_GenNormals |
+		//aiProcess_CalcTangentSpace
 	);
 
 	if (pScene == nullptr)
@@ -24,7 +26,7 @@ StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string Model
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = pScene->mMeshes[i];
-		Meshes.emplace_back(pRM, mesh, nullptr, scale);
+		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale);
 	}
 
 	CB = pRM->CreateConstBuffer(&Transformation, sizeof(Transformation), 0);
@@ -49,4 +51,14 @@ void StaticMeshComponent::Update(Camera* cam)
 void StaticMeshComponent::SetPos(DirectX::XMFLOAT3 Pos)
 {
 	this->Pos = Pos;
+}
+
+Engine_API DirectX::XMFLOAT3 StaticMeshComponent::GetPos()
+{
+	return Pos;
+}
+
+Engine_API DirectX::XMMATRIX StaticMeshComponent::GetTransform()
+{
+	return Transformation;
 }

@@ -8,7 +8,7 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
-DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, float scale)
+DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale)
 {
 	VertexLayout Lay;
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
@@ -60,6 +60,8 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, flo
 
 	if (!mat)
 		Material = MeshMaterial::GetDefaultMaterial(pRM, Lay);
+	else
+		Material = std::make_shared<MeshMaterial>(pRM, mat, path.parent_path().string() + "\\", Lay);
 }
 
 void DrawableMesh::BindMaterial(Graphics* pGraphics)

@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <DirectXMath.h>
+#include <PxPhysicsAPI.h>
 
 #include "../../Header.h"
 
@@ -25,8 +26,13 @@ public:
 
 	Engine_API void SetPos(DirectX::XMFLOAT3 Pos);
 
+	Engine_API DirectX::XMFLOAT3 GetPos();
+	Engine_API DirectX::XMMATRIX GetTransform();
+
 private:
 	std::vector<DrawableMesh> Meshes;
+
+protected:
 	std::shared_ptr<ConstantBuffer> CB;
 	DirectX::XMFLOAT3 Pos;
 	DirectX::XMMATRIX Transformation;

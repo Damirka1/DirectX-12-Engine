@@ -221,6 +221,8 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
     <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="Graphics\StaticMeshComponent.cpp" />
+    <ClCompile Include="Headers\Scene\Objects\Cube.cpp" />
+    <ClCompile Include="Headers\Scene\Objects\Sphere.cpp" />
     <ClCompile Include="input\Camera.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
@@ -241,6 +243,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Neither</FavorSizeOrSpeed>
     </ClCompile>
+    <ClCompile Include="PhysX\PhysxManager.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
     <ClCompile Include="Window\Window.cpp" />
@@ -358,12 +361,16 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Input\Mouse.h" />
     <ClInclude Include="Headers\MathUtilities.h" />
     <ClInclude Include="Headers\MessageHandler.h" />
+    <ClInclude Include="Headers\PhysX\PhysxManager.h" />
     <ClInclude Include="Headers\Scene\Components\StaticMeshArrayComponent.h" />
     <ClInclude Include="Headers\Scene\Components\StaticMeshComponent.h" />
     <ClInclude Include="Headers\Scene\Model.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
     <ClInclude Include="Headers\Scene\Actor.h" />
     <ClInclude Include="Headers\Scene\Character.h" />
+    <ClInclude Include="Headers\Scene\Objects\Cube.h" />
+    <ClInclude Include="Headers\Scene\Objects\Plane.h" />
+    <ClInclude Include="Headers\Scene\Objects\Sphere.h" />
     <ClInclude Include="Headers\Scene\Pawn.h" />
     <ClInclude Include="Headers\Scene\Scene.h" />
     <ClInclude Include="Headers\Timer.h" />

@@ -5,6 +5,7 @@
 #include "Graphics.h"
 #include "ResourceManager.h"
 #include "FrameCommander.h"
+#include "PhysX/PhysxManager.h"
 //#include "Events/ScriptManager.h"
 #include "../Console/Console.h"
 
@@ -16,6 +17,10 @@
 
 #include "Scene/Components/StaticMeshComponent.h"
 
+#include "Scene/Objects/Plane.h"
+#include "Scene/Objects/Sphere.h"
+#include "Scene/Objects/Cube.h"
+
 
 class EngineCore
 {
@@ -24,9 +29,10 @@ public:
 	EngineCore(HINSTANCE hInstance)
 	{
 		// Create core objects
-		_Window = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
+		_Window = new Window(hInstance, L"DirectX 12 Engine", 1920, 1080);
 		_ResourceManager = new ResourceManager(_Window);
 		_FrameCommander = new FrameCommander(_Window, _ResourceManager);
+		_PhysxManager = new PhysxManager();
 
 		// _ScriptManager = new ScriptManager(_Window);
 		_Timer = new Timer();
@@ -93,12 +99,16 @@ public:
 	void PrepareDX()
 	{
 		_FrameCommander->InitializeResources();
+		_Timer->Mark();
 	}
 
 	void SetupJobs()
 	{
 		_Window->ProcessMessages();
 		_FrameCommander->SetupInit();
+		float dt = _Timer->Mark();
+
+		_PhysxManager->Simulate(dt);
 	}
 
 	void ExecuteJobs()
@@ -143,6 +153,28 @@ public:
 		return _Model;
 	}
 
+	std::shared_ptr<Plane> CreatePlane()
+	{
+		std::shared_ptr<Plane> _Plane = std::make_shared<Plane>(_ResourceManager, _PhysxManager);
+
+		return _Plane;
+	}
+
+	std::shared_ptr<Sphere> CreateSphere()
+	{
+		std::shared_ptr<Sphere> _Sphere = std::make_shared<Sphere>(_ResourceManager, _PhysxManager);
+
+		return _Sphere;
+	}
+
+	std::shared_ptr<Cube> CreateCube()
+	{
+		std::shared_ptr<Cube> _Cube = std::make_shared<Cube>(_ResourceManager, _PhysxManager);
+
+		return _Cube;
+	}
+
+
 	void RemoveModelByTag(std::string Tag);
 	//void RemoveModelByPtr(std::shared_ptr<Model> Model);
 
@@ -164,6 +196,7 @@ public:
 		delete _Window;
 		delete _ResourceManager;
 		delete _FrameCommander;
+		delete _PhysxManager;
 		//delete _ScriptManager;
 		delete _Timer;
 	}
@@ -173,6 +206,7 @@ private:
 		Console* _Console;
 		Window* _Window;
 		ResourceManager* _ResourceManager;
+		PhysxManager* _PhysxManager;
 		FrameCommander* _FrameCommander;
 		//ScriptManager* _ScriptManager;
 

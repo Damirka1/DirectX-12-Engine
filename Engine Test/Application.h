@@ -28,6 +28,8 @@ private:
 
 	Camera* pCamera;
 	std::vector<std::shared_ptr<StaticMeshComponent>> models;
+	std::vector<std::shared_ptr<Sphere>> spheres;
+	std::vector<std::shared_ptr<Cube>> cubes;
 };
 
 #endif
