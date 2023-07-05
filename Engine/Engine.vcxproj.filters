@@ -528,7 +528,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DirectXTex.dll" />
-    <None Include="assimp-vc140-mt.dll" />
     <None Include="Assimp\include\assimp\color4.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -553,5 +552,6 @@
     <None Include="Assimp\include\assimp\vector3.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="assimp-vc143-mt.dll" />
   </ItemGroup>
 </Project>

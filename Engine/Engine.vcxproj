@@ -463,7 +463,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <Library Include="DirectXTex.lib" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assimp-vc140-mt.dll" />
+    <None Include="assimp-vc143-mt.dll" />
     <None Include="Assimp\include\assimp\color4.inl" />
     <None Include="Assimp\include\assimp\material.inl" />
     <None Include="Assimp\include\assimp\matrix3x3.inl" />

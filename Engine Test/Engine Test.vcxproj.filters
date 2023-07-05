@@ -29,5 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DirectXTex.dll" />
+    <None Include="assimp-vc143-mt.dll" />
   </ItemGroup>
 </Project>

@@ -15,11 +15,20 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 	Lay.AddElement("NormCoord", DXGI_FORMAT_R32G32B32_FLOAT);
 	bool HasTexCoords = m->HasTextureCoords(0);
 
-	if(HasTexCoords)
-		Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
-
 	std::vector<FLOAT> Buffer;
 	std::vector<UINT> Indecies;
+
+	// Reserve space for vertecies and normals
+	int reserveSpace = (m->mNumVertices * 3) * 2;
+
+	if (HasTexCoords)
+	{
+		Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
+
+		Buffer.reserve(reserveSpace + m->mNumVertices * 2);
+	}
+	else 
+		Buffer.reserve(reserveSpace);
 
 	for (size_t i = 0, j = 0, k = 0; i < m->mNumVertices; i++, j++, k++)
 	{
