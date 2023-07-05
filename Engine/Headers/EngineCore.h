@@ -29,7 +29,7 @@ public:
 	EngineCore(HINSTANCE hInstance)
 	{
 		// Create core objects
-		_Window = new Window(hInstance, L"DirectX 12 Engine", 1920, 1080);
+		_Window = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
 		_ResourceManager = new ResourceManager(_Window);
 		_FrameCommander = new FrameCommander(_Window, _ResourceManager);
 		_PhysxManager = new PhysxManager();

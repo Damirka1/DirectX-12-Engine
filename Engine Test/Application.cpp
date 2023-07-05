@@ -12,7 +12,7 @@ Application::Application(HINSTANCE hInstance)
 
 	ms->EnableRawInput();
 
-	pCamera = new Camera(std::make_pair<short, short>(1920, 1080));
+	pCamera = new Camera(std::make_pair<short, short>(1280, 720));
 	pCamera->SetSensitivity(0.005f);
 
 	Core->SetBackgroundColor(0.2f, 0.2f, 0.2f);
@@ -27,9 +27,13 @@ Application::Application(HINSTANCE hInstance)
 	models[1]->SetPos({ 5.0f, -3.0f, 4.0f });
 	pScene->AddModel(models[1]);
 
-	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\123\\obj\\kindred.obj", "Test3"));
-	models[2]->SetPos({ 0.0, 0.0f, 0.0f });
-	pScene->AddModel(models[2]);*/
+	/*models.push_back(Core->LoadModel("C:\\Home\\GraphicsProjects\\3d models\\M-B AMG ", "Test1", 1.0f));
+	models.back()->SetPos({ 0.0f, 2.0f, 0.0f });
+	pScene->AddModel(models.back())*/;
+
+	/*models.push_back(Core->LoadModel("C:\\Home\\GraphicsProjects\\3d models\\123\\obj\\kindred.obj", "Test3"));
+	models.back()->SetPos({0.0, 0.0f, 0.0f});
+	pScene->AddModel(models.back());*/
 
 	models.push_back(Core->CreatePlane());
 	pScene->AddModel(models.back());
@@ -102,10 +106,10 @@ void Application::Run()
 
 		if (add)
 		{
-			auto s = Core->CreateSphere();
+			/*auto s = Core->CreateSphere();
 			s->AddForce({2.2f, 0.0f, 20.0f});
 			spheres.push_back(s);
-			pScene->AddModel(s);
+			pScene->AddModel(s);*/
 
 			auto c = Core->CreateCube();
 			//c->AddForce({ 2.2f, 0.0f, 20.0f });

@@ -23,6 +23,9 @@ MeshMaterial::MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string Ro
 
 	aiString TexFileName;
 
+	PSO_Layout pLay(1);
+	pLay.DepthState(true);
+
 	if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &TexFileName) == aiReturn_SUCCESS)
 	{
 		ShaderCode += "Dif";
@@ -34,6 +37,8 @@ MeshMaterial::MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string Ro
 
 		Resources.push_back(pRM->CreateTexture2D(RootPath + TexFileName.C_Str(), 1, true));
 		Resources.push_back(pRM->CreateDefaultSampler(2));
+
+		pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelatePixelShader" + ShaderCode + ".cso"));
 	}
 	else
 	{
@@ -42,12 +47,13 @@ MeshMaterial::MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string Ro
 			.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
 		Resources.push_back(pRM->CreateConstBuffer(&color, sizeof(color), 1));
+
+		pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
 	}
 
-	PSO_Layout pLay(1);
-	pLay.DepthState(true);
+	
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader" + ShaderCode + ".cso"));
-	pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
+	
 
 	pRootSignature = pRM->CreateRootSignature(RLay);
 	pPipelineStateObject = pRM->CreatePipelineStateObject(pLay, VLay, pRootSignature);

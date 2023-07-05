@@ -58,10 +58,13 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 	pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
 	pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
 
+	//Material = MeshMaterial::GetDefaultMaterial(pRM, Lay);
 	if (!mat)
 		Material = MeshMaterial::GetDefaultMaterial(pRM, Lay);
 	else
 		Material = std::make_shared<MeshMaterial>(pRM, mat, path.parent_path().string() + "\\", Lay);
+
+	this->Lay = Lay;
 }
 
 void DrawableMesh::BindMaterial(Graphics* pGraphics)

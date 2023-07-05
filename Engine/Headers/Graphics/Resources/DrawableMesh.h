@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include "../../Input/Camera.h"
+#include "VertexLayout.h"
 
 class Graphics;
 class ResourceManager;
@@ -12,6 +13,7 @@ struct aiMaterial;
 class VertexBuffer;
 class IndexBuffer;
 class MeshMaterial;
+
 
 class DrawableMesh
 {
@@ -23,6 +25,7 @@ public:
 	void Draw(Graphics* pGraphics);
 
 private:
+	VertexLayout Lay;
 	std::shared_ptr<VertexBuffer> pVertexBuffer;
 	std::shared_ptr<IndexBuffer> pIndexBuffer;
 

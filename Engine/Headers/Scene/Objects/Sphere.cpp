@@ -5,7 +5,7 @@
 
 Sphere::Sphere(ResourceManager* pRM, PhysxManager* pPM)
 	:
-	StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Moon\\Moon.obj")
+	StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Sphere\\Sphere.obj")
 {
 	StaticMeshComponent::SetPos({ 0.0f, 10.0f, 0.0f });
 

@@ -520,10 +520,11 @@
     <FxCompile Include="Shaders\UI_PixelShader.hlsl" />
     <FxCompile Include="Shaders\PixelShaderDif.hlsl" />
     <FxCompile Include="Shaders\VertexShaderDif.hlsl" />
+    <FxCompile Include="Shaders\PixelatePixelShaderDif.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="DirectXTex.lib" />
-    <Library Include="Assimp\bin\x64\assimp-vc140-mt.lib" />
+    <Library Include="Assimp\bin\x64\assimp-vc143-mt.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DirectXTex.dll" />
