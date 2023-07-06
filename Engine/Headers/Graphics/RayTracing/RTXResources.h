@@ -86,7 +86,7 @@ private:
 	ID3D12DescriptorHeap* pSrvUavHeap;
 
 	void CreateShaderBindingTable();
-	nv_helpers_dx12::ShaderBindingTableGenerator pSbtHelper;
+	nv_helpers_dx12::ShaderBindingTableGenerator SbtHelper;
 	ID3D12Resource* pSbtStorage;
 
 	void ReleaseStructures();

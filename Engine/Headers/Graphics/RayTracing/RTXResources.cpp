@@ -43,6 +43,7 @@ void RTXResources::StartInitialize()
 		CreateRaytracingPipeline();
 		CreateRaytracingOutputBuffer();
 		CreateShaderResourceHeap();
+		CreateShaderBindingTable();
 	}
 }
 
@@ -79,6 +80,8 @@ RTXResources::~RTXResources()
 	pOutputResource->Release();
 
 	pSrvUavHeap->Release();
+
+	pSbtStorage->Release();
 }
 
 void RTXResources::CreateBottomLevelAS()
@@ -321,6 +324,43 @@ void RTXResources::CreateShaderResourceHeap()
 
 void RTXResources::CreateShaderBindingTable()
 {
+	// The SBT helper class collects calls to Add*Program.  If called several
+	// times, the helper must be emptied before re-adding shaders.
+	SbtHelper.Reset();
+
+	// The pointer to the beginning of the heap is the only parameter required by
+	// shaders without root parameters
+	D3D12_GPU_DESCRIPTOR_HANDLE srvUavHeapHandle = pSrvUavHeap->GetGPUDescriptorHandleForHeapStart();
+
+	// The helper treats both root parameter pointers and heap pointers as void*,
+	// while DX12 uses the
+	// D3D12_GPU_DESCRIPTOR_HANDLE to define heap pointers. The pointer in this
+	// struct is a UINT64, which then has to be reinterpreted as a pointer.
+	auto heapPointer = reinterpret_cast<UINT64*>(srvUavHeapHandle.ptr);
+
+	// The ray generation only uses heap data
+	SbtHelper.AddRayGenerationProgram(L"RayGen", { heapPointer });
+
+	// The miss and hit shaders do not access any external resources: instead they
+	// communicate their results through the ray payload
+	SbtHelper.AddMissProgram(L"Miss", {});
+
+	// Adding the triangle hit shader
+	SbtHelper.AddHitGroup(L"HitGroup", {});
+
+	// Compute the size of the SBT given the number of shaders and their
+	// parameters
+	uint32_t sbtSize = SbtHelper.ComputeSBTSize();
+
+	// Create the SBT on the upload heap. This is required as the helper will use
+	// mapping to write the SBT contents. After the SBT compilation it could be
+	// copied to the default heap for performance.
+	pSbtStorage = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), sbtSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, nv_helpers_dx12::kUploadHeapProps);
+	if (!pSbtStorage) {
+		throw std::logic_error("Could not allocate the shader binding table");
+	}
+	// Compile the SBT from the shader and parameters info
+	SbtHelper.Generate(pSbtStorage, pRtStateObjectProps);
 }
 
 void RTXResources::ReleaseStructures()
