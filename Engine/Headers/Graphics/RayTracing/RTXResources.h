@@ -61,9 +61,7 @@ private:
 	ID3D12RootSignature* CreateHitSignature();
 	ID3D12RootSignature* CreateMissSignature();
 	
-	nv_helpers_dx12::TopLevelASGenerator TopLevelASGenerator;
 	AccelerationStructureBuffers TopLevelASBuffers;
-	std::vector<std::pair<ID3D12Resource*, DirectX::XMMATRIX>> Instances;
 
 	IDxcBlob* pRayGenLibrary;
 	IDxcBlob* pHitLibrary;
@@ -79,7 +77,8 @@ private:
 	// Ray tracing pipeline state properties, retaining the shader identifiers
 	// to use in the Shader Binding Table
 	ID3D12StateObjectProperties* pRtStateObjectProps;
-
+	
+	void CreateRaytracingPipeline();
 	void CreateRaytracingOutputBuffer();
 	void CreateShaderResourceHeap();
 
@@ -89,4 +88,6 @@ private:
 	void CreateShaderBindingTable();
 	nv_helpers_dx12::ShaderBindingTableGenerator pSbtHelper;
 	ID3D12Resource* pSbtStorage;
+
+	void ReleaseStructures();
 };

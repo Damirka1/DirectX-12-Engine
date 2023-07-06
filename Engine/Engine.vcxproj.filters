@@ -597,4 +597,10 @@
     <None Include="assimp-vc143-mt.dll" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Shaders\Common.hlsl" />
+    <CustomBuild Include="Shaders\Hit.hlsl" />
+    <CustomBuild Include="Shaders\Miss.hlsl" />
+    <CustomBuild Include="Shaders\RayGen.hlsl" />
+  </ItemGroup>
 </Project>

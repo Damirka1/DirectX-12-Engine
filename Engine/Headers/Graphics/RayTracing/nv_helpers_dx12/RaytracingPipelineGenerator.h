@@ -122,6 +122,8 @@ public:
   /// Compiles the raytracing state object
   ID3D12StateObject* Generate();
 
+  ~RayTracingPipelineGenerator();
+
 private:
   /// Storage for DXIL libraries and their exported symbols
   struct Library

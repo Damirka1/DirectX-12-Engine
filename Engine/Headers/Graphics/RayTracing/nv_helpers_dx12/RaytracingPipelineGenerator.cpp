@@ -281,6 +281,12 @@ ID3D12StateObject* RayTracingPipelineGenerator::Generate()
   return rtStateObject;
 }
 
+RayTracingPipelineGenerator::~RayTracingPipelineGenerator()
+{
+    m_dummyLocalRootSignature->Release();
+    m_dummyGlobalRootSignature->Release();
+}
+
 //--------------------------------------------------------------------------------------------------
 //
 // The pipeline creation requires having at least one empty global and local root signatures, so
