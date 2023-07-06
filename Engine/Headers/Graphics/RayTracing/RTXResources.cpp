@@ -42,6 +42,7 @@ void RTXResources::StartInitialize()
 	{
 		CreateRaytracingPipeline();
 		CreateRaytracingOutputBuffer();
+		CreateShaderResourceHeap();
 	}
 }
 
@@ -76,6 +77,8 @@ RTXResources::~RTXResources()
 	pRtStateObject->Release();
 
 	pOutputResource->Release();
+
+	pSrvUavHeap->Release();
 }
 
 void RTXResources::CreateBottomLevelAS()
@@ -288,6 +291,32 @@ void RTXResources::CreateRaytracingOutputBuffer()
 
 void RTXResources::CreateShaderResourceHeap()
 {
+	auto device = pGraphics->GetDevice();
+	// Create a SRV/UAV/CBV descriptor heap. We need 2 entries - 1 UAV for the
+	// raytracing output and 1 SRV for the TLAS
+	pSrvUavHeap = nv_helpers_dx12::CreateDescriptorHeap(device, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+
+	// Get a handle to the heap memory on the CPU side, to be able to write the
+	// descriptors directly
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = pSrvUavHeap->GetCPUDescriptorHandleForHeapStart();
+
+	// Create the UAV. Based on the root signature we created it is the first
+	// entry. The Create*View methods write the view information directly into
+	// srvHandle
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	device->CreateUnorderedAccessView(pOutputResource, nullptr, &uavDesc, srvHandle);
+
+	// Add the Top Level AS SRV right after the raytracing output buffer
+	srvHandle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.RaytracingAccelerationStructure.Location = TopLevelASBuffers.pResult->GetGPUVirtualAddress();
+	// Write the acceleration structure view in the heap
+	device->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
 }
 
 void RTXResources::CreateShaderBindingTable()
