@@ -39,7 +39,10 @@ void RTXResources::StartInitialize()
 	CreateTopLevelAS();
 
 	if (!pRtStateObject)
+	{
 		CreateRaytracingPipeline();
+		CreateRaytracingOutputBuffer();
+	}
 }
 
 void RTXResources::EndInitialize()
@@ -71,6 +74,8 @@ RTXResources::~RTXResources()
 
 	pRtStateObjectProps->Release();
 	pRtStateObject->Release();
+
+	pOutputResource->Release();
 }
 
 void RTXResources::CreateBottomLevelAS()
@@ -260,6 +265,25 @@ void RTXResources::CreateRaytracingPipeline()
 
 void RTXResources::CreateRaytracingOutputBuffer()
 {
+	D3D12_RESOURCE_DESC resDesc = {};
+	resDesc.DepthOrArraySize = 1;
+	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	// The backbuffer is actually DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, but sRGB
+	// formats cannot be used with UAVs. For accuracy we should convert to sRGB
+	// ourselves in the shader
+	resDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+	auto res = pGraphics->GetResolution();
+
+	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	resDesc.Width = res.first;
+	resDesc.Height = res.second;
+	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	resDesc.MipLevels = 1;
+	resDesc.SampleDesc.Count = 1;
+	Error_Check(
+		pGraphics->GetDevice()->CreateCommittedResource(&nv_helpers_dx12::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&pOutputResource))
+	);
 }
 
 void RTXResources::CreateShaderResourceHeap()
