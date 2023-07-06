@@ -26,7 +26,7 @@ StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string Model
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = pScene->mMeshes[i];
-		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale);
+		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale, &Transformation);
 	}
 
 	CB = pRM->CreateConstBuffer(&Transformation, sizeof(Transformation), 0);

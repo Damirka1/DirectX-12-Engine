@@ -8,7 +8,9 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
-DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale)
+DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale, DirectX::XMMATRIX* transfrom)
+	:
+	transfrom(transfrom)
 {
 	VertexLayout Lay;
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
@@ -66,6 +68,8 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 
 	pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
 	pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
+
+	pRM->PrepareForRtx(this);
 
 	//Material = MeshMaterial::GetDefaultMaterial(pRM, Lay);
 	if (!mat)

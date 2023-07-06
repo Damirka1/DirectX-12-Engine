@@ -37,8 +37,8 @@ Application::Application(HINSTANCE hInstance)
 
 	models.push_back(Core->CreatePlane());
 	pScene->AddModel(models.back());
-	spheres.push_back(Core->CreateSphere());
-	pScene->AddModel(spheres.back());
+	/*spheres.push_back(Core->CreateSphere());
+	pScene->AddModel(spheres.back());*/
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
 }

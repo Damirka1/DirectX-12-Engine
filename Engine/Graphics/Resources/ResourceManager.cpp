@@ -13,6 +13,8 @@ ResourceManager::ResourceManager(Window* pWindow) noexcept
 {
 	pGraphics = pWindow->GetGraphics();
 	Heap.Initialize(pGraphics);
+
+	rt = new RTXResources(pGraphics);
 }
 
 std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
@@ -130,11 +132,21 @@ void ResourceManager::InitializeResources(Scene* pScene)
 
 	pGraphics->Initialize();
 
+	if (rt->IsNeedUpdate())
+	{
+		pGraphics->SetupInit();
+		rt->StartInitialize();
+
+		pGraphics->Initialize();
+		rt->EndInitialize();
+	}
+
 	//pScene->InitCamera();
 }
 
 ResourceManager::~ResourceManager()
 {
+	delete rt;
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader)
@@ -208,5 +220,10 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexc
 	}
 
 	return std::static_pointer_cast<Sampler>(i->second);
+}
+
+Engine_API void ResourceManager::PrepareForRtx(DrawableMesh* mesh, unsigned int hitGroup)
+{
+	rt->PrepareMeshForRtx(mesh, hitGroup);
 }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -135,7 +136,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Assimp\bin\x64\;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxcompiler.lib;assimp-vc143-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -144,7 +145,8 @@
       <Command>copy "$(ProjectDir)DirectXTex.dll" "$(TargetDir)"
 copy "$(ProjectDir)assimp-vc143-mt.dll" "$(TargetDir)"
 if not exist "$(SolutionDir)Engine Test\Shaders" mkdir "$(SolutionDir)Engine Test\Shaders"
-copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Command>
+copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"
+copy "$(ProjectDir)dxcompiler.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy DirectXTex to output directory and copy compiled shader to engine test project</Message>
@@ -177,7 +179,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Assimp\bin\x64\;$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mt.lib;DirectXTex.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxcompiler.lib;assimp-vc143-mt.lib;DirectXTex.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -190,7 +192,8 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <Command>copy "$(ProjectDir)DirectXTex.dll" "$(TargetDir)"
 copy "$(ProjectDir)assimp-vc143-mt.dll" "$(TargetDir)"
 if not exist "$(SolutionDir)Engine Test\Shaders" mkdir "$(SolutionDir)Engine Test\Shaders"
-copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Command>
+copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"
+copy "$(ProjectDir)dxcompiler.dll" "$(TargetDir)"</Command>
       <Message>Copy DirectXTex to output directory and copy compiled shader to engine test project</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -221,6 +224,12 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
     <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="Graphics\StaticMeshComponent.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RootSignatureGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\ShaderBindingTableGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\TopLevelASGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\RTXResources.cpp" />
     <ClCompile Include="Headers\Scene\Objects\Cube.cpp" />
     <ClCompile Include="Headers\Scene\Objects\Sphere.cpp" />
     <ClCompile Include="input\Camera.cpp" />
@@ -336,6 +345,13 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\d3dx12.h" />
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
     <ClInclude Include="Headers\Graphics\GraphicsException.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\DXRHelper.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RootSignatureGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\ShaderBindingTableGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\TopLevelASGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\RTXResources.h" />
     <ClInclude Include="Headers\Graphics\Resources\Bindable.h" />
     <ClInclude Include="Headers\Graphics\Resources\Heap\Descriptor.h" />
     <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorHeapArray.h" />
@@ -353,6 +369,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\Resources\PipeLineState.h" />
     <ClInclude Include="Headers\Graphics\Resources\Resource.h" />
     <ClInclude Include="Headers\Graphics\Resources\RootSignature.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\RTXStateObject.h" />
     <ClInclude Include="Headers\Graphics\Resources\UI_Element.h" />
     <ClInclude Include="Headers\Graphics\Resources\VertexLayout.h" />
     <ClInclude Include="Headers\Header.h" />
@@ -473,8 +490,17 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <None Include="Assimp\include\assimp\vector2.inl" />
     <None Include="Assimp\include\assimp\vector3.inl" />
     <None Include="DirectXTex.dll" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
 </Project>

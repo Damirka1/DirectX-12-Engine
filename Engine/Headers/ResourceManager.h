@@ -17,6 +17,7 @@
 #include "Graphics/Resources/Buffers/Textures.h"
 
 #include "Graphics/Resources/Heap/DescriptorsGlobalHeap.h"
+#include "Graphics/RayTracing/RTXResources.h"
 
 class Window;
 class Scene;
@@ -35,6 +36,8 @@ public:
 	Engine_API std::shared_ptr<ConstantBuffer> CreateConstBuffer(const void* pData, unsigned int DataSize, UINT Index) noexcept;
 	Engine_API std::shared_ptr<Texture2D> CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader = false);
 	Engine_API std::shared_ptr<Sampler> CreateDefaultSampler(UINT Index) noexcept;
+
+	Engine_API void PrepareForRtx(DrawableMesh* mesh, unsigned int hitGroup = 0);
 	
 	Engine_API void InitializeResources(Scene* pScene);
 	Engine_API ~ResourceManager();
@@ -42,6 +45,8 @@ public:
 private:
 	Graphics* pGraphics;
 	DescriptorsGlobalHeap Heap;
+
+	RTXResources* rt;
 
 	// srv uav
 	std::unordered_map<std::string, std::shared_ptr<Resource>> HeapResources;

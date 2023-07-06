@@ -24,6 +24,7 @@ class VertexBuffer : public Buffer, public Resource
 {
 	friend class Drawable;
 	friend class DrawableArray;
+	friend class RTXResources;
 public:
 	VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT VetexCount, UINT Slot = 0);
 	void Bind(Graphics* pGraphics) override;
@@ -44,6 +45,7 @@ class IndexBuffer : public Buffer, public Resource
 {
 	friend class Drawable;
 	friend class DrawableArray;
+	friend class RTXResources;
 public:
 	IndexBuffer(std::vector<unsigned int>* Indecies) noexcept;
 	void Bind(Graphics* pGraphics) override;

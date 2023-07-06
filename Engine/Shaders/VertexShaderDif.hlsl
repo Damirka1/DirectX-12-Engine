@@ -1,7 +1,7 @@
 cbuffer C
 {
     matrix PosViewProj;
-}
+};
 
 struct VSOUT
 {

@@ -84,7 +84,7 @@ void VertexBuffer::Initialize(Graphics* pGraphics)
 {
 	if (!Initialized)
 	{
-		Buffer::Initialize(pGraphics, pData, DataSize, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		Buffer::Initialize(pGraphics, pData, DataSize, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		VertexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
 		VertexView.StrideInBytes = Stride;
@@ -131,7 +131,7 @@ void IndexBuffer::Initialize(Graphics* pGraphics)
 {
 	if (!Initialized)
 	{
-		Buffer::Initialize(pGraphics, Indecies.data(), static_cast<UINT>(Indecies.size() * sizeof(unsigned int)), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		Buffer::Initialize(pGraphics, Indecies.data(), static_cast<UINT>(Indecies.size() * sizeof(unsigned int)), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		IndexView.BufferLocation = pBuffer->GetGPUVirtualAddress();
 		IndexView.SizeInBytes = static_cast<UINT>(Indecies.size() * sizeof(unsigned int));
