@@ -225,7 +225,7 @@ void RTXResources::CreateTopLevelAS()
 	nv_helpers_dx12::TopLevelASGenerator topLevelASGenerator;
 	// Gather all the instances into the builder helper
 	for (size_t i = 0; i < BlasInstances.size(); i++)
-		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].Model->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
+		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].Model->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(1 * i));
 
 	// As for the bottom-level AS, the building the AS requires some scratch space
 	// to store temporary data in addition to the actual AS. In the case of the

@@ -89,6 +89,6 @@ void RayGen() {
         // between the hit/miss shaders and the raygen
         payload);
 
-    if(payload.colorAndDistance.w < -0.9f)
+    if(payload.colorAndDistance.w > -1.0f)
         gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1.f);
 }
