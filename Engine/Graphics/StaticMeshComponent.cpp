@@ -26,10 +26,12 @@ StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string Model
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = pScene->mMeshes[i];
-		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale, &Transformation);
+		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale);
 	}
 
 	CB = pRM->CreateConstBuffer(&Transformation, sizeof(Transformation), 0);
+
+	pRM->PrepareForRtx(this);
 }
 
 void StaticMeshComponent::Draw(Graphics* pGraphics)
@@ -44,18 +46,25 @@ void StaticMeshComponent::Draw(Graphics* pGraphics)
 
 void StaticMeshComponent::Update(Camera* cam)
 {
-	Transformation = DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos)) * cam->GetView() * cam->GetProjection());
+	PosMatrix = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos));
+	Transformation = DirectX::XMMatrixTranspose(PosMatrix * cam->GetView() * cam->GetProjection());
 	CB->Update(&Transformation, sizeof(Transformation));
 }
 
 void StaticMeshComponent::SetPos(DirectX::XMFLOAT3 Pos)
 {
 	this->Pos = Pos;
+	this->PosMatrix = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos));
 }
 
 Engine_API DirectX::XMFLOAT3 StaticMeshComponent::GetPos()
 {
 	return Pos;
+}
+
+DirectX::XMMATRIX& StaticMeshComponent::GetPosMatrix()
+{
+	return PosMatrix;
 }
 
 Engine_API DirectX::XMMATRIX StaticMeshComponent::GetTransform()

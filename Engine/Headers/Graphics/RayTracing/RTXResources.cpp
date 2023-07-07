@@ -5,17 +5,25 @@
 #include "nv_helpers_dx12/RaytracingPipelineGenerator.h"
 #include "nv_helpers_dx12/RootSignatureGenerator.h"
 
-#include "../Resources/DrawableMesh.h"
+//#include "../Resources/DrawableMesh.h"
+#include "../../Scene/Components/StaticMeshComponent.h"
 
-RTXResources::RTXResources(Graphics* pGraphics)
+#include "../../ResourceManager.h"
+
+RTXResources::RTXResources(Graphics* pGraphics, ResourceManager* pRM)
 {
 	this->pGraphics = pGraphics;
+	this->pRM = pRM;
+
+	CBuffer b{};
+
+	pConstBuffer = pRM->CreateConstBuffer(&b, sizeof(b), 0);
 }
 
-void RTXResources::PrepareMeshForRtx(DrawableMesh* mesh, unsigned int hitGroup)
+void RTXResources::PrepareModelForRtx(StaticMeshComponent* model, unsigned int hitGroup)
 {
 	RTResource resource;
-	resource.Mesh = mesh;
+	resource.Model = model;
 	resource.Buffers = { 0 };
 	resource.InstanceId = BlasInstances.size();
 	resource.HitGroup = hitGroup;
@@ -32,33 +40,120 @@ bool RTXResources::IsNeedUpdate()
 
 void RTXResources::StartInitialize()
 {
-	ReleaseStructures();
+	// TODO: make resource releasing
+	//ReleaseStructures();
 
 	CreateBottomLevelAS();
-
 	CreateTopLevelAS();
 
 	if (!pRtStateObject)
 	{
 		CreateRaytracingPipeline();
 		CreateRaytracingOutputBuffer();
-		CreateShaderResourceHeap();
-		CreateShaderBindingTable();
 	}
+
+	CreateShaderResourceHeap();
+	CreateShaderBindingTable();
+
+	NeedUpdate = false;
 }
 
 void RTXResources::EndInitialize()
 {
-	for (int i = 0; i < BlasInstances.size(); i++)
+	/*for (int i = 0; i < BlasInstances.size(); i++)
 	{
 		BlasInstances[i].Buffers.pScratch->Release();
 		BlasInstances[i].Buffers.pScratch = nullptr;
-	}
+	}*/
+}
 
-	TopLevelASBuffers.pScratch->Release();
-	TopLevelASBuffers.pScratch = nullptr;
+void RTXResources::CopyBuffer()
+{
+	pGraphics->CopyFromRenderTarget(pOutputResource);
+}
 
-	NeedUpdate = false;
+void RTXResources::DispatchRays()
+{
+	auto commandList = pGraphics->GetCommandList();
+
+	// Bind the descriptor heap giving access to the top-level acceleration
+		// structure, as well as the raytracing output
+	std::vector<ID3D12DescriptorHeap*> heaps = { pSrvUavHeap };
+	commandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+
+	// On the last frame, the raytracing output was used as a copy source, to
+	// copy its contents into the render target. Now we need to transition it to
+	// a UAV so that the shaders can write in it.
+	CD3DX12_RESOURCE_BARRIER transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	commandList->ResourceBarrier(1, &transition);
+
+	// Setup the raytracing task
+	D3D12_DISPATCH_RAYS_DESC desc = {};
+	// The layout of the SBT is as follows: ray generation shader, miss
+	// shaders, hit groups. As described in the CreateShaderBindingTable method,
+	// all SBT entries of a given type have the same size to allow a fixed
+	// stride.
+
+	// The ray generation shaders are always at the beginning of the SBT.
+	uint32_t rayGenerationSectionSizeInBytes = SbtHelper.GetRayGenSectionSize();
+	desc.RayGenerationShaderRecord.StartAddress = pSbtStorage->GetGPUVirtualAddress();
+	desc.RayGenerationShaderRecord.SizeInBytes = rayGenerationSectionSizeInBytes;
+
+	// The miss shaders are in the second SBT section, right after the ray
+	// generation shader. We have one miss shader for the camera rays and one
+	// for the shadow rays, so this section has a size of 2*m_sbtEntrySize. We
+	// also indicate the stride between the two miss shaders, which is the size
+	// of a SBT entry
+	uint32_t missSectionSizeInBytes = SbtHelper.GetMissSectionSize();
+	desc.MissShaderTable.StartAddress = pSbtStorage->GetGPUVirtualAddress() + rayGenerationSectionSizeInBytes;
+	desc.MissShaderTable.SizeInBytes = missSectionSizeInBytes;
+	desc.MissShaderTable.StrideInBytes = SbtHelper.GetMissEntrySize();
+
+	// The hit groups section start after the miss shaders. In this sample we
+	// have one 1 hit group for the triangle
+	uint32_t hitGroupsSectionSize = SbtHelper.GetHitGroupSectionSize();
+	desc.HitGroupTable.StartAddress = pSbtStorage->GetGPUVirtualAddress() + rayGenerationSectionSizeInBytes + missSectionSizeInBytes;
+	desc.HitGroupTable.SizeInBytes = hitGroupsSectionSize;
+	desc.HitGroupTable.StrideInBytes = SbtHelper.GetHitGroupEntrySize();
+
+	auto res = pGraphics->GetResolution();
+
+	// Dimensions of the image to render, identical to a kernel launch dimension
+	desc.Width = res.first;
+	desc.Height = res.second;
+	desc.Depth = 1;
+
+	// Bind the raytracing pipeline
+	commandList->SetPipelineState1(pRtStateObject);
+	// Dispatch the rays and write to the raytracing output
+	commandList->DispatchRays(&desc);
+
+	// The raytracing output needs to be copied to the actual render target used
+	// for display. For this, we need to transition the raytracing output from a
+	// UAV to a copy source, and the render target buffer to a copy destination.
+	// We can then do the actual copy, before transitioning the render target
+	// buffer into a render target, that will be then used to display the image
+	transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	commandList->ResourceBarrier(1, &transition);
+
+	pGraphics->CopyToRenderTarget(pOutputResource);
+
+	transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	commandList->ResourceBarrier(1, &transition);
+}
+
+void RTXResources::Update(Camera* pCamera)
+{
+	UpdateTopLevelAS();
+
+	CBuffer b;
+	b.View = pCamera->GetView();
+	b.Projection = pCamera->GetProjection();
+	DirectX::XMVECTOR det;
+	b.IView = DirectX::XMMatrixInverse(&det, b.View);
+	b.IProjection = DirectX::XMMatrixInverse(&det, b.Projection);
+	
+	pConstBuffer->Update(&b, sizeof(b));
 }
 
 
@@ -88,15 +183,16 @@ void RTXResources::CreateBottomLevelAS()
 {
 	for (int i = 0; i < BlasInstances.size(); i++)
 	{
-		DrawableMesh* mesh = BlasInstances[i].Mesh;
-
-		std::shared_ptr<VertexBuffer> pVertexBuffer = mesh->pVertexBuffer;
-		std::shared_ptr<IndexBuffer> pIndexBuffer = mesh->pIndexBuffer;
-
 		nv_helpers_dx12::BottomLevelASGenerator bottomLevelAS;
 
-		// Adding all vertex buffers and not transforming their position.
-		bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
+		for (int j = 0; j < BlasInstances[i].Model->Meshes.size(); j++)
+		{
+			std::shared_ptr<VertexBuffer> pVertexBuffer = BlasInstances[i].Model->Meshes[j].pVertexBuffer;
+			std::shared_ptr<IndexBuffer> pIndexBuffer = BlasInstances[i].Model->Meshes[j].pIndexBuffer;
+
+			// Adding all vertex buffers and not transforming their position.
+			bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
+		}
 
 		// The AS build requires some scratch space to store temporary information.
 		// The amount of scratch memory is dependent on the scene complexity.
@@ -127,10 +223,9 @@ void RTXResources::CreateBottomLevelAS()
 void RTXResources::CreateTopLevelAS()
 {
 	nv_helpers_dx12::TopLevelASGenerator topLevelASGenerator;
-
 	// Gather all the instances into the builder helper
 	for (size_t i = 0; i < BlasInstances.size(); i++)
-		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, *BlasInstances[i].Mesh->transfrom, static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
+		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].Model->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
 
 	// As for the bottom-level AS, the building the AS requires some scratch space
 	// to store temporary data in addition to the actual AS. In the case of the
@@ -157,6 +252,13 @@ void RTXResources::CreateTopLevelAS()
 	// we also pass the existing AS as the 'previous' AS, so that it can be
 	// refitted in place.
 	topLevelASGenerator.Generate(pGraphics->GetCommandList(), TopLevelASBuffers.pScratch, TopLevelASBuffers.pResult, TopLevelASBuffers.pInstanceDesc);
+	
+	TopLevelASGenerator = std::move(topLevelASGenerator);
+}
+
+void RTXResources::UpdateTopLevelAS()
+{
+	TopLevelASGenerator.Generate(pGraphics->GetCommandList(), TopLevelASBuffers.pScratch, TopLevelASBuffers.pResult, TopLevelASBuffers.pInstanceDesc);
 }
 
 ID3D12RootSignature* RTXResources::CreateRayGenSignature()
@@ -168,7 +270,10 @@ ID3D12RootSignature* RTXResources::CreateRayGenSignature()
 		  0 /*heap slot where the UAV is defined*/},
 		 {0 /*t0*/, 1, 0,
 		  D3D12_DESCRIPTOR_RANGE_TYPE_SRV /*Top-level acceleration structure*/,
-		  1} });
+		  1},
+		{0 /*b0*/, 1, 0,
+		  D3D12_DESCRIPTOR_RANGE_TYPE_CBV /* Const buffer */,
+		  2} });
 
 	return rsc.Generate(pGraphics->GetDevice(), true);
 }
@@ -288,7 +393,7 @@ void RTXResources::CreateRaytracingOutputBuffer()
 	resDesc.MipLevels = 1;
 	resDesc.SampleDesc.Count = 1;
 	Error_Check(
-		pGraphics->GetDevice()->CreateCommittedResource(&nv_helpers_dx12::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&pOutputResource))
+		pGraphics->GetDevice()->CreateCommittedResource(&nv_helpers_dx12::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&pOutputResource))
 	);
 }
 
@@ -297,7 +402,7 @@ void RTXResources::CreateShaderResourceHeap()
 	auto device = pGraphics->GetDevice();
 	// Create a SRV/UAV/CBV descriptor heap. We need 2 entries - 1 UAV for the
 	// raytracing output and 1 SRV for the TLAS
-	pSrvUavHeap = nv_helpers_dx12::CreateDescriptorHeap(device, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+	pSrvUavHeap = nv_helpers_dx12::CreateDescriptorHeap(device, 3, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
 	// Get a handle to the heap memory on the CPU side, to be able to write the
 	// descriptors directly
@@ -320,6 +425,14 @@ void RTXResources::CreateShaderResourceHeap()
 	srvDesc.RaytracingAccelerationStructure.Location = TopLevelASBuffers.pResult->GetGPUVirtualAddress();
 	// Write the acceleration structure view in the heap
 	device->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
+
+	// Add the constant buffer for the camera after the TLAS
+	srvHandle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// Describe and create a constant buffer view for the camera
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+	cbvDesc.BufferLocation = pConstBuffer->pBuffer->GetGPUVirtualAddress();
+	cbvDesc.SizeInBytes = pConstBuffer->DataSize;
+	device->CreateConstantBufferView(&cbvDesc, srvHandle);
 }
 
 void RTXResources::CreateShaderBindingTable()
@@ -371,6 +484,8 @@ void RTXResources::ReleaseStructures()
 		{
 			BlasInstances[i].Buffers.pResult->Release();
 			BlasInstances[i].Buffers.pResult = nullptr;
+			BlasInstances[i].Buffers.pScratch->Release();
+			BlasInstances[i].Buffers.pScratch = nullptr;
 		}
 	}
 
@@ -378,6 +493,9 @@ void RTXResources::ReleaseStructures()
 	{
 		TopLevelASBuffers.pResult->Release();
 		TopLevelASBuffers.pResult = nullptr;
+
+		TopLevelASBuffers.pScratch->Release();
+		TopLevelASBuffers.pScratch = nullptr;
 
 		TopLevelASBuffers.pInstanceDesc->Release();
 		TopLevelASBuffers.pInstanceDesc = nullptr;

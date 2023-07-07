@@ -8,7 +8,8 @@
 #include "../Resources/Buffers/Buffers.h"
 #include "nv_helpers_dx12/ShaderBindingTableGenerator.h"
 
-class DrawableMesh;
+class StaticMeshComponent;
+class Camera;
 
 class RTXResources 
 {
@@ -22,23 +23,37 @@ class RTXResources
 
 	struct RTResource 
 	{
-		DrawableMesh* Mesh;
+		StaticMeshComponent* Model;
 		AccelerationStructureBuffers Buffers;
 		unsigned int InstanceId;
 		unsigned int HitGroup;
 	};
 
+	struct CBuffer 
+	{
+		DirectX::XMMATRIX View;
+		DirectX::XMMATRIX Projection;
+		DirectX::XMMATRIX IView;
+		DirectX::XMMATRIX IProjection;
+	};
+
 public:
 
-	RTXResources(Graphics* pGraphics);
+	RTXResources(Graphics* pGraphics, ResourceManager* pRM);
 
-	void PrepareMeshForRtx(DrawableMesh* mesh, unsigned int hitGroup);
+	void PrepareModelForRtx(StaticMeshComponent* model, unsigned int hitGroup);
 
 	bool IsNeedUpdate();
 
 	void StartInitialize();
 
 	void EndInitialize();
+
+	void CopyBuffer();
+
+	void DispatchRays();
+
+	void Update(Camera* pCamera);
 
 	~RTXResources();
 
@@ -47,6 +62,9 @@ private:
 	bool NeedUpdate = false;
 
 	Graphics* pGraphics;
+	ResourceManager* pRM;
+
+	std::shared_ptr<ConstantBuffer> pConstBuffer;
 
 	std::vector<RTResource> BlasInstances;
 
@@ -57,10 +75,13 @@ private:
 	/// \param     instances : pair of BLAS and transform
 	void CreateTopLevelAS();
 
+	void UpdateTopLevelAS();
+
 	ID3D12RootSignature* CreateRayGenSignature();
 	ID3D12RootSignature* CreateHitSignature();
 	ID3D12RootSignature* CreateMissSignature();
 	
+	nv_helpers_dx12::TopLevelASGenerator TopLevelASGenerator;
 	AccelerationStructureBuffers TopLevelASBuffers;
 
 	IDxcBlob* pRayGenLibrary;

@@ -27,6 +27,12 @@ void Scene::AddModel(std::shared_ptr<StaticMeshComponent> pModel)
 	Models.push_back(pModel);
 }
 
+void Scene::Update()
+{
+	for (auto model : Models)
+		model->Update(pCamera);
+}
+
 void Scene::SetCamera(Camera* cam)
 {
 	if (cam)

@@ -63,6 +63,7 @@ private:
 
 class ConstantBuffer : public Resource
 {
+	friend class RTXResources;
 public:
 	ConstantBuffer(const void* pData, unsigned int DataSize);
 	void Bind(Graphics* pGraphics) override;

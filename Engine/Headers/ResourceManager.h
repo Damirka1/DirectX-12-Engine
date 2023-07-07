@@ -37,7 +37,12 @@ public:
 	Engine_API std::shared_ptr<Texture2D> CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader = false);
 	Engine_API std::shared_ptr<Sampler> CreateDefaultSampler(UINT Index) noexcept;
 
-	Engine_API void PrepareForRtx(DrawableMesh* mesh, unsigned int hitGroup = 0);
+	Engine_API void PrepareForRtx(StaticMeshComponent* model, unsigned int hitGroup = 0);
+
+	Engine_API void CopyBuffer();
+	Engine_API void DispatchRays();
+
+	Engine_API void Update();
 	
 	Engine_API void InitializeResources(Scene* pScene);
 	Engine_API ~ResourceManager();

@@ -17,6 +17,8 @@ Application::Application(HINSTANCE hInstance)
 
 	Core->SetBackgroundColor(0.2f, 0.2f, 0.2f);
 
+	pCamera->SetPos({ 0.0f, 0.0f, -50.0f });
+
 	pScene = Core->CreateScene();
 	pScene->SetCamera(pCamera);
 
@@ -37,8 +39,9 @@ Application::Application(HINSTANCE hInstance)
 
 	models.push_back(Core->CreatePlane());
 	pScene->AddModel(models.back());
-	/*spheres.push_back(Core->CreateSphere());
-	pScene->AddModel(spheres.back());*/
+	spheres.push_back(Core->CreateSphere());
+	pScene->AddModel(spheres.back());
+	//spheres.back()->SetPos({ 0.0f, 0.0f, 4.0f });
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
 }
@@ -95,8 +98,7 @@ void Application::Run()
 			}
 		}
 
-		for (auto m : models)
-			m->Update(pCamera);
+		Core->Update();
 
 		for (auto m : spheres)
 			m->UpdateBody(pCamera);

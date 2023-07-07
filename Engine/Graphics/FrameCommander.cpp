@@ -44,6 +44,12 @@ void FrameCommander::InitializeResources()
 		throw std::exception("Set scene to frame commander befor preparetion");
 }
 
+void FrameCommander::Update()
+{
+	pScene->Update();
+	pResourceManager->Update();
+}
+
 void FrameCommander::Render()
 {
 	pGraphics->Setup(BackgroundColor.x, BackgroundColor.y, BackgroundColor.z);
@@ -69,6 +75,10 @@ void FrameCommander::Render()
 
 	for (auto& m : pScene->Models)
 		m->Draw(pGraphics);
+
+	pResourceManager->CopyBuffer();
+
+	pResourceManager->DispatchRays();
 
 	pGraphics->Execute();
 }

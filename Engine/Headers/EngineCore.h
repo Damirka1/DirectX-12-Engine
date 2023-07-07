@@ -117,6 +117,10 @@ public:
 		_FrameCommander->Render();
 	}
 
+	void Update() {
+		_FrameCommander->Update();
+	}
+
 	void CreateConsole()
 	{
 		_Console = new Console(L"Engine debug console");

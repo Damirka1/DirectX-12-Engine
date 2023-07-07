@@ -38,6 +38,8 @@ public:
 	//Engine_API void AddModel(std::shared_ptr<Model> pModel);
 	Engine_API void AddModel(std::shared_ptr<StaticMeshComponent> pModel);
 
+	Engine_API void Update();
+
 	Engine_API void SetCamera(Camera* pCam);
 
 private:

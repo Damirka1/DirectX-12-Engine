@@ -374,6 +374,28 @@ std::pair<short, short> Graphics::GetResolution() noexcept
     return std::make_pair<short, short>(static_cast<short>(ViewPort.Width), static_cast<short>(ViewPort.Height));
 }
 
+void Graphics::CopyToRenderTarget(ID3D12Resource* pBuffer)
+{
+    CD3DX12_RESOURCE_BARRIER transition = CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
+    pCommandList->ResourceBarrier(1, &transition);
+
+    pCommandList->CopyResource(pRenderTargets[FrameIndex], pBuffer);
+
+    transition = CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    pCommandList->ResourceBarrier(1, &transition);
+}
+
+void Graphics::CopyFromRenderTarget(ID3D12Resource* pBuffer)
+{
+    CD3DX12_RESOURCE_BARRIER transition = CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    pCommandList->ResourceBarrier(1, &transition);
+
+    pCommandList->CopyResource(pBuffer, pRenderTargets[FrameIndex]);
+
+    transition = CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    pCommandList->ResourceBarrier(1, &transition);
+}
+
 std::wstring Graphics::GetInfo() noexcept
 {
     return L"[Device]: " + std::wstring(static_cast<wchar_t*>(DeviceDesc.Description)) + L'\n'

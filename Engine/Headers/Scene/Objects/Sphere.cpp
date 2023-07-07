@@ -28,6 +28,8 @@ void Sphere::UpdateBody(Camera* cam)
 
 	Transformation = DirectX::XMMatrixTranspose(m * cam->GetView() * cam->GetProjection());
 	CB->Update(&Transformation, sizeof(Transformation));
+
+	PosMatrix = m;
 }
 
 Engine_API void Sphere::AddForce(DirectX::XMFLOAT3 vec)

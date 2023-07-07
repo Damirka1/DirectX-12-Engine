@@ -14,7 +14,7 @@ ResourceManager::ResourceManager(Window* pWindow) noexcept
 	pGraphics = pWindow->GetGraphics();
 	Heap.Initialize(pGraphics);
 
-	rt = new RTXResources(pGraphics);
+	rt = new RTXResources(pGraphics, this);
 }
 
 std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
@@ -130,16 +130,15 @@ void ResourceManager::InitializeResources(Scene* pScene)
 
 	ToInit.clear();
 
-	pGraphics->Initialize();
-
 	if (rt->IsNeedUpdate())
 	{
-		pGraphics->SetupInit();
 		rt->StartInitialize();
-
-		pGraphics->Initialize();
-		rt->EndInitialize();
+		//rt->EndInitialize();
 	}
+	else
+		rt->Update(pScene->pCamera);
+
+	pGraphics->Initialize();
 
 	//pScene->InitCamera();
 }
@@ -222,8 +221,26 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexc
 	return std::static_pointer_cast<Sampler>(i->second);
 }
 
-Engine_API void ResourceManager::PrepareForRtx(DrawableMesh* mesh, unsigned int hitGroup)
+Engine_API void ResourceManager::PrepareForRtx(StaticMeshComponent* model, unsigned int hitGroup)
 {
-	rt->PrepareMeshForRtx(mesh, hitGroup);
+	rt->PrepareModelForRtx(model, hitGroup);
+}
+
+void ResourceManager::CopyBuffer()
+{
+	rt->CopyBuffer();
+}
+
+void ResourceManager::DispatchRays()
+{
+	rt->DispatchRays();
+}
+
+void ResourceManager::Update()
+{
+	//rt->Update();
+	///*pGraphics->Initialize();
+	//pGraphics->SetupInit();*/
+	//rt->StartInitialize();
 }
 

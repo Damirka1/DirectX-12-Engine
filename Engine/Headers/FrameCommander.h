@@ -17,6 +17,8 @@ public:
 
 	Engine_API void SetupInit();
 	Engine_API void InitializeResources();
+
+	Engine_API void Update();
 	
 	Engine_API void Render();
 	Engine_API ~FrameCommander();

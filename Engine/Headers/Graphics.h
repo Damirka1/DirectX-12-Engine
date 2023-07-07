@@ -17,6 +17,7 @@
 class Graphics
 {
 	friend class Window;
+	friend class RTXResources;
 public:
 	Engine_API Graphics(HWND pWindow, short Width = 800, short Height = 600);
 	Engine_API ~Graphics();
@@ -36,6 +37,9 @@ public:
 
 	std::pair<short, short> GetResolution() noexcept;
 
+	void CopyToRenderTarget(ID3D12Resource* pBuffer);
+	void CopyFromRenderTarget(ID3D12Resource* pBuffer);
+
 private:
 	void WaitForGpu();
 	void MoveToNextFrame();
@@ -53,10 +57,13 @@ private:
 	ID3D12Device9* pDevice = nullptr;
 	ID3D12GraphicsCommandList6* pCommandList = nullptr;
 	ID3D12CommandQueue* pCommandQueue = nullptr;
+	ID3D12Resource2* pUAViews[FrameCount];
 	ID3D12Resource2* pRenderTargets[FrameCount];
 	ID3D12CommandAllocator* pCommandAllocators[FrameCount];
 	ID3D12DescriptorHeap* pRTV_Heap = nullptr;
+	ID3D12DescriptorHeap* pUAV_Heap = nullptr;
 	UINT RTV_Size = 0;
+	UINT UAV_Size = 0;
 
 	// DepthStencil buffers.
 	ID3D12Resource2* pDepthStencilBuffer;
