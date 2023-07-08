@@ -281,6 +281,14 @@ ID3D12RootSignature* RTXResources::CreateRayGenSignature()
 ID3D12RootSignature* RTXResources::CreateHitSignature()
 {
 	nv_helpers_dx12::RootSignatureGenerator rsc;
+
+	rsc.AddHeapRangesParameter(
+		{
+		 {0 /*t0*/, 1, 0,
+		  D3D12_DESCRIPTOR_RANGE_TYPE_SRV /*Top-level acceleration structure*/,
+		  1}
+		});
+
 	return rsc.Generate(pGraphics->GetDevice(), true);
 }
 
@@ -364,7 +372,7 @@ void RTXResources::CreateRaytracingPipeline()
 	// then requires a trace depth of 1. Note that this recursion depth should be
 	// kept to a minimum for best performance. Path tracing algorithms can be
 	// easily flattened into a simple loop in the ray generation.
-	pipeline.SetMaxRecursionDepth(1);
+	pipeline.SetMaxRecursionDepth(2);
 
 	// Compile the pipeline for execution on the GPU
 	pRtStateObject = pipeline.Generate();
@@ -459,7 +467,7 @@ void RTXResources::CreateShaderBindingTable()
 	SbtHelper.AddMissProgram(L"Miss", {});
 
 	// Adding the triangle hit shader
-	SbtHelper.AddHitGroup(L"HitGroup", {});
+	SbtHelper.AddHitGroup(L"HitGroup", { heapPointer });
 
 	// Compute the size of the SBT given the number of shaders and their
 	// parameters

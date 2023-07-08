@@ -17,15 +17,16 @@ cbuffer CameraParams : register(b0)
 
 [shader("raygeneration")]
 void RayGen() {
-    // Initialize the ray payload
-    HitInfo payload;
-    payload.colorAndDistance = float4(0.9, 0.6, 0.2, 1);
-
     // Get the location within the dispatched 2D grid of work items
     // (often maps to pixels, so this could represent a pixel coordinate).
     uint2 launchIndex = DispatchRaysIndex().xy;
     float2 dims = float2(DispatchRaysDimensions().xy);
     float2 d = (((launchIndex.xy + 0.5f) / dims.xy) * 2.f - 1.f);
+
+    // Initialize the ray payload
+    HitInfo payload;
+    payload.colorAndDistance = float4(0, 0, 0, 1);
+
     // Define a ray, consisting of origin, direction, and the min-max distance
     // values
     // 18.9 #DXR Extra: Perspective Camera
@@ -89,6 +90,6 @@ void RayGen() {
         // between the hit/miss shaders and the raygen
         payload);
 
-    if(payload.colorAndDistance.w > -1.0f)
-        gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1.f);
+    if(payload.colorAndDistance.r < 0)
+        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, 1.f);
 }
