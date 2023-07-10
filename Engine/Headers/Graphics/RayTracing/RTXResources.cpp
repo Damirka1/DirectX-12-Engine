@@ -167,10 +167,6 @@ RTXResources::~RTXResources()
 	pRtStateObject->Release();
 
 	pOutputResource->Release();
-
-	pSrvUavHeap->Release();
-
-	pSbtStorage->Release();
 }
 
 void RTXResources::CreateBottomLevelAS()
