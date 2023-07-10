@@ -38,10 +38,9 @@ bool RTXResources::IsNeedUpdate()
 	return NeedUpdate;
 }
 
-void RTXResources::StartInitialize()
+void RTXResources::Initialize()
 {
-	// TODO: make resource releasing
-	//ReleaseStructures();
+	ReleaseStructures();
 
 	CreateBottomLevelAS();
 	CreateTopLevelAS();
@@ -56,15 +55,6 @@ void RTXResources::StartInitialize()
 	CreateShaderBindingTable();
 
 	NeedUpdate = false;
-}
-
-void RTXResources::EndInitialize()
-{
-	/*for (int i = 0; i < BlasInstances.size(); i++)
-	{
-		BlasInstances[i].Buffers.pScratch->Release();
-		BlasInstances[i].Buffers.pScratch = nullptr;
-	}*/
 }
 
 void RTXResources::CopyBuffer()
@@ -146,13 +136,17 @@ void RTXResources::Update(Camera* pCamera)
 {
 	UpdateTopLevelAS();
 
-	CBuffer b;
+	CBuffer b = {};
 	b.View = pCamera->GetView();
 	b.Projection = pCamera->GetProjection();
 	DirectX::XMVECTOR det;
 	b.IView = DirectX::XMMatrixInverse(&det, b.View);
 	b.IProjection = DirectX::XMMatrixInverse(&det, b.Projection);
 	
+	float df = timer.Peek();
+
+	b.LightPos = {b.LightPos.x + sinf(df) * 50, b.LightPos.y, b.LightPos.z + cosf(df) * 50 };
+
 	pConstBuffer->Update(&b, sizeof(b));
 }
 
@@ -225,7 +219,7 @@ void RTXResources::CreateTopLevelAS()
 	nv_helpers_dx12::TopLevelASGenerator topLevelASGenerator;
 	// Gather all the instances into the builder helper
 	for (size_t i = 0; i < BlasInstances.size(); i++)
-		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].Model->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(1 * i));
+		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].Model->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
 
 	// As for the bottom-level AS, the building the AS requires some scratch space
 	// to store temporary data in addition to the actual AS. In the case of the
@@ -239,7 +233,7 @@ void RTXResources::CreateTopLevelAS()
 
 	// Create the scratch and result buffers. Since the build is all done on GPU,
 	// those can be allocated on the default heap
-	TopLevelASBuffers.pScratch = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), scratchSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nv_helpers_dx12::kDefaultHeapProps);
+	TopLevelASBuffers.pScratch = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), scratchSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, nv_helpers_dx12::kDefaultHeapProps);
 	TopLevelASBuffers.pResult = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), resultSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, nv_helpers_dx12::kDefaultHeapProps);
 
 	// The buffer describing the instances: ID, shader binding information,
@@ -286,7 +280,10 @@ ID3D12RootSignature* RTXResources::CreateHitSignature()
 		{
 		 {0 /*t0*/, 1, 0,
 		  D3D12_DESCRIPTOR_RANGE_TYPE_SRV /*Top-level acceleration structure*/,
-		  1}
+		  1},
+		  {0 /*b0*/, 1, 0,
+		  D3D12_DESCRIPTOR_RANGE_TYPE_CBV /* Const buffer */,
+		  2}
 		});
 
 	return rsc.Generate(pGraphics->GetDevice(), true);
@@ -439,7 +436,7 @@ void RTXResources::CreateShaderResourceHeap()
 	// Describe and create a constant buffer view for the camera
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 	cbvDesc.BufferLocation = pConstBuffer->pBuffer->GetGPUVirtualAddress();
-	cbvDesc.SizeInBytes = pConstBuffer->DataSize;
+	cbvDesc.SizeInBytes = pConstBuffer->BufferSize;
 	device->CreateConstantBufferView(&cbvDesc, srvHandle);
 }
 
@@ -507,5 +504,12 @@ void RTXResources::ReleaseStructures()
 
 		TopLevelASBuffers.pInstanceDesc->Release();
 		TopLevelASBuffers.pInstanceDesc = nullptr;
+	}
+
+	if (pSbtStorage)
+	{
+		pSrvUavHeap->Release();
+
+		pSbtStorage->Release();
 	}
 }

@@ -177,7 +177,7 @@ void ConstantBuffer::Bind(Graphics* pGraphics)
 void ConstantBuffer::Initialize(Graphics* pGraphics)
 {
 	ID3D12Device9* pDevice = pGraphics->GetDevice();
-	UINT BufferSize = (DataSize + 255) & ~255;
+	BufferSize = (DataSize + 255) & ~255;
 
 	if (!Initialized)
 	{

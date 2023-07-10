@@ -39,7 +39,7 @@ void FrameCommander::SetupInit()
 void FrameCommander::InitializeResources()
 {
 	if (pScene)
-		pResourceManager->InitializeResources(&*pScene);
+		pResourceManager->InitializeResources(pScene);
 	else
 		throw std::exception("Set scene to frame commander befor preparetion");
 }

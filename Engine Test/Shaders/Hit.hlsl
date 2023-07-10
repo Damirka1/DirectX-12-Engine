@@ -8,10 +8,10 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
 {
     if (payload.colorAndDistance.w >= 1)
     {
-        float3 lightPos = float3(20, 0, -2);
         // Find the world - space hit position 
         float3 worldOrigin = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
-        float3 lightDir = normalize(lightPos - worldOrigin);
+        float3 vecToLight = lightPos - worldOrigin;
+        float3 lightDir = normalize(vecToLight);
         // Fire a shadow ray. The direction is hard-coded here, but can be fetched 
         // from a constant-buffer 
         RayDesc ray;
@@ -21,7 +21,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         ray.TMax = 100000;
         // Initialize the ray payload 
         HitInfo shadowPayload;
-        shadowPayload.colorAndDistance = float4(0,0,0, RayTCurrent());
+        shadowPayload.colorAndDistance = float4(0,0,0,-1);
         // Trace the ray 
         TraceRay(
             SceneBVH,
@@ -34,15 +34,11 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
             shadowPayload);
 
         if (shadowPayload.colorAndDistance.w > -1)
-        {
-            payload.colorAndDistance = float4(0,0,0, RayTCurrent());
-        }
+            payload.colorAndDistance = float4(0.1f, 0.1f, 0.1f, -2);
         else
-        {
-            payload.colorAndDistance = float4(shadowPayload.colorAndDistance.rgb, RayTCurrent());
-        }
+            payload.colorAndDistance = float4(0, 0, 0, 2);
 
     }
 	else
-        payload.colorAndDistance = float4(0,0,0, RayTCurrent());
+        payload.colorAndDistance = float4(1, 1, 1, RayTCurrent());
 }

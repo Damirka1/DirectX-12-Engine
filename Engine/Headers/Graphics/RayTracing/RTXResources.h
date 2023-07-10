@@ -8,6 +8,8 @@
 #include "../Resources/Buffers/Buffers.h"
 #include "nv_helpers_dx12/ShaderBindingTableGenerator.h"
 
+#include "../../Timer.h"
+
 class StaticMeshComponent;
 class Camera;
 
@@ -35,6 +37,7 @@ class RTXResources
 		DirectX::XMMATRIX Projection;
 		DirectX::XMMATRIX IView;
 		DirectX::XMMATRIX IProjection;
+		DirectX::XMFLOAT3 LightPos;
 	};
 
 public:
@@ -45,9 +48,7 @@ public:
 
 	bool IsNeedUpdate();
 
-	void StartInitialize();
-
-	void EndInitialize();
+	void Initialize();
 
 	void CopyBuffer();
 
@@ -58,6 +59,8 @@ public:
 	~RTXResources();
 
 private:
+	Timer timer;
+	DirectX::XMFLOAT3 LightPos = { 20, 0, -2 };
 
 	bool NeedUpdate = false;
 

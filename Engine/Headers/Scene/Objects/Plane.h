@@ -20,6 +20,8 @@ public:
 		pShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 		pPM->AddToScene(pRigidStatic);
+
+		pRM->PrepareForRtx(this, 0);
 	}
 
 private:

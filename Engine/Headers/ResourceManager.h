@@ -44,7 +44,7 @@ public:
 
 	Engine_API void Update();
 	
-	Engine_API void InitializeResources(Scene* pScene);
+	Engine_API void InitializeResources(std::shared_ptr<Scene> pScene);
 	Engine_API ~ResourceManager();
 
 private:

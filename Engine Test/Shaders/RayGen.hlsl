@@ -6,15 +6,6 @@ RWTexture2D< float4 > gOutput : register(u0);
 // Raytracing acceleration structure, accessed as a SRV
 RaytracingAccelerationStructure SceneBVH : register(t0);
 
-// 18.9 #DXR Extra: Perspective Camera
-cbuffer CameraParams : register(b0)
-{
-    float4x4 view;
-    float4x4 projection;
-    float4x4 viewI;
-    float4x4 projectionI;
-}
-
 [shader("raygeneration")]
 void RayGen() {
     // Get the location within the dispatched 2D grid of work items
@@ -25,11 +16,10 @@ void RayGen() {
 
     // Initialize the ray payload
     HitInfo payload;
-    payload.colorAndDistance = float4(0, 0, 0, 1);
+    payload.colorAndDistance = float4(1, 1, 0, 1);
 
     // Define a ray, consisting of origin, direction, and the min-max distance
     // values
-    // 18.9 #DXR Extra: Perspective Camera
     RayDesc ray;
     ray.Origin = mul(viewI, float4(0, 0, 0, 1));
     float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
@@ -90,6 +80,11 @@ void RayGen() {
         // between the hit/miss shaders and the raygen
         payload);
 
-    if(payload.colorAndDistance.r < 0)
-        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, 1.f);
+    /*if(payload.colorAndDistance.r < 0)
+        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, 1.f);*/
+    
+    //gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1);
+
+    if (payload.colorAndDistance.w <= -2)
+        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, gOutput[launchIndex].a);
 }

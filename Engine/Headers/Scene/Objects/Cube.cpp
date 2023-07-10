@@ -18,6 +18,8 @@ Cube::Cube(ResourceManager* pRM, PhysxManager* pPM)
 	pShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 	pPM->AddToScene(pRigidDynamic);
+
+	pRM->PrepareForRtx(this, 0);
 }
 
 void Cube::UpdateBody(Camera* cam)

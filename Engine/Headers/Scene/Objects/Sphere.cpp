@@ -18,6 +18,8 @@ Sphere::Sphere(ResourceManager* pRM, PhysxManager* pPM)
 	pShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 	pPM->AddToScene(pRigidDynamic);
+
+	pRM->PrepareForRtx(this, 0);
 }
 
 void Sphere::UpdateBody(Camera* cam)

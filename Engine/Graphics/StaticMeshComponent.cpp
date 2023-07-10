@@ -30,8 +30,6 @@ StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string Model
 	}
 
 	CB = pRM->CreateConstBuffer(&Transformation, sizeof(Transformation), 0);
-
-	pRM->PrepareForRtx(this);
 }
 
 void StaticMeshComponent::Draw(Graphics* pGraphics)

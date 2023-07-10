@@ -95,7 +95,7 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(const void* p
 	return res;
 }
 
-void ResourceManager::InitializeResources(Scene* pScene)
+void ResourceManager::InitializeResources(std::shared_ptr<Scene> pScene)
 {
 	if (Heap.IsNeedUpdateHeap0())
 	{
@@ -131,10 +131,7 @@ void ResourceManager::InitializeResources(Scene* pScene)
 	ToInit.clear();
 
 	if (rt->IsNeedUpdate())
-	{
-		rt->StartInitialize();
-		//rt->EndInitialize();
-	}
+		rt->Initialize();
 	else
 		rt->Update(pScene->pCamera);
 
@@ -238,9 +235,5 @@ void ResourceManager::DispatchRays()
 
 void ResourceManager::Update()
 {
-	//rt->Update();
-	///*pGraphics->Initialize();
-	//pGraphics->SetupInit();*/
-	//rt->StartInitialize();
 }
 

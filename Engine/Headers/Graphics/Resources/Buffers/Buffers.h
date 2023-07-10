@@ -76,6 +76,7 @@ private:
 	D3D12_CONSTANT_BUFFER_VIEW_DESC BufferView;
 	const void* pData;
 	UINT DataSize;
+	UINT BufferSize;
 };
 
 #endif

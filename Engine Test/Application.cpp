@@ -39,8 +39,9 @@ Application::Application(HINSTANCE hInstance)
 
 	models.push_back(Core->CreatePlane());
 	pScene->AddModel(models.back());
-	spheres.push_back(Core->CreateSphere());
-	pScene->AddModel(spheres.back());
+
+	cubes.push_back(Core->CreateCube());
+	pScene->AddModel(cubes.back());
 	//spheres.back()->SetPos({ 0.0f, 0.0f, 4.0f });
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
@@ -108,10 +109,10 @@ void Application::Run()
 
 		if (add)
 		{
-			/*auto s = Core->CreateSphere();
-			s->AddForce({2.2f, 0.0f, 20.0f});
+			auto s = Core->CreateSphere();
+			//s->AddForce({2.2f, 0.0f, 20.0f});
 			spheres.push_back(s);
-			pScene->AddModel(s);*/
+			pScene->AddModel(s);
 
 			auto c = Core->CreateCube();
 			//c->AddForce({ 2.2f, 0.0f, 20.0f });
