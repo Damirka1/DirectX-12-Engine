@@ -37,6 +37,8 @@ public:
 
 	std::pair<short, short> GetResolution() noexcept;
 
+	ID3D12Resource* GetRenderTarget(unsigned int index);
+
 	void CopyToRenderTarget(ID3D12Resource* pBuffer);
 	void CopyFromRenderTarget(ID3D12Resource* pBuffer);
 
@@ -47,6 +49,7 @@ private:
 
 private:
 	static const UINT FrameCount = 2;
+	static const UINT BuffersCount = 5;
 
 	// Window size.
 	CD3DX12_VIEWPORT ViewPort;
@@ -57,18 +60,19 @@ private:
 	ID3D12Device9* pDevice = nullptr;
 	ID3D12GraphicsCommandList6* pCommandList = nullptr;
 	ID3D12CommandQueue* pCommandQueue = nullptr;
-	ID3D12Resource2* pUAViews[FrameCount];
 	ID3D12Resource2* pRenderTargets[FrameCount];
+	// Create buffers for albedo, pos, normal and specular textures
+	ID3D12Resource2* pBuffers[BuffersCount];
+
 	ID3D12CommandAllocator* pCommandAllocators[FrameCount];
 	ID3D12DescriptorHeap* pRTV_Heap = nullptr;
-	ID3D12DescriptorHeap* pUAV_Heap = nullptr;
+	ID3D12DescriptorHeap* pBuffers_Heap = nullptr;
 	UINT RTV_Size = 0;
-	UINT UAV_Size = 0;
 
 	// DepthStencil buffers.
 	ID3D12Resource2* pDepthStencilBuffer;
 	ID3D12DescriptorHeap* pdsDescriptorHeap;
-	DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DXGI_FORMAT DsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// Additional info.
 	DXGI_FORMAT ViewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;

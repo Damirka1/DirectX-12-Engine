@@ -74,7 +74,7 @@ void RTXResources::DispatchRays()
 	// On the last frame, the raytracing output was used as a copy source, to
 	// copy its contents into the render target. Now we need to transition it to
 	// a UAV so that the shaders can write in it.
-	CD3DX12_RESOURCE_BARRIER transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	CD3DX12_RESOURCE_BARRIER transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	commandList->ResourceBarrier(1, &transition);
 
 	// Setup the raytracing task
@@ -123,13 +123,13 @@ void RTXResources::DispatchRays()
 	// UAV to a copy source, and the render target buffer to a copy destination.
 	// We can then do the actual copy, before transitioning the render target
 	// buffer into a render target, that will be then used to display the image
-	transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	commandList->ResourceBarrier(1, &transition);
 
 	pGraphics->CopyToRenderTarget(pOutputResource);
 
-	transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	commandList->ResourceBarrier(1, &transition);
+	/*transition = CD3DX12_RESOURCE_BARRIER::Transition(pOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	commandList->ResourceBarrier(1, &transition);*/
 }
 
 void RTXResources::Update(Camera* pCamera)
@@ -165,8 +165,6 @@ RTXResources::~RTXResources()
 
 	pRtStateObjectProps->Release();
 	pRtStateObject->Release();
-
-	pOutputResource->Release();
 }
 
 void RTXResources::CreateBottomLevelAS()
@@ -377,25 +375,27 @@ void RTXResources::CreateRaytracingPipeline()
 
 void RTXResources::CreateRaytracingOutputBuffer()
 {
-	D3D12_RESOURCE_DESC resDesc = {};
-	resDesc.DepthOrArraySize = 1;
-	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	// The backbuffer is actually DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, but sRGB
-	// formats cannot be used with UAVs. For accuracy we should convert to sRGB
-	// ourselves in the shader
-	resDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//D3D12_RESOURCE_DESC resDesc = {};
+	//resDesc.DepthOrArraySize = 1;
+	//resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	//// The backbuffer is actually DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, but sRGB
+	//// formats cannot be used with UAVs. For accuracy we should convert to sRGB
+	//// ourselves in the shader
+	//resDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	auto res = pGraphics->GetResolution();
+	//auto res = pGraphics->GetResolution();
 
-	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-	resDesc.Width = res.first;
-	resDesc.Height = res.second;
-	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	resDesc.MipLevels = 1;
-	resDesc.SampleDesc.Count = 1;
-	Error_Check(
-		pGraphics->GetDevice()->CreateCommittedResource(&nv_helpers_dx12::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&pOutputResource))
-	);
+	//resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	//resDesc.Width = res.first;
+	//resDesc.Height = res.second;
+	//resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	//resDesc.MipLevels = 1;
+	//resDesc.SampleDesc.Count = 1;
+	//Error_Check(
+	//	pGraphics->GetDevice()->CreateCommittedResource(&nv_helpers_dx12::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&pOutputResource))
+	//);
+
+	pOutputResource = pGraphics->GetRenderTarget(4);
 }
 
 void RTXResources::CreateShaderResourceHeap()

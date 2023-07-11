@@ -8,6 +8,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
 {
     if (payload.colorAndDistance.w >= 1)
     {
+        float3 lightPos = float3(10, 7, 0);
         // Find the world - space hit position 
         float3 worldOrigin = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
         float3 vecToLight = lightPos - worldOrigin;
@@ -34,11 +35,10 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
             shadowPayload);
 
         if (shadowPayload.colorAndDistance.w > -1)
-            payload.colorAndDistance = float4(0.1f, 0.1f, 0.1f, -2);
+            payload.colorAndDistance = float4(0.2f, 0.2f, 0.2f, -2);
         else
             payload.colorAndDistance = float4(0, 0, 0, 2);
-
     }
-	else
+    else
         payload.colorAndDistance = float4(1, 1, 1, RayTCurrent());
 }

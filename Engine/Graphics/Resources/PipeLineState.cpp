@@ -103,7 +103,8 @@ void PipelineStateObject::Initialize(Graphics* pGraphics)
 	}
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.NumRenderTargets = P_Lay.RenderTargetsCount;
-	psoDesc.RTVFormats[0] = pGraphics->GetRTVFormat();
+	for(int i = 0; i < psoDesc.NumRenderTargets; i++)
+		psoDesc.RTVFormats[i] = pGraphics->GetRTVFormat();
 	psoDesc.SampleDesc.Count = P_Lay.SampleCount;
 
 

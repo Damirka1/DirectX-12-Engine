@@ -13,13 +13,15 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 	VertexLayout Lay;
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
 	Lay.AddElement("NormCoord", DXGI_FORMAT_R32G32B32_FLOAT);
+	Lay.AddElement("TanCoord", DXGI_FORMAT_R32G32B32_FLOAT);
+	Lay.AddElement("BiTanCoord", DXGI_FORMAT_R32G32B32_FLOAT);
 	bool HasTexCoords = m->HasTextureCoords(0);
 
 	std::vector<FLOAT> Buffer;
 	std::vector<UINT> Indecies;
 
-	// Reserve space for vertecies and normals
-	int reserveSpace = (m->mNumVertices * 3) * 2;
+	// Reserve space for vertecies, normals, tangents and bitangents
+	int reserveSpace = (m->mNumVertices * 3) * 4;
 
 	if (HasTexCoords)
 	{
@@ -30,7 +32,7 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 	else 
 		Buffer.reserve(reserveSpace);
 
-	for (size_t i = 0, j = 0, k = 0; i < m->mNumVertices; i++, j++, k++)
+	for (size_t i = 0; i < m->mNumVertices; i++)
 	{
 		aiVector3D v = m->mVertices[i];
 
@@ -38,14 +40,24 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 		Buffer.push_back(v.y * scale);
 		Buffer.push_back(v.z * scale);
 
-		aiVector3D vn = m->mNormals[k];
+		aiVector3D vn = m->mNormals[i];
 		Buffer.push_back(vn.x);
 		Buffer.push_back(vn.y);
 		Buffer.push_back(vn.z);
 
+		aiVector3D vtn = m->mTangents[i];
+		Buffer.push_back(vtn.x);
+		Buffer.push_back(vtn.y);
+		Buffer.push_back(vtn.z);
+
+		aiVector3D vbtn = m->mBitangents[i];
+		Buffer.push_back(vbtn.x);
+		Buffer.push_back(vbtn.y);
+		Buffer.push_back(vbtn.z);
+
 		if (HasTexCoords)
 		{
-			aiVector3D vt = m->mTextureCoords[0][j];
+			aiVector3D vt = m->mTextureCoords[0][i];
 			Buffer.push_back(vt.x);
 			Buffer.push_back(vt.y);
 		}
@@ -62,7 +74,7 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 		Indecies.push_back(face.mIndices[2]);	
 	}
 
-	int count = HasTexCoords ? 3 + 3 + 2 : 3 + 3;
+	int count = HasTexCoords ? 3 * 4 + 2 : 3 * 4;
 
 	pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
 	pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);

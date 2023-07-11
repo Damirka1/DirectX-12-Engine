@@ -8,16 +8,14 @@
 #include <assimp/postprocess.h>
 
 StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string ModelPath, float scale)
-	:
-	Pos({0.0, 0.0, 0.0})
 {
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(ModelPath.c_str(),
 		//aiProcess_Triangulate |
 		//aiProcess_JoinIdenticalVertices |
-		aiProcess_ConvertToLeftHanded //|
-		//aiProcess_GenNormals |
-		//aiProcess_CalcTangentSpace
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_GenNormals |
+		aiProcess_CalcTangentSpace
 	);
 
 	if (pScene == nullptr)
@@ -29,7 +27,7 @@ StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string Model
 		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale);
 	}
 
-	CB = pRM->CreateConstBuffer(&Transformation, sizeof(Transformation), 0);
+	CB = pRM->CreateConstBuffer(&DxTransform, sizeof(DxTransform), 0);
 }
 
 void StaticMeshComponent::Draw(Graphics* pGraphics)
@@ -44,28 +42,32 @@ void StaticMeshComponent::Draw(Graphics* pGraphics)
 
 void StaticMeshComponent::Update(Camera* cam)
 {
-	PosMatrix = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos));
-	Transformation = DirectX::XMMatrixTranspose(PosMatrix * cam->GetView() * cam->GetProjection());
-	CB->Update(&Transformation, sizeof(Transformation));
+	DxTransform.Pos = DirectX::XMMatrixTranspose(Transform.PosMatrix);
+	DxTransform.PosViewProj = DirectX::XMMatrixTranspose(Transform.PosMatrix * cam->GetView() * cam->GetProjection());
+	DxTransform.View = DirectX::XMMatrixTranspose(cam->GetView());
+	DxTransform.Proj = DirectX::XMMatrixTranspose(cam->GetProjection());
+	DxTransform.ViewPos = cam->GetPos();
+
+	CB->Update(&DxTransform, sizeof(DxTransform));
 }
 
 void StaticMeshComponent::SetPos(DirectX::XMFLOAT3 Pos)
 {
-	this->Pos = Pos;
-	this->PosMatrix = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos));
+	Transform.Pos = Pos;
+	Transform.PosMatrix = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Pos));
 }
 
 Engine_API DirectX::XMFLOAT3 StaticMeshComponent::GetPos()
 {
-	return Pos;
+	return Transform.Pos;
 }
 
 DirectX::XMMATRIX& StaticMeshComponent::GetPosMatrix()
 {
-	return PosMatrix;
+	return Transform.PosMatrix;
 }
 
 Engine_API DirectX::XMMATRIX StaticMeshComponent::GetTransform()
 {
-	return Transformation;
+	return {};
 }

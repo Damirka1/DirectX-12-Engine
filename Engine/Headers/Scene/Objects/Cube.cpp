@@ -28,10 +28,11 @@ void Cube::UpdateBody(Camera* cam)
 
 	DirectX::XMMATRIX m(tf.front());
 
-	Transformation = DirectX::XMMatrixTranspose(m * cam->GetView() * cam->GetProjection());
-	CB->Update(&Transformation, sizeof(Transformation));
-
-	PosMatrix = m;
+	Transform.PosMatrix = m;
+	DxTransform.Pos = DirectX::XMMatrixTranspose(Transform.PosMatrix);
+	DxTransform.PosViewProj = DirectX::XMMatrixTranspose(Transform.PosMatrix * cam->GetView() * cam->GetProjection());
+	
+	CB->Update(&DxTransform, sizeof(DxTransform));
 }
 
 Engine_API void Cube::AddForce(DirectX::XMFLOAT3 vec)

@@ -18,6 +18,23 @@ class Camera;
 class StaticMeshComponent
 {
 	friend class RTXResources;
+
+	struct DxTransform
+	{
+		DirectX::XMMATRIX Pos;
+		DirectX::XMMATRIX View;
+		DirectX::XMMATRIX Proj;
+		DirectX::XMMATRIX PosViewProj;
+		DirectX::XMFLOAT3 ViewPos;
+	};
+
+	struct Transform
+	{
+		DirectX::XMFLOAT3 Pos;
+		DirectX::XMMATRIX PosMatrix;
+		DirectX::XMFLOAT3 Rotation;
+	};
+
 public:
 	Engine_API StaticMeshComponent(ResourceManager* pRM, std::string ModelPath, float scale = 1.0f);
 
@@ -36,7 +53,7 @@ private:
 
 protected:
 	std::shared_ptr<ConstantBuffer> CB;
-	DirectX::XMFLOAT3 Pos;
-	DirectX::XMMATRIX PosMatrix;
-	DirectX::XMMATRIX Transformation;
+
+	DxTransform DxTransform;
+	Transform Transform;
 };

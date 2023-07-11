@@ -86,5 +86,5 @@ void RayGen() {
     //gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1);
 
     if (payload.colorAndDistance.w <= -2)
-        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, gOutput[launchIndex].a);
+        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb * payload.colorAndDistance.rgb, gOutput[launchIndex].a);
 }

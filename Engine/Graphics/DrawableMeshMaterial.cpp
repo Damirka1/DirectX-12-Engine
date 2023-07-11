@@ -23,7 +23,8 @@ MeshMaterial::MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string Ro
 
 	aiString TexFileName;
 
-	PSO_Layout pLay(1);
+	// Set 4 render targets
+	PSO_Layout pLay(4);
 	pLay.DepthState(true);
 
 	if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &TexFileName) == aiReturn_SUCCESS)
