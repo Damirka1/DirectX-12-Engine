@@ -39,20 +39,20 @@ Application::Application(HINSTANCE hInstance)
 	models.back()->SetPos({0.0, 0.0f, 0.0f});
 	pScene->AddModel(models.back());*/
 
-	models.push_back(Core->CreatePlane({0, -20, 0}, {0, 0, 0}));
-	pScene->AddModel(models.back());
+	//models.push_back(Core->CreatePlane({0, -20, 0}, {0, 0, 0}));
+	models.push_back(pScene->CreatePlane({ 0, -20, 0 }, { 0, 0, 0 }));
 
-	models.push_back(Core->CreatePlane({ 0, -20, -20 }, { DirectX::XMConvertToRadians(-90), 0, 0}));
-	pScene->AddModel(models.back());
+	//models.push_back(Core->CreatePlane({ 0, -20, -20 }, { DirectX::XMConvertToRadians(-90), 0, 0}));
+	models.push_back(pScene->CreatePlane({ 0, -20, -20 }, { DirectX::XMConvertToRadians(-90), 0, 0 }));
 
-	models.push_back(Core->CreatePlane({ 0, -20, 20 }, { DirectX::XMConvertToRadians(90), 0, 0 }));
-	pScene->AddModel(models.back());
+	//models.push_back(Core->CreatePlane({ 0, -20, 20 }, { DirectX::XMConvertToRadians(90), 0, 0 }));
+	models.push_back(pScene->CreatePlane({ 0, -20, 20 }, { DirectX::XMConvertToRadians(90), 0, 0 }));
 
-	models.push_back(Core->CreatePlane({ 20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(-90) }));
-	pScene->AddModel(models.back());
+	//models.push_back(Core->CreatePlane({ 20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(-90) }));
+	models.push_back(pScene->CreatePlane({ 20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(-90) }));
 
-	models.push_back(Core->CreatePlane({ -20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(90) }));
-	pScene->AddModel(models.back());
+	//models.push_back(Core->CreatePlane({ -20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(90) }));
+	models.push_back(pScene->CreatePlane({ -20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(90) }));
 
 	
 	std::default_random_engine e;
@@ -92,8 +92,8 @@ Application::Application(HINSTANCE hInstance)
 
 	for (int i = 0; i < 50; i++)
 	{
-		spheres.push_back(Core->CreateSphere({dis(e), dis(e), dis(e)}));
-		pScene->AddModel(spheres.back());
+		//spheres.push_back(Core->CreateSphere({dis(e), dis(e), dis(e)}));
+		spheres.push_back(pScene->CreateSphere({ dis(e), dis(e), dis(e) }));
 	}
 
 	//spheres.back()->SetPos({ 0.0f, 0.0f, 4.0f });
@@ -155,18 +155,18 @@ void Application::Run()
 
 		Core->Update();
 
-		for (auto m : spheres)
-			m->UpdateBody(pCamera);
+		//for (auto m : spheres)
+		//	m->UpdateBody(pCamera);
 
-		for (auto m : cubes)
-			m->UpdateBody(pCamera);
+		//for (auto m : cubes)
+		//	m->UpdateBody(pCamera);
 
 		if (add)
 		{
-			auto s = Core->CreateSphere({0, 5.0f, 0});
+			//auto s = Core->CreateSphere({0, 5.0f, 0});
 			//s->AddForce({2.2f, 0.0f, 20.0f});
-			spheres.push_back(s);
-			pScene->AddModel(s);
+			//spheres.push_back(s);
+			spheres.push_back(pScene->CreateSphere({ 0, 5.0f, 0 }));
 
 			//auto c = Core->CreateCube();
 			////c->AddForce({ 2.2f, 0.0f, 20.0f });

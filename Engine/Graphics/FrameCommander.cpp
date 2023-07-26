@@ -1,11 +1,12 @@
 #include "../Headers/FrameCommander.h"
 #include "../Headers/Window.h"
 #include "../Headers/Scene/Scene.h"
+#include "../Headers/Timer.h"
 
-FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept
+FrameCommander::FrameCommander(Window* pWindow, Timer* pTimer) noexcept
 	:
 	pGraphics(pWindow->GetGraphics()),
-	pResourceManager(pRM)
+	pTimer(pTimer)
 {
 }
 
@@ -39,7 +40,7 @@ void FrameCommander::SetupInit()
 void FrameCommander::InitializeResources()
 {
 	if (pScene)
-		pResourceManager->InitializeResources(pScene);
+		pScene->InitializeResources();
 	else
 		throw std::exception("Set scene to frame commander befor preparetion");
 }
@@ -47,15 +48,16 @@ void FrameCommander::InitializeResources()
 void FrameCommander::Update()
 {
 	pScene->Update();
-	pResourceManager->Update();
+	//pResourceManager->Update();
 }
 
 void FrameCommander::Render()
 {
+	float dt = pTimer->Mark();
 	pGraphics->Setup(BackgroundColor.x, BackgroundColor.y, BackgroundColor.z);
 
-	// Bind global heap.
-	pResourceManager->Heap.Bind(pGraphics);
+	//// Bind global heap.
+	//pResourceManager->Heap.Bind(pGraphics);
 
 	//// Bind pipelinestate object.
 	//for (auto& PSO : pScene->DrawablesMap)
@@ -73,12 +75,22 @@ void FrameCommander::Render()
 	//	}
 	//}
 
-	for (auto& m : pScene->Models)
+	/*for (auto& m : pScene->Models)
 		m->Draw(pGraphics);
 
 	pResourceManager->CopyBuffer();
 
-	pResourceManager->DispatchRays();
+	pResourceManager->DispatchRays();*/
+
+	auto* res = &pScene->SceneResources;
+
+	res->pColorPass->Bind();
+	res->pColorPass->Execute();
+
+	res->pTexturePass->Bind();
+	res->pTexturePass->Execute();
+
+	res->pPhysx->Simulate(dt);
 
 	pGraphics->Execute();
 }
@@ -87,9 +99,9 @@ FrameCommander::~FrameCommander()
 {
 }
 
-FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) noexcept
+FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, Timer* pTimer) noexcept
 	:
-	FrameCommander(pWindow, pRM)
+	FrameCommander(pWindow, pTimer)
 {
 	pWindow->DisableVSync();
 	pWindow->SleepTime = 1;

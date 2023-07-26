@@ -9,9 +9,6 @@
 #include "../Engine/Headers/Scene/Scene.h"
 #include "../Engine/Headers/Scene/Components/StaticMeshComponent.h"
 
-
-
-
 class Application
 {
 public:

@@ -7,12 +7,14 @@ class DrawableMesh;
 class Pass
 {
 public:
-	Pass(Graphics* pGraphics, ResourceManager* pRM);
+	Pass(Graphics* pGraphics);
 	Pass(Pass&) = delete;
 
-	~Pass() = default;
+	ResourceManager* GetResourceManager();
 
-	virtual void Bind() = 0;
+	~Pass();
+
+	virtual void Bind();
 
 	virtual void Execute() = 0;
 

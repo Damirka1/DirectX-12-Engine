@@ -19,14 +19,14 @@
 #include "Graphics/Resources/Heap/DescriptorsGlobalHeap.h"
 #include "Graphics/RayTracing/RTXResources.h"
 
-class Window;
+class Graphics;
 class Scene;
 
 class ResourceManager
 {
 	friend class FrameCommander;
 public:
-	Engine_API ResourceManager(Window* pWindow) noexcept;
+	Engine_API ResourceManager(Graphics* pGraphics) noexcept;
 	ResourceManager(ResourceManager&) = delete;
 
 	Engine_API std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot = 0) noexcept;
@@ -43,15 +43,17 @@ public:
 	Engine_API void DispatchRays();
 
 	Engine_API void Update();
+
+	Engine_API void BindHeap();
 	
-	Engine_API void InitializeResources(std::shared_ptr<Scene> pScene);
+	Engine_API void InitializeResources();
 	Engine_API ~ResourceManager();
 
 private:
 	Graphics* pGraphics;
 	DescriptorsGlobalHeap Heap;
 
-	RTXResources* rt;
+	//RTXResources* rt;
 
 	// srv uav
 	std::unordered_map<std::string, std::shared_ptr<Resource>> HeapResources;

@@ -6,12 +6,15 @@
 #include "../../Input/Camera.h"
 #include "VertexLayout.h"
 
+#include "../../Scene/Transform.h"
+
 class Graphics;
-class ResourceManager;
+class SceneResources;
 struct aiMesh;
 struct aiMaterial;
 class VertexBuffer;
 class IndexBuffer;
+class ConstantBuffer;
 class MeshMaterial;
 
 
@@ -19,7 +22,7 @@ class DrawableMesh
 {
 	friend class RTXResources;
 public:
-	DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale = 1.0f);
+	DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale = 1.0f);
 
 	void BindMaterial(Graphics* pGraphics);
 
@@ -27,10 +30,17 @@ public:
 
 	void UpdateColor(DirectX::XMFLOAT3 color);
 
+	void Update(const Transform& parent, Camera* pCamera);
+
 private:
 	VertexLayout Lay;
 	std::shared_ptr<VertexBuffer> pVertexBuffer;
 	std::shared_ptr<IndexBuffer> pIndexBuffer;
+
+	std::shared_ptr<ConstantBuffer> pConstBuffer;
+	Transform T = { };
+	DxTransform DxT = { };
+
 
 	std::shared_ptr<MeshMaterial> Material;
 };

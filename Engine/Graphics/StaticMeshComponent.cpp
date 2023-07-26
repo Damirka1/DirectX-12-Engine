@@ -1,13 +1,13 @@
 #include "../Headers/Scene/Components/StaticMeshComponent.h"
 #include "../Headers/Graphics/Resources/DrawableMesh.h"
-#include "../Headers/ResourceManager.h"
+#include "../Headers/Scene/SceneResources.h"
 #include "../Headers/Input/Camera.h"
 
 #include "assimp/Importer.hpp"
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string ModelPath, float scale)
+StaticMeshComponent::StaticMeshComponent(SceneResources* pSceneResources, std::string ModelPath, float scale)
 {
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(ModelPath.c_str(),
@@ -24,12 +24,12 @@ StaticMeshComponent::StaticMeshComponent(ResourceManager* pRM, std::string Model
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = pScene->mMeshes[i];
-		Meshes.emplace_back(pRM, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale);
+		Meshes.emplace_back(pSceneResources, mesh, pScene->mMaterials[mesh->mMaterialIndex], ModelPath, scale);
 	}
 
 	Transform.PosMatrix = DirectX::XMMatrixIdentity();
 
-	CB = pRM->CreateConstBuffer(&DxTransform, sizeof(DxTransform), 0);
+	//CB = pRM->CreateConstBuffer(&DxTransform, sizeof(DxTransform), 0);
 }
 
 void StaticMeshComponent::Draw(Graphics* pGraphics)
@@ -37,20 +37,24 @@ void StaticMeshComponent::Draw(Graphics* pGraphics)
 	for (auto& m : Meshes)
 	{
 		m.BindMaterial(pGraphics);
-		CB->Bind(pGraphics);
+		//CB->Bind(pGraphics);
 		m.Draw(pGraphics);
 	}
 }
 
 void StaticMeshComponent::Update(Camera* cam)
 {
-	DxTransform.Pos = DirectX::XMMatrixTranspose(Transform.PosMatrix);
+	/*DxTransform.Pos = DirectX::XMMatrixTranspose(Transform.PosMatrix);
 	DxTransform.PosViewProj = DirectX::XMMatrixTranspose(Transform.PosMatrix * cam->GetView() * cam->GetProjection());
 	DxTransform.View = DirectX::XMMatrixTranspose(cam->GetView());
 	DxTransform.Proj = DirectX::XMMatrixTranspose(cam->GetProjection());
-	DxTransform.ViewPos = cam->GetPos();
+	DxTransform.ViewPos = cam->GetPos();*/
 
-	CB->Update(&DxTransform, sizeof(DxTransform));
+	//CB->Update(&DxTransform, sizeof(DxTransform));
+
+	for (auto& m : Meshes) {
+		m.Update(Transform, cam);
+	}
 }
 
 void StaticMeshComponent::SetPos(DirectX::XMFLOAT3 Pos)

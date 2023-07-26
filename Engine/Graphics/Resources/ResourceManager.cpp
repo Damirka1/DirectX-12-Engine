@@ -9,12 +9,13 @@
 #include "../../Headers/Graphics/Resources/DrawableMeshMaterial.h"
 
 
-ResourceManager::ResourceManager(Window* pWindow) noexcept
+ResourceManager::ResourceManager(Graphics* pGraphics) noexcept
+	:
+	pGraphics(pGraphics)
 {
-	pGraphics = pWindow->GetGraphics();
 	Heap.Initialize(pGraphics);
 
-	rt = new RTXResources(pGraphics, this);
+	//rt = new RTXResources(pGraphics, this);
 }
 
 std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
@@ -95,7 +96,7 @@ std::shared_ptr<ConstantBuffer> ResourceManager::CreateConstBuffer(const void* p
 	return res;
 }
 
-void ResourceManager::InitializeResources(std::shared_ptr<Scene> pScene)
+void ResourceManager::InitializeResources()
 {
 	if (Heap.IsNeedUpdateHeap0())
 	{
@@ -130,22 +131,20 @@ void ResourceManager::InitializeResources(std::shared_ptr<Scene> pScene)
 
 	ToInit.clear();
 
-	if (rt->IsNeedUpdate())
+	/*if (rt->IsNeedUpdate())
 		rt->Initialize();
 	else
-		rt->Update(pScene->pCamera);
+		rt->Update(pScene->pCamera);*/
 
-	pGraphics->Initialize();
-
-	if(rt->IsNeedRelease())
-		rt->ReleaseScratch();
+	/*if(rt->IsNeedRelease())
+		rt->ReleaseScratch();*/
 
 	//pScene->InitCamera();
 }
 
 ResourceManager::~ResourceManager()
 {
-	delete rt;
+	//delete rt;
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader)
@@ -223,20 +222,25 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexc
 
 Engine_API void ResourceManager::PrepareForRtx(StaticMeshComponent* model, unsigned int hitGroup)
 {
-	rt->PrepareModelForRtx(model, hitGroup);
+	//rt->PrepareModelForRtx(model, hitGroup);
 }
 
 void ResourceManager::CopyBuffer()
 {
-	rt->CopyBuffer();
+	//rt->CopyBuffer();
 }
 
 void ResourceManager::DispatchRays()
 {
-	rt->DispatchRays();
+	//rt->DispatchRays();
 }
 
 void ResourceManager::Update()
 {
+}
+
+void ResourceManager::BindHeap()
+{
+	Heap.Bind(pGraphics);
 }
 

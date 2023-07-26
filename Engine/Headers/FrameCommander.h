@@ -4,13 +4,15 @@
 #include "Graphics.h"
 #include "ResourceManager.h"
 
+class Timer;
+
 class FrameCommander
 {
 public:
 	FrameCommander() = delete;
 	FrameCommander(FrameCommander&) = delete;
 
-	Engine_API FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept;
+	Engine_API FrameCommander(Window* pWindow, Timer* pTimer) noexcept;
 	Engine_API void SetBackgroundColor(float r, float g, float b) noexcept;
 	Engine_API void ChangeBackgroundColor(float dr, float dg, float db) noexcept;
 	Engine_API void SetScene(std::shared_ptr<Scene> pScene);
@@ -25,7 +27,7 @@ public:
 
 private:
 	Graphics* pGraphics;
-	ResourceManager* pResourceManager;
+	Timer* pTimer;
 	
 	std::shared_ptr<Scene> pScene;
 	DirectX::XMFLOAT3 BackgroundColor = { 0.0f, 0.0f, 0.0f };
@@ -41,7 +43,7 @@ public:
 	FrameCommanderHWND() = delete;
 	FrameCommanderHWND(FrameCommanderHWND&) = delete;
 
-	Engine_API FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) noexcept;
+	Engine_API FrameCommanderHWND(Window* pWindow, Timer* pTimer) noexcept;
 	Engine_API ~FrameCommanderHWND() override = default;
 
 private:

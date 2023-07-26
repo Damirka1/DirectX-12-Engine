@@ -4,14 +4,15 @@
 #include "../Resources/PipeLineState.h"
 #include "../Resources/DrawableMesh.h"
 
-RenderPass::RenderPass(Graphics* pGraphics, ResourceManager* pRM)
+RenderPass::RenderPass(Graphics* pGraphics)
 	:
-	Pass(pGraphics, pRM)
+	Pass(pGraphics)
 {
 }
 
 void RenderPass::Bind()
 {
+	Pass::Bind();
 	pPipelineStateObject->Bind(pGraphics);
 	pRootSignature->Bind(pGraphics);
 }

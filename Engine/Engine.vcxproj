@@ -349,8 +349,10 @@ copy "$(ProjectDir)dxil.dll" "$(TargetDir)"</Command>
     <ClInclude Include="Headers\Graphics\d3dx12.h" />
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
     <ClInclude Include="Headers\Graphics\GraphicsException.h" />
+    <ClInclude Include="Headers\Graphics\Passes\ColorRenderPass.h" />
     <ClInclude Include="Headers\Graphics\Passes\Pass.h" />
     <ClInclude Include="Headers\Graphics\Passes\RenderPass.h" />
+    <ClInclude Include="Headers\Graphics\Passes\TextureRenderPass.h" />
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.h" />
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\DXRHelper.h" />
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.h" />
@@ -396,6 +398,8 @@ copy "$(ProjectDir)dxil.dll" "$(TargetDir)"</Command>
     <ClInclude Include="Headers\Scene\Objects\Sphere.h" />
     <ClInclude Include="Headers\Scene\Pawn.h" />
     <ClInclude Include="Headers\Scene\Scene.h" />
+    <ClInclude Include="Headers\Scene\SceneResources.h" />
+    <ClInclude Include="Headers\Scene\Transform.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />

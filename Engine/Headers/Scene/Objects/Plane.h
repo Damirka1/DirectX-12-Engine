@@ -1,17 +1,21 @@
 #pragma once
 #include "../Components/StaticMeshComponent.h"
+#include "../../Scene/SceneResources.h"
 #include "../../PhysX/PhysxManager.h"
 
 class Plane : public StaticMeshComponent
 {
 public:
-	Plane(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
+	Plane(SceneResources* pSceneResources, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 		:
-		StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Plane\\Plane.obj", 20)
+		StaticMeshComponent(pSceneResources, "C:\\Home\\GraphicsProjects\\3d models\\Plane\\Plane.obj", 20)
 	{
 		StaticMeshComponent::SetPos(Pos);
 		StaticMeshComponent::SetRotation(Rotation);
 		//DirectX::XMFLOAT3 rot = { 45.0f, 0.0f, 0.0f };
+
+		auto pPM = pSceneResources->pPhysx;
+
 		pRigidStatic = pPM->CreateRigidStatic(StaticMeshComponent::GetPosMatrix());
 		pMaterial = pPM->CreateMaterial();
 
@@ -23,7 +27,7 @@ public:
 
 		pPM->AddToScene(pRigidStatic);
 
-		pRM->PrepareForRtx(this, 0);
+		//pRM->PrepareForRtx(this, 0);
 	}
 
 private:

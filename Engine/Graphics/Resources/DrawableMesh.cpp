@@ -2,18 +2,18 @@
 #include "../../Headers/Graphics/Resources/Buffers/Buffers.h"
 #include "../../Headers/Graphics/Resources/VertexLayout.h"
 #include "../../Headers/Graphics/Resources/DrawableMeshMaterial.h"
-#include "../../Headers/ResourceManager.h"
+#include "../../Headers/Scene/SceneResources.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
-DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale)
+DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale)
 {
-	VertexLayout Lay;
+	/*VertexLayout Lay;
 	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
 	Lay.AddElement("NormCoord", DXGI_FORMAT_R32G32B32_FLOAT);
-	Lay.AddElement("TanCoord", DXGI_FORMAT_R32G32B32_FLOAT);
+	Lay.AddElement("TanCoord", DXGI_FORMAT_R32G32B32_FLOAT);*/
 	Lay.AddElement("BiTanCoord", DXGI_FORMAT_R32G32B32_FLOAT);
 	bool HasTexCoords = m->HasTextureCoords(0);
 
@@ -25,12 +25,15 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 
 	if (HasTexCoords)
 	{
-		Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
+		//Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
 
 		Buffer.reserve(reserveSpace + m->mNumVertices * 2);
 	}
 	else 
 		Buffer.reserve(reserveSpace);
+
+	if (m->mFaces[0].mNumIndices != 3)
+		throw std::exception("Not triangulated mesh");
 
 	for (size_t i = 0; i < m->mNumVertices; i++)
 	{
@@ -63,9 +66,6 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 		}
 	}
 
-	if(m->mFaces[0].mNumIndices != 3)
-		throw std::exception("Not triangulated mesh");
-
 	for (size_t i = 0; i < m->mNumFaces; i++)
 	{
 		aiFace face = m->mFaces[i];
@@ -76,14 +76,39 @@ DrawableMesh::DrawableMesh(ResourceManager* pRM, aiMesh* m, aiMaterial* mat, std
 
 	int count = HasTexCoords ? 3 * 4 + 2 : 3 * 4;
 
-	pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
-	pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
-
-	//Material = MeshMaterial::GetDefaultMaterial(pRM, Lay);
 	if (!mat)
-		Material = MeshMaterial::GetDefaultMaterial(pRM, Lay);
+	{	
+		Material = MeshMaterial::GetDefaultMaterial(pSceneResources, Lay);
+		auto pRM = pSceneResources->pTexturePass->GetResourceManager();
+		pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
+		pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
+
+		pConstBuffer = pRM->CreateConstBuffer(&DxT, sizeof(DxTransform), 0);
+
+		pSceneResources->pTexturePass->AddMesh(this);
+	}
 	else
-		Material = std::make_shared<MeshMaterial>(pRM, mat, path.parent_path().string() + "\\", Lay);
+	{
+		Material = std::make_shared<MeshMaterial>(pSceneResources, mat, path.parent_path().string() + "\\", Lay);
+
+		ResourceManager* pRM;
+
+		if (Material->GetType() == MeshMaterial::MaterialType::Color)
+		{
+			pRM = pSceneResources->pColorPass->GetResourceManager();
+			pSceneResources->pColorPass->AddMesh(this);
+		}
+		else
+		{
+			pRM = pSceneResources->pTexturePass->GetResourceManager();
+			pSceneResources->pTexturePass->AddMesh(this);
+		}
+
+		pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
+		pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
+
+		pConstBuffer = pRM->CreateConstBuffer(&DxT, sizeof(DxTransform), 0);
+	}
 
 	this->Lay = Lay;
 }
@@ -97,6 +122,7 @@ void DrawableMesh::Draw(Graphics* pGraphics)
 {
 	pVertexBuffer->Bind(pGraphics);
 	pIndexBuffer->Bind(pGraphics);
+	pConstBuffer->Bind(pGraphics);
 
 	pGraphics->GetCommandList()->DrawIndexedInstanced(pIndexBuffer->GetIndeciesCount(), 1, 0, 0, 0);
 }
@@ -104,4 +130,16 @@ void DrawableMesh::Draw(Graphics* pGraphics)
 void DrawableMesh::UpdateColor(DirectX::XMFLOAT3 color)
 {
 	Material->UpdateColor(color);
+}
+
+void DrawableMesh::Update(const Transform& parent, Camera* pCamera)
+{
+	T = parent;
+	DxT.Pos = DirectX::XMMatrixTranspose(T.PosMatrix);
+	DxT.PosViewProj = DirectX::XMMatrixTranspose(T.PosMatrix * pCamera->GetView() * pCamera->GetProjection());
+	DxT.View = DirectX::XMMatrixTranspose(pCamera->GetView());
+	DxT.Proj = DirectX::XMMatrixTranspose(pCamera->GetProjection());
+	DxT.ViewPos = pCamera->GetPos();
+
+	pConstBuffer->Update(&DxT, sizeof(DxTransform));
 }

@@ -30,12 +30,14 @@ public:
 	{
 		// Create core objects
 		_Window = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
-		_ResourceManager = new ResourceManager(_Window);
-		_FrameCommander = new FrameCommander(_Window, _ResourceManager);
-		_PhysxManager = new PhysxManager();
+		//_ResourceManager = new ResourceManager(_Window->GetGraphics());
+		
+		//_PhysxManager = new PhysxManager();
 
 		// _ScriptManager = new ScriptManager(_Window);
 		_Timer = new Timer();
+
+		_FrameCommander = new FrameCommander(_Window, _Timer);
 
 		// Get input from window
 		_Keyboard = _Window->GetKeyboard();
@@ -106,9 +108,9 @@ public:
 	{
 		_Window->ProcessMessages();
 		_FrameCommander->SetupInit();
-		float dt = _Timer->Mark();
+		//float dt = _Timer->Mark();
 
-		_PhysxManager->Simulate(dt);
+		//_PhysxManager->Simulate(dt);
 	}
 
 	void ExecuteJobs()
@@ -141,48 +143,14 @@ public:
 	// TODO: add some params.
 	std::shared_ptr<Scene> CreateScene(std::string Tag = "Scene")
 	{
-		std::shared_ptr<Scene> _Scene = std::make_shared<Scene>();
+		std::shared_ptr<Scene> _Scene = std::make_shared<Scene>(_Window->GetGraphics());
 		// TODO: add tag to scene.
 		
 		return _Scene;
 	}
 
-	// TODO: finish memory load system!
-	// TODO: make this func thread safe!
-	std::shared_ptr<StaticMeshComponent> LoadModel(std::string Path, std::string Tag, float Scale = 1.0f)
-	{
-		std::shared_ptr<StaticMeshComponent> _Model = std::make_shared<StaticMeshComponent>(_ResourceManager, Path, Scale);
-		// TODO: add tag to model
-
-		return _Model;
-	}
-
-	std::shared_ptr<Plane> CreatePlane(DirectX::XMFLOAT3 Pos = {0, 0, 0}, DirectX::XMFLOAT3 Rotation = {0, 0, 0})
-	{
-		std::shared_ptr<Plane> _Plane = std::make_shared<Plane>(_ResourceManager, _PhysxManager, Pos, Rotation);
-
-		return _Plane;
-	}
-
-	std::shared_ptr<Sphere> CreateSphere(DirectX::XMFLOAT3 Pos = { 0, 0, 0 }, DirectX::XMFLOAT3 Rotation = { 0, 0, 0 })
-	{
-		std::shared_ptr<Sphere> _Sphere = std::make_shared<Sphere>(_ResourceManager, _PhysxManager, Pos, Rotation);
-
-		return _Sphere;
-	}
-
-	std::shared_ptr<Cube> CreateCube(DirectX::XMFLOAT3 Pos = { 0, 0, 0 }, DirectX::XMFLOAT3 Rotation = { 0, 0, 0 })
-	{
-		std::shared_ptr<Cube> _Cube = std::make_shared<Cube>(_ResourceManager, _PhysxManager, Pos, Rotation);
-
-		return _Cube;
-	}
-
-
-	void RemoveModelByTag(std::string Tag);
+	//void RemoveModelByTag(std::string Tag);
 	//void RemoveModelByPtr(std::shared_ptr<Model> Model);
-
-
 
 	std::shared_ptr<Keyboard> GetKeyboardInput()
 	{
@@ -198,9 +166,9 @@ public:
 	{
 		delete _Console;
 		delete _Window;
-		delete _ResourceManager;
+		//delete _ResourceManager;
 		delete _FrameCommander;
-		delete _PhysxManager;
+		//delete _PhysxManager;
 		//delete _ScriptManager;
 		delete _Timer;
 	}
@@ -209,15 +177,14 @@ private:
 		// Engine core:
 		Console* _Console;
 		Window* _Window;
-		ResourceManager* _ResourceManager;
-		PhysxManager* _PhysxManager;
+		//ResourceManager* _ResourceManager;
+		//PhysxManager* _PhysxManager;
 		FrameCommander* _FrameCommander;
 		//ScriptManager* _ScriptManager;
 
 		Timer* _Timer;
 
 		bool Running = false;
-
 
 		// Engine input:
 		std::shared_ptr<Keyboard> _Keyboard;

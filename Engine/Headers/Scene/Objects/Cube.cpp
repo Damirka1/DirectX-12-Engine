@@ -1,14 +1,17 @@
 #include "Cube.h"
 #include "../../Headers/Graphics/Resources/DrawableMesh.h"
 #include "../../Headers/ResourceManager.h"
+#include "../../Headers/Scene/SceneResources.h"
 #include "../../Headers/Input/Camera.h"
 
-Cube::Cube(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
+Cube::Cube(SceneResources* pSceneResources, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 	:
-	StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Cube\\Cube.obj")
+	StaticMeshComponent(pSceneResources, "C:\\Home\\GraphicsProjects\\3d models\\Cube\\Cube.obj")
 {
 	StaticMeshComponent::SetPos(Pos);
 	StaticMeshComponent::SetRotation(Rotation);
+
+	auto pPM = pSceneResources->pPhysx;
 
 	pRigidDynamic = pPM->CreateRigidDynamic(StaticMeshComponent::GetPos());
 	pMaterial = pPM->CreateMaterial(0.2f, 0.8f, 0.1f);
@@ -20,20 +23,22 @@ Cube::Cube(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, Direc
 
 	pPM->AddToScene(pRigidDynamic);
 
-	pRM->PrepareForRtx(this, 0);
+	//pRM->PrepareForRtx(this, 0);
 }
 
-void Cube::UpdateBody(Camera* cam)
+void Cube::Update(Camera* cam)
 {
 	physx::PxMat44 tf = pRigidDynamic->getGlobalPose();
 
 	DirectX::XMMATRIX m(tf.front());
 
 	Transform.PosMatrix = m;
-	DxTransform.Pos = DirectX::XMMatrixTranspose(Transform.PosMatrix);
-	DxTransform.PosViewProj = DirectX::XMMatrixTranspose(Transform.PosMatrix * cam->GetView() * cam->GetProjection());
+	//DxTransform.Pos = DirectX::XMMatrixTranspose(Transform.PosMatrix);
+	//DxTransform.PosViewProj = DirectX::XMMatrixTranspose(Transform.PosMatrix * cam->GetView() * cam->GetProjection());
 	
-	CB->Update(&DxTransform, sizeof(DxTransform));
+	//CB->Update(&DxTransform, sizeof(DxTransform));
+
+	StaticMeshComponent::Update(cam);
 }
 
 Engine_API void Cube::AddForce(DirectX::XMFLOAT3 vec)

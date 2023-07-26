@@ -10,7 +10,7 @@ class PipelineStateObject;
 class RootSignature;
 class Graphics;
 struct aiMaterial;
-class ResourceManager;
+class SceneResources;
 class PSO_Layout;
 class RS_Layout;
 class VertexLayout;
@@ -20,14 +20,23 @@ class MeshMaterial
 {
 	friend class RTXResources;
 public:
+
+	enum MaterialType
+	{
+		Color,
+		Texture,
+	};
+
 	MeshMaterial() = default;
-	MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string RootPath, VertexLayout& VLay);
+	MeshMaterial(SceneResources* pSceneResources, aiMaterial* mat, std::string RootPath, VertexLayout& VLay);
+
+	MaterialType GetType();
 
 	void Bind(Graphics* pGraphics);
 
 	void UpdateColor(DirectX::XMFLOAT3 color);
 
-	static std::shared_ptr<MeshMaterial> GetDefaultMaterial(ResourceManager* pRM, VertexLayout& VLay);
+	static std::shared_ptr<MeshMaterial> GetDefaultMaterial(SceneResources* pSceneResources, VertexLayout& VLay);
 
 private:
 	std::shared_ptr<PipelineStateObject> pPipelineStateObject;
@@ -36,4 +45,6 @@ private:
 	std::vector<std::shared_ptr<Resource>> Resources;
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
 	DirectX::XMFLOAT3 color;
+
+	MaterialType type;
 };
