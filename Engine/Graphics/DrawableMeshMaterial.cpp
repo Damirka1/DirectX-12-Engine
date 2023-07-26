@@ -47,18 +47,18 @@ MeshMaterial::MeshMaterial(ResourceManager* pRM, aiMaterial* mat, std::string Ro
 		RLay.AddDescriptorTable(D3D12_SHADER_VISIBILITY_PIXEL)
 			.AddRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
-		Resources.push_back(pRM->CreateConstBuffer(&color, sizeof(color), 1));
+		pConstBuffer = pRM->CreateConstBuffer(&color, sizeof(color), 1);
+
+		Resources.push_back(pConstBuffer);
 
 		pLay.SetShader(PSO_Layout::Shader::Pixel, std::string("Shaders\\PixelShader" + ShaderCode + ".cso"));
 	}
-
 	
 	pLay.SetShader(PSO_Layout::Shader::Vertex, std::string("Shaders\\VertexShader" + ShaderCode + ".cso"));
 	
 
 	pRootSignature = pRM->CreateRootSignature(RLay);
 	pPipelineStateObject = pRM->CreatePipelineStateObject(pLay, VLay, pRootSignature);
-
 }
 
 void MeshMaterial::Bind(Graphics* pGraphics)
@@ -70,6 +70,13 @@ void MeshMaterial::Bind(Graphics* pGraphics)
 
 	for (auto& res : Resources)
 		res->Bind(pGraphics);
+}
+
+void MeshMaterial::UpdateColor(DirectX::XMFLOAT3 color)
+{
+	this->color = color;
+	pConstBuffer->pData = static_cast<const void*>(&this->color);
+	pConstBuffer->DataSize = sizeof(this->color);
 }
 
 std::shared_ptr<MeshMaterial> MeshMaterial::GetDefaultMaterial(ResourceManager* pRM, VertexLayout& VLay)

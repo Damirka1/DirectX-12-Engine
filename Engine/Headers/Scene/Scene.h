@@ -17,19 +17,6 @@ class Scene
 	friend class FrameCommander;
 	friend class ResourceManager;
 
-	//class PipeLineResources
-	//{
-	//	struct RootSignatureResources
-	//	{
-	//		std::shared_ptr<RootSignature> pRootSignature;
-	//		//std::unordered_map<std::string, std::shared_ptr<DrawableArray>> DrawArrayIndexed;
-	//		//std::unordered_map<std::string, std::shared_ptr<Drawable>>		DrawIndexed;
-	//	};
-	//public:
-	//	std::shared_ptr<PipelineStateObject> pPipeLineStateObject;
-	//	std::unordered_map<std::string, RootSignatureResources> RootSignatures;
-	//};
-
 public:
 	Engine_API Scene() = default;
 	Engine_API Scene(Scene&) = delete;
@@ -37,6 +24,8 @@ public:
 	//Engine_API void AddDrawable(Drawable* pDrawable);
 	//Engine_API void AddModel(std::shared_ptr<Model> pModel);
 	Engine_API void AddModel(std::shared_ptr<StaticMeshComponent> pModel);
+
+	Engine_API void AddModels(std::vector<std::shared_ptr<StaticMeshComponent>> Models);
 
 	Engine_API void Update();
 

@@ -33,6 +33,7 @@ class StaticMeshComponent
 		DirectX::XMFLOAT3 Pos;
 		DirectX::XMMATRIX PosMatrix;
 		DirectX::XMFLOAT3 Rotation;
+		DirectX::XMVECTOR RotQuat;
 	};
 
 public:
@@ -44,16 +45,20 @@ public:
 
 	Engine_API void SetPos(DirectX::XMFLOAT3 Pos);
 
+	Engine_API void SetRotation(DirectX::XMFLOAT3 Rotation);
+
 	Engine_API DirectX::XMFLOAT3 GetPos();
+	Engine_API DirectX::XMFLOAT3 GetRotation();
 	Engine_API DirectX::XMMATRIX& GetPosMatrix();
 	Engine_API DirectX::XMMATRIX GetTransform();
 
 private:
-	std::vector<DrawableMesh> Meshes;
+	
 
 protected:
+	std::vector<DrawableMesh> Meshes;
 	std::shared_ptr<ConstantBuffer> CB;
 
-	DxTransform DxTransform;
-	Transform Transform;
+	DxTransform DxTransform = { };
+	Transform Transform = { };
 };

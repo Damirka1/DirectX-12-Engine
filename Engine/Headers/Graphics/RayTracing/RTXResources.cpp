@@ -7,6 +7,7 @@
 
 //#include "../Resources/DrawableMesh.h"
 #include "../../Scene/Components/StaticMeshComponent.h"
+#include "../Resources/DrawableMeshMaterial.h"
 
 #include "../../ResourceManager.h"
 
@@ -38,6 +39,11 @@ bool RTXResources::IsNeedUpdate()
 	return NeedUpdate;
 }
 
+bool RTXResources::IsNeedRelease()
+{
+	return NeedRelease;
+}
+
 void RTXResources::Initialize()
 {
 	ReleaseStructures();
@@ -55,6 +61,23 @@ void RTXResources::Initialize()
 	CreateShaderBindingTable();
 
 	NeedUpdate = false;
+	NeedRelease = true;
+}
+
+
+// Release only after initialization
+void RTXResources::ReleaseScratch()
+{
+	for (int i = 0; i < BlasInstances.size(); i++)
+	{
+		if (BlasInstances[i].Buffers.pScratch)
+		{
+			BlasInstances[i].Buffers.pScratch->Release();
+			BlasInstances[i].Buffers.pScratch = nullptr;
+		}
+	}
+
+	NeedRelease = false;
 }
 
 void RTXResources::CopyBuffer()
@@ -155,6 +178,17 @@ RTXResources::~RTXResources()
 {
 	ReleaseStructures();
 
+	for (int i = 0; i < BlasInstances.size(); i++)
+	{
+		if (BlasInstances[i].Buffers.pResult)
+		{
+			BlasInstances[i].Buffers.pResult->Release();
+			BlasInstances[i].Buffers.pResult = nullptr;
+			/*BlasInstances[i].Buffers.pScratch->Release();
+			BlasInstances[i].Buffers.pScratch = nullptr;*/
+		}
+	}
+
 	pRayGenLibrary->Release();
 	pMissLibrary->Release();
 	pHitLibrary->Release();
@@ -171,40 +205,43 @@ void RTXResources::CreateBottomLevelAS()
 {
 	for (int i = 0; i < BlasInstances.size(); i++)
 	{
-		nv_helpers_dx12::BottomLevelASGenerator bottomLevelAS;
-
-		for (int j = 0; j < BlasInstances[i].Model->Meshes.size(); j++)
+		if (!BlasInstances[i].Buffers.pResult)
 		{
-			std::shared_ptr<VertexBuffer> pVertexBuffer = BlasInstances[i].Model->Meshes[j].pVertexBuffer;
-			std::shared_ptr<IndexBuffer> pIndexBuffer = BlasInstances[i].Model->Meshes[j].pIndexBuffer;
+			nv_helpers_dx12::BottomLevelASGenerator bottomLevelAS;
 
-			// Adding all vertex buffers and not transforming their position.
-			bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
+			for (int j = 0; j < BlasInstances[i].Model->Meshes.size(); j++)
+			{
+				std::shared_ptr<VertexBuffer> pVertexBuffer = BlasInstances[i].Model->Meshes[j].pVertexBuffer;
+				std::shared_ptr<IndexBuffer> pIndexBuffer = BlasInstances[i].Model->Meshes[j].pIndexBuffer;
+
+				// Adding all vertex buffers and not transforming their position.
+				bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
+			}
+
+			// The AS build requires some scratch space to store temporary information.
+			// The amount of scratch memory is dependent on the scene complexity.
+			UINT64 scratchSizeInBytes = 0;
+			// The final AS also needs to be stored in addition to the existing vertex
+			// buffers. It size is also dependent on the scene complexity.
+			UINT64 resultSizeInBytes = 0;
+
+			bottomLevelAS.ComputeASBufferSizes(pGraphics->GetDevice(), false, &scratchSizeInBytes,
+				&resultSizeInBytes);
+
+			// Once the sizes are obtained, the application is responsible for allocating
+			// the necessary buffers. Since the entire generation will be done on the GPU,
+			// we can directly allocate those on the default heap
+			AccelerationStructureBuffers buffers;
+			buffers.pScratch = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), scratchSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, nv_helpers_dx12::kDefaultHeapProps);
+			buffers.pResult = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), resultSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, nv_helpers_dx12::kDefaultHeapProps);
+
+			// Build the acceleration structure. Note that this call integrates a barrier
+			// on the generated AS, so that it can be used to compute a top-level AS right
+			// after this method.
+			bottomLevelAS.Generate(pGraphics->GetCommandList(), buffers.pScratch, buffers.pResult, false, nullptr);
+
+			BlasInstances[i].Buffers = buffers;
 		}
-
-		// The AS build requires some scratch space to store temporary information.
-		// The amount of scratch memory is dependent on the scene complexity.
-		UINT64 scratchSizeInBytes = 0;
-		// The final AS also needs to be stored in addition to the existing vertex
-		// buffers. It size is also dependent on the scene complexity.
-		UINT64 resultSizeInBytes = 0;
-
-		bottomLevelAS.ComputeASBufferSizes(pGraphics->GetDevice(), false, &scratchSizeInBytes,
-			&resultSizeInBytes);
-
-		// Once the sizes are obtained, the application is responsible for allocating
-		// the necessary buffers. Since the entire generation will be done on the GPU,
-		// we can directly allocate those on the default heap
-		AccelerationStructureBuffers buffers;
-		buffers.pScratch = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), scratchSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, nv_helpers_dx12::kDefaultHeapProps);
-		buffers.pResult = nv_helpers_dx12::CreateBuffer(pGraphics->GetDevice(), resultSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, nv_helpers_dx12::kDefaultHeapProps);
-
-		// Build the acceleration structure. Note that this call integrates a barrier
-		// on the generated AS, so that it can be used to compute a top-level AS right
-		// after this method.
-		bottomLevelAS.Generate(pGraphics->GetCommandList(), buffers.pScratch, buffers.pResult, false, nullptr);
-
-		BlasInstances[i].Buffers = buffers;
 	}
 }
 
@@ -479,17 +516,6 @@ void RTXResources::CreateShaderBindingTable()
 
 void RTXResources::ReleaseStructures()
 {
-	for (int i = 0; i < BlasInstances.size(); i++)
-	{
-		if (BlasInstances[i].Buffers.pResult)
-		{
-			BlasInstances[i].Buffers.pResult->Release();
-			BlasInstances[i].Buffers.pResult = nullptr;
-			BlasInstances[i].Buffers.pScratch->Release();
-			BlasInstances[i].Buffers.pScratch = nullptr;
-		}
-	}
-
 	if (TopLevelASBuffers.pResult)
 	{
 		TopLevelASBuffers.pResult->Release();

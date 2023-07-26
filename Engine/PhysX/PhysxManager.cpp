@@ -52,12 +52,21 @@ void PhysxManager::AddToScene(physx::PxActor* pActor)
     pScene->addActor(*pActor);
 }
 
-physx::PxRigidStatic* PhysxManager::CreateRigidStatic(DirectX::XMFLOAT3 Pos)
+physx::PxRigidStatic* PhysxManager::CreateRigidStatic(DirectX::XMMATRIX transform)
 {
-    return pPhysics->createRigidStatic(physx::PxTransform(Pos.x, Pos.y, Pos.z));
+    float data[] = {
+        transform.r[0].m128_f32[0], transform.r[0].m128_f32[1], transform.r[0].m128_f32[2], transform.r[0].m128_f32[3],
+        transform.r[1].m128_f32[0], transform.r[1].m128_f32[1], transform.r[1].m128_f32[2], transform.r[1].m128_f32[3],
+        transform.r[2].m128_f32[0], transform.r[2].m128_f32[1], transform.r[2].m128_f32[2], transform.r[2].m128_f32[3],
+        transform.r[3].m128_f32[0], transform.r[3].m128_f32[1], transform.r[3].m128_f32[2], transform.r[3].m128_f32[3],
+    };
+
+    physx::PxMat44 m = physx::PxMat44(data);
+
+    return pPhysics->createRigidStatic(physx::PxTransform(m));
 }
 
-physx::PxRigidDynamic* PhysxManager::CreateRigidDynamic(DirectX::XMFLOAT3 Pos)
+physx::PxRigidDynamic* PhysxManager::CreateRigidDynamic(DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 {
     return pPhysics->createRigidDynamic(physx::PxTransform(Pos.x, Pos.y, Pos.z));
 }

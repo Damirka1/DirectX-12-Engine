@@ -226,6 +226,8 @@ copy "$(ProjectDir)dxil.dll" "$(TargetDir)"</Command>
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
     <ClCompile Include="Graphics\FrameCommander.cpp" />
     <ClCompile Include="Graphics\StaticMeshComponent.cpp" />
+    <ClCompile Include="Headers\Graphics\Passes\Pass.cpp" />
+    <ClCompile Include="Headers\Graphics\Passes\RenderPass.cpp" />
     <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.cpp" />
     <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.cpp" />
     <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RootSignatureGenerator.cpp" />
@@ -347,6 +349,8 @@ copy "$(ProjectDir)dxil.dll" "$(TargetDir)"</Command>
     <ClInclude Include="Headers\Graphics\d3dx12.h" />
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
     <ClInclude Include="Headers\Graphics\GraphicsException.h" />
+    <ClInclude Include="Headers\Graphics\Passes\Pass.h" />
+    <ClInclude Include="Headers\Graphics\Passes\RenderPass.h" />
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.h" />
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\DXRHelper.h" />
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.h" />

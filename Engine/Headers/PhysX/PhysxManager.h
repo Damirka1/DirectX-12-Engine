@@ -13,8 +13,8 @@ public:
 
 	Engine_API void AddToScene(physx::PxActor* pActor);
 
-	Engine_API physx::PxRigidStatic* CreateRigidStatic(DirectX::XMFLOAT3 Pos);
-	Engine_API physx::PxRigidDynamic* CreateRigidDynamic(DirectX::XMFLOAT3 Pos);
+	Engine_API physx::PxRigidStatic* CreateRigidStatic(DirectX::XMMATRIX transform);
+	Engine_API physx::PxRigidDynamic* CreateRigidDynamic(DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation = { 0, 0, 0 });
 
 	Engine_API physx::PxMaterial* CreateMaterial(float sf = 0.5f, float df = 0.5f, float r = 0.1f);    //static friction, dynamic friction, restitution);
 

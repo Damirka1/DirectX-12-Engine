@@ -157,23 +157,23 @@ public:
 		return _Model;
 	}
 
-	std::shared_ptr<Plane> CreatePlane()
+	std::shared_ptr<Plane> CreatePlane(DirectX::XMFLOAT3 Pos = {0, 0, 0}, DirectX::XMFLOAT3 Rotation = {0, 0, 0})
 	{
-		std::shared_ptr<Plane> _Plane = std::make_shared<Plane>(_ResourceManager, _PhysxManager);
+		std::shared_ptr<Plane> _Plane = std::make_shared<Plane>(_ResourceManager, _PhysxManager, Pos, Rotation);
 
 		return _Plane;
 	}
 
-	std::shared_ptr<Sphere> CreateSphere()
+	std::shared_ptr<Sphere> CreateSphere(DirectX::XMFLOAT3 Pos = { 0, 0, 0 }, DirectX::XMFLOAT3 Rotation = { 0, 0, 0 })
 	{
-		std::shared_ptr<Sphere> _Sphere = std::make_shared<Sphere>(_ResourceManager, _PhysxManager);
+		std::shared_ptr<Sphere> _Sphere = std::make_shared<Sphere>(_ResourceManager, _PhysxManager, Pos, Rotation);
 
 		return _Sphere;
 	}
 
-	std::shared_ptr<Cube> CreateCube()
+	std::shared_ptr<Cube> CreateCube(DirectX::XMFLOAT3 Pos = { 0, 0, 0 }, DirectX::XMFLOAT3 Rotation = { 0, 0, 0 })
 	{
-		std::shared_ptr<Cube> _Cube = std::make_shared<Cube>(_ResourceManager, _PhysxManager);
+		std::shared_ptr<Cube> _Cube = std::make_shared<Cube>(_ResourceManager, _PhysxManager, Pos, Rotation);
 
 		return _Cube;
 	}

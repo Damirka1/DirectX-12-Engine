@@ -3,11 +3,12 @@
 #include "../../Headers/ResourceManager.h"
 #include "../../Headers/Input/Camera.h"
 
-Cube::Cube(ResourceManager* pRM, PhysxManager* pPM)
+Cube::Cube(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 	:
 	StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Cube\\Cube.obj")
 {
-	StaticMeshComponent::SetPos({ 0.0f, 13.0f, 0.0f });
+	StaticMeshComponent::SetPos(Pos);
+	StaticMeshComponent::SetRotation(Rotation);
 
 	pRigidDynamic = pPM->CreateRigidDynamic(StaticMeshComponent::GetPos());
 	pMaterial = pPM->CreateMaterial(0.2f, 0.8f, 0.1f);

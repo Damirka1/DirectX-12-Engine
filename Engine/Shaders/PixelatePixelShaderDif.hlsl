@@ -29,21 +29,30 @@ struct VSIN
 
 PSOUT main(VSIN vsin)
 {
-    float3 lightPos = float3(10, 7, 0);
+    //float3 lightPos = float3(0, 10, 0);
+
+    float3 lightPos[] = { float3(-10, 10, -10), float3(10, 10, 10) };
     float3 lightColor = float3(1.0f, 0.8f, 0.5f);
 
     float3 norm = normalize(vsin.Norm);
-    float3 lightDir = normalize(lightPos - vsin.PsPos);
-
-    float specularStrength = 0.5f;
-
     float3 viewDir = normalize(vsin.ViewPos - vsin.PsPos);
-    float3 reflectDir = reflect(-lightDir, norm);
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    float3 specular = specularStrength * spec * lightColor;
+    float specularStrength = 0.2f;
 
-    float diffuse = max(dot(norm, lightDir), 0.0);
+    float3 diffuse = 0;
+    float3 specular = 0;
+
+
+    for (int i = 0; i < 2; i++)
+    {
+        float3 lightDir = normalize(lightPos[i] - vsin.PsPos);
+        float3 reflectDir = reflect(-lightDir, norm);
+
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32 + i * 32);
+        specular += specularStrength * spec * lightColor;
+
+        diffuse += max(dot(norm, lightDir), 0.0) * 0.1f;
+    }
 
     float3 ambient = 0.1f * lightColor;
 

@@ -1,6 +1,8 @@
 #include "../Headers/Scene/Scene.h"
 #include "../Headers/Scene/Model.h"
 
+#include <iterator>
+
 //void Scene::AddDrawable(Drawable* pDrawable)
 //{
 //	std::shared_ptr<DrawableArray> Array = pDrawable->Array;
@@ -25,6 +27,11 @@ void Scene::AddModel(std::shared_ptr<StaticMeshComponent> pModel)
 	}*/
 
 	Models.push_back(pModel);
+}
+
+void Scene::AddModels(std::vector<std::shared_ptr<StaticMeshComponent>> Models)
+{
+	std::copy(this->Models.begin(), this->Models.end(), std::back_inserter(Models));
 }
 
 void Scene::Update()

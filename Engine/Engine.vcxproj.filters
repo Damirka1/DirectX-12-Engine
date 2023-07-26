@@ -144,6 +144,12 @@
     <ClCompile Include="Headers\Graphics\RayTracing\RTXResources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Headers\Graphics\Passes\Pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Headers\Graphics\Passes\RenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Buffers.h">
@@ -552,6 +558,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\DXRHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\Passes\Pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\Passes\RenderPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,7 +16,7 @@ void RayGen() {
 
     // Initialize the ray payload
     HitInfo payload;
-    payload.colorAndDistance = float4(1, 1, 0, 1);
+    payload.colorAndDistance = float4(1, 1, 1, 1);
 
     // Define a ray, consisting of origin, direction, and the min-max distance
     // values

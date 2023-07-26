@@ -48,7 +48,11 @@ public:
 
 	bool IsNeedUpdate();
 
+	bool IsNeedRelease();
+
 	void Initialize();
+
+	void ReleaseScratch();
 
 	void CopyBuffer();
 
@@ -63,6 +67,7 @@ private:
 	DirectX::XMFLOAT3 LightPos = { 20, 0, -2 };
 
 	bool NeedUpdate = false;
+	bool NeedRelease = false;
 
 	Graphics* pGraphics;
 	ResourceManager* pRM;

@@ -137,6 +137,9 @@ void ResourceManager::InitializeResources(std::shared_ptr<Scene> pScene)
 
 	pGraphics->Initialize();
 
+	if(rt->IsNeedRelease())
+		rt->ReleaseScratch();
+
 	//pScene->InitCamera();
 }
 

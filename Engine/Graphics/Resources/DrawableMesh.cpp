@@ -100,3 +100,8 @@ void DrawableMesh::Draw(Graphics* pGraphics)
 
 	pGraphics->GetCommandList()->DrawIndexedInstanced(pIndexBuffer->GetIndeciesCount(), 1, 0, 0, 0);
 }
+
+void DrawableMesh::UpdateColor(DirectX::XMFLOAT3 color)
+{
+	Material->UpdateColor(color);
+}

@@ -25,6 +25,8 @@ public:
 
 	void Draw(Graphics* pGraphics);
 
+	void UpdateColor(DirectX::XMFLOAT3 color);
+
 private:
 	VertexLayout Lay;
 	std::shared_ptr<VertexBuffer> pVertexBuffer;

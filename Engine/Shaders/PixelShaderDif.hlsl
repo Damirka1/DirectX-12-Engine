@@ -21,7 +21,7 @@ struct VSIN
 
 PSOUT main(VSIN vsin)
 {
-    float3 lightPos = float3(10, 7, 0);
+    float3 lightPos = float3(0, 10, 0);
     float3 lightColor = float3(1.0f, 0.8f, 0.5f);
 
     float3 norm = normalize(vsin.Norm);

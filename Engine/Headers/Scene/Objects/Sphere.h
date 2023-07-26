@@ -5,7 +5,7 @@
 class Sphere : public StaticMeshComponent
 {
 public:
-	Engine_API Sphere(ResourceManager* pRM, PhysxManager* pPM);
+	Engine_API Sphere(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation);
 
 	Engine_API void UpdateBody(Camera* cam);
 

@@ -2,12 +2,14 @@
 #include "../../Headers/Graphics/Resources/DrawableMesh.h"
 #include "../../Headers/ResourceManager.h"
 #include "../../Headers/Input/Camera.h"
+#include <random>
 
-Sphere::Sphere(ResourceManager* pRM, PhysxManager* pPM)
+Sphere::Sphere(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 	:
 	StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Sphere\\Sphere.obj")
 {
-	StaticMeshComponent::SetPos({ 0.0f, 10.0f, 0.0f });
+	StaticMeshComponent::SetPos(Pos);
+	StaticMeshComponent::SetRotation(Rotation);
 
 	pRigidDynamic = pPM->CreateRigidDynamic(StaticMeshComponent::GetPos());
 	pMaterial = pPM->CreateMaterial(0.2f, 0.8f, 0.0f);
@@ -18,6 +20,15 @@ Sphere::Sphere(ResourceManager* pRM, PhysxManager* pPM)
 	pShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 	pPM->AddToScene(pRigidDynamic);
+
+	static std::default_random_engine e;
+	static std::uniform_real_distribution<float> dis(0, 1); // range [0, 1)
+	
+	for (auto& m : Meshes)
+	{
+		DirectX::XMFLOAT3 color = { dis(e), dis(e), dis(e) };
+		m.UpdateColor(color);
+	}
 
 	pRM->PrepareForRtx(this, 0);
 }

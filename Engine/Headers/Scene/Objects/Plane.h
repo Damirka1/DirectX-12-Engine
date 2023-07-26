@@ -5,12 +5,14 @@
 class Plane : public StaticMeshComponent
 {
 public:
-	Plane(ResourceManager* pRM, PhysxManager* pPM)
+	Plane(ResourceManager* pRM, PhysxManager* pPM, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 		:
 		StaticMeshComponent(pRM, "C:\\Home\\GraphicsProjects\\3d models\\Plane\\Plane.obj", 20)
 	{
-		StaticMeshComponent::SetPos({ 0.0f, -20.0f, 0.0f });
-		pRigidStatic = pPM->CreateRigidStatic(StaticMeshComponent::GetPos());
+		StaticMeshComponent::SetPos(Pos);
+		StaticMeshComponent::SetRotation(Rotation);
+		//DirectX::XMFLOAT3 rot = { 45.0f, 0.0f, 0.0f };
+		pRigidStatic = pPM->CreateRigidStatic(StaticMeshComponent::GetPosMatrix());
 		pMaterial = pPM->CreateMaterial();
 
 		pShape = physx::PxRigidActorExt::createExclusiveShape(*pRigidStatic,
