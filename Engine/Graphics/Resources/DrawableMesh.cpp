@@ -110,6 +110,8 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 		pConstBuffer = pRM->CreateConstBuffer(&DxT, sizeof(DxTransform), 0);
 	}
 
+	pSceneResources->pRTXPass->AddMesh(this);
+
 	this->Lay = Lay;
 }
 
@@ -142,4 +144,9 @@ void DrawableMesh::Update(const Transform& parent, Camera* pCamera)
 	DxT.ViewPos = pCamera->GetPos();
 
 	pConstBuffer->Update(&DxT, sizeof(DxTransform));
+}
+
+DirectX::XMMATRIX& DrawableMesh::GetPosMatrix()
+{
+	return T.PosMatrix;
 }

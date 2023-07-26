@@ -10,7 +10,7 @@
 
 #include "../../Timer.h"
 
-class StaticMeshComponent;
+class DrawableMesh;
 class Camera;
 
 class RTXResources 
@@ -25,7 +25,7 @@ class RTXResources
 
 	struct RTResource 
 	{
-		StaticMeshComponent* Model;
+		DrawableMesh* mesh;
 		AccelerationStructureBuffers Buffers;
 		unsigned int InstanceId;
 		unsigned int HitGroup;
@@ -44,7 +44,7 @@ public:
 
 	RTXResources(Graphics* pGraphics, ResourceManager* pRM);
 
-	void PrepareModelForRtx(StaticMeshComponent* model, unsigned int hitGroup);
+	void PrepareMeshForRtx(DrawableMesh* mesh, unsigned int hitGroup);
 
 	bool IsNeedUpdate();
 

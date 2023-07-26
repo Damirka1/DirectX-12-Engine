@@ -130,21 +130,10 @@ void ResourceManager::InitializeResources()
 		res->Initialize(pGraphics);
 
 	ToInit.clear();
-
-	/*if (rt->IsNeedUpdate())
-		rt->Initialize();
-	else
-		rt->Update(pScene->pCamera);*/
-
-	/*if(rt->IsNeedRelease())
-		rt->ReleaseScratch();*/
-
-	//pScene->InitCamera();
 }
 
 ResourceManager::~ResourceManager()
 {
-	//delete rt;
 }
 
 std::shared_ptr<Texture2D> ResourceManager::CreateTexture2D(const std::string& Path, UINT Index, bool OnlyPixelShader)
@@ -218,21 +207,6 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexc
 	}
 
 	return std::static_pointer_cast<Sampler>(i->second);
-}
-
-Engine_API void ResourceManager::PrepareForRtx(StaticMeshComponent* model, unsigned int hitGroup)
-{
-	//rt->PrepareModelForRtx(model, hitGroup);
-}
-
-void ResourceManager::CopyBuffer()
-{
-	//rt->CopyBuffer();
-}
-
-void ResourceManager::DispatchRays()
-{
-	//rt->DispatchRays();
 }
 
 void ResourceManager::Update()

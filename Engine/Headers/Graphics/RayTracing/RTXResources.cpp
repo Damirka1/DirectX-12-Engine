@@ -5,8 +5,8 @@
 #include "nv_helpers_dx12/RaytracingPipelineGenerator.h"
 #include "nv_helpers_dx12/RootSignatureGenerator.h"
 
-//#include "../Resources/DrawableMesh.h"
-#include "../../Scene/Components/StaticMeshComponent.h"
+#include "../Resources/DrawableMesh.h"
+//#include "../../Scene/Components/StaticMeshComponent.h"
 #include "../Resources/DrawableMeshMaterial.h"
 
 #include "../../ResourceManager.h"
@@ -21,10 +21,10 @@ RTXResources::RTXResources(Graphics* pGraphics, ResourceManager* pRM)
 	pConstBuffer = pRM->CreateConstBuffer(&b, sizeof(b), 0);
 }
 
-void RTXResources::PrepareModelForRtx(StaticMeshComponent* model, unsigned int hitGroup)
+void RTXResources::PrepareMeshForRtx(DrawableMesh* mesh, unsigned int hitGroup)
 {
 	RTResource resource;
-	resource.Model = model;
+	resource.mesh = mesh;
 	resource.Buffers = { 0 };
 	resource.InstanceId = BlasInstances.size();
 	resource.HitGroup = hitGroup;
@@ -209,14 +209,11 @@ void RTXResources::CreateBottomLevelAS()
 		{
 			nv_helpers_dx12::BottomLevelASGenerator bottomLevelAS;
 
-			for (int j = 0; j < BlasInstances[i].Model->Meshes.size(); j++)
-			{
-				std::shared_ptr<VertexBuffer> pVertexBuffer = BlasInstances[i].Model->Meshes[j].pVertexBuffer;
-				std::shared_ptr<IndexBuffer> pIndexBuffer = BlasInstances[i].Model->Meshes[j].pIndexBuffer;
+			std::shared_ptr<VertexBuffer> pVertexBuffer = BlasInstances[i].mesh->pVertexBuffer;
+			std::shared_ptr<IndexBuffer> pIndexBuffer = BlasInstances[i].mesh->pIndexBuffer;
 
-				// Adding all vertex buffers and not transforming their position.
-				bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
-			}
+			// Adding all vertex buffers and not transforming their position.
+			bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
 
 			// The AS build requires some scratch space to store temporary information.
 			// The amount of scratch memory is dependent on the scene complexity.
@@ -250,7 +247,7 @@ void RTXResources::CreateTopLevelAS()
 	nv_helpers_dx12::TopLevelASGenerator topLevelASGenerator;
 	// Gather all the instances into the builder helper
 	for (size_t i = 0; i < BlasInstances.size(); i++)
-		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].Model->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
+		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].mesh->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
 
 	// As for the bottom-level AS, the building the AS requires some scratch space
 	// to store temporary data in addition to the actual AS. In the case of the

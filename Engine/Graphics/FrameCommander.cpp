@@ -56,29 +56,7 @@ void FrameCommander::Render()
 	float dt = pTimer->Mark();
 	pGraphics->Setup(BackgroundColor.x, BackgroundColor.y, BackgroundColor.z);
 
-	//// Bind global heap.
-	//pResourceManager->Heap.Bind(pGraphics);
-
-	//// Bind pipelinestate object.
-	//for (auto& PSO : pScene->DrawablesMap)
-	//{
-	//	PSO.second.pPipeLineStateObject->Bind(pGraphics);
-
-	//	// Bind rootsignatures.
-	//	for (auto& RS : PSO.second.RootSignatures)
-	//	{
-	//		RS.second.pRootSignature->Bind(pGraphics);
-
-	//		// And finaly render objects.
-	//		for (auto& obj : RS.second.DrawArrayIndexed)
-	//			obj.second->DrawIndexed(pGraphics);
-	//	}
-	//}
-
-	/*for (auto& m : pScene->Models)
-		m->Draw(pGraphics);
-
-	pResourceManager->CopyBuffer();
+	/*pResourceManager->CopyBuffer();
 
 	pResourceManager->DispatchRays();*/
 
@@ -89,6 +67,8 @@ void FrameCommander::Render()
 
 	res->pTexturePass->Bind();
 	res->pTexturePass->Execute();
+
+	res->pRTXPass->Execute();
 
 	res->pPhysx->Simulate(dt);
 

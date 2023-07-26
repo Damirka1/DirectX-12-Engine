@@ -32,6 +32,8 @@ public:
 
 	void Update(const Transform& parent, Camera* pCamera);
 
+	DirectX::XMMATRIX& GetPosMatrix();
+
 private:
 	VertexLayout Lay;
 	std::shared_ptr<VertexBuffer> pVertexBuffer;

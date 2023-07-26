@@ -2,6 +2,7 @@
 
 #include "../Graphics/Passes/ColorRenderPass.h"
 #include "../Graphics/Passes/TextureRenderPass.h"
+#include "../Graphics/Passes/RTXPass.h"
 #include "../PhysX/PhysxManager.h"
 
 class Graphics;
@@ -18,6 +19,8 @@ public:
 		// Create passes
 		pColorPass = new ColorRenderPass(pGraphics);
 		pTexturePass = new TextureRenderPass(pGraphics);
+
+		pRTXPass = new RTXPass(pGraphics);
 	}
 
 	~SceneResources()
@@ -25,6 +28,7 @@ public:
 		delete pPhysx;
 		delete pColorPass;
 		delete pTexturePass;
+		delete pRTXPass;
 	}
 	
 public:
@@ -33,4 +37,5 @@ public:
 
 	ColorRenderPass* pColorPass;
 	TextureRenderPass* pTexturePass;
+	RTXPass* pRTXPass;
 };

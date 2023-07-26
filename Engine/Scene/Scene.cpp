@@ -96,6 +96,7 @@ void Scene::InitializeResources()
 	SceneResources.pColorPass->GetResourceManager()->InitializeResources();
 	SceneResources.pTexturePass->GetResourceManager()->InitializeResources();
 	SceneResources.pGraphics->Initialize();
+	SceneResources.pRTXPass->Initialize(pCamera);
 }
 
 //void Scene::InitCamera()
