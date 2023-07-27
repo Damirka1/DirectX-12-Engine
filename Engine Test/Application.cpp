@@ -24,79 +24,23 @@ Application::Application(HINSTANCE hInstance)
 	pScene = Core->CreateScene();
 	pScene->SetCamera(pCamera);
 
-	/*models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test1", 2.0f));
-	models[0]->SetPos({ -5.0f, -3.0f, 4.0f });
-	pScene->AddModel(models[0]);
-	models.push_back(Core->LoadModel("C:\\Home\\Graphics Projects\\3d models\\spider man\\Blender\\SpiderMan.obj", "Test2", 3.0f));
-	models[1]->SetPos({ 5.0f, -3.0f, 4.0f });
-	pScene->AddModel(models[1]);
-
-	/*models.push_back(Core->LoadModel("C:\\Home\\GraphicsProjects\\3d models\\M-B AMG ", "Test1", 1.0f));
-	models.back()->SetPos({ 0.0f, 2.0f, 0.0f });
-	pScene->AddModel(models.back())*/;
-
-	/*models.push_back(Core->LoadModel("C:\\Home\\GraphicsProjects\\3d models\\123\\obj\\kindred.obj", "Test3"));
-	models.back()->SetPos({0.0, 0.0f, 0.0f});
-	pScene->AddModel(models.back());*/
-
-	//models.push_back(Core->CreatePlane({0, -20, 0}, {0, 0, 0}));
 	models.push_back(pScene->CreatePlane({ 0, -20, 0 }, { 0, 0, 0 }));
 
-	//models.push_back(Core->CreatePlane({ 0, -20, -20 }, { DirectX::XMConvertToRadians(-90), 0, 0}));
 	models.push_back(pScene->CreatePlane({ 0, -20, -20 }, { DirectX::XMConvertToRadians(-90), 0, 0 }));
 
-	//models.push_back(Core->CreatePlane({ 0, -20, 20 }, { DirectX::XMConvertToRadians(90), 0, 0 }));
 	models.push_back(pScene->CreatePlane({ 0, -20, 20 }, { DirectX::XMConvertToRadians(90), 0, 0 }));
 
-	//models.push_back(Core->CreatePlane({ 20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(-90) }));
 	models.push_back(pScene->CreatePlane({ 20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(-90) }));
 
-	//models.push_back(Core->CreatePlane({ -20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(90) }));
 	models.push_back(pScene->CreatePlane({ -20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(90) }));
 
 	
 	std::default_random_engine e;
 	std::uniform_real_distribution<float> dis(-15, 16); // range [-15, 15]
 
-	//const int threadCount = 16;
-
-	//std::vector<std::shared_ptr<StaticMeshComponent>> thd[threadCount] = {};
-	//std::thread th[threadCount];
-	//
-	//for (int i = 0; i < threadCount; i++)
-	//{
-	//	th[i] = std::thread([&](int index) {
-	//		int v = index;
-	//		for (int j = 0; j < 10; j++)
-	//			thd[index].push_back(Core->CreateSphere({dis(e), dis(e), dis(e)}));
-	//		}, i);
-	//}
-
-	//for (int i = 0; i < threadCount; i++)
-	//{
-	//	th[i].join();
-	//}
-
-	//for (int i = 0; i < threadCount; i++)
-	//{
-
-	//	for(auto& el : thd[i])
-	//	{
-	//		spheres.push_back(std::reinterpret_pointer_cast<Sphere>(el));
-	//		pScene->AddModel(el);
-	//	}
-
-	//	/*std::copy(spheres.begin(), spheres.end(), std::back_inserter(thd[i]));
-	//	pScene->AddModels(thd[i])*/;
-	//}
-
-	for (int i = 0; i < 50; i++)
-	{
-		//spheres.push_back(Core->CreateSphere({dis(e), dis(e), dis(e)}));
+	for (int i = 0; i < 20; i++)
 		spheres.push_back(pScene->CreateSphere({ dis(e), dis(e), dis(e) }));
-	}
 
-	//spheres.back()->SetPos({ 0.0f, 0.0f, 4.0f });
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
 }

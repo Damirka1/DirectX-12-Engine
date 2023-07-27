@@ -14,7 +14,7 @@
 #include <assimp/postprocess.h>
 
 
-MeshMaterial::MeshMaterial(SceneResources* pSceneResources, aiMaterial* mat, std::string RootPath, VertexLayout& VLay)
+MeshMaterial::MeshMaterial(SceneResources* pSceneResources, aiMaterial* mat, std::string RootPath)
 {
 	aiString TexFileName;
 
@@ -26,25 +26,25 @@ MeshMaterial::MeshMaterial(SceneResources* pSceneResources, aiMaterial* mat, std
 		Resources.push_back(pRM->CreateTexture2D(RootPath + TexFileName.C_Str(), 1, true));
 		Resources.push_back(pRM->CreateDefaultSampler(2));
 
-		type = MeshMaterial::MaterialType::Texture;
+		Type = MeshMaterial::MaterialType::Texture;
 	}
 	else
 	{
 		pRM = pSceneResources->pColorPass->GetResourceManager();
 
-		mat->Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(color));
+		mat->Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(dxColor));
 
-		pConstBuffer = pRM->CreateConstBuffer(&color, sizeof(color), 1);
+		pConstBuffer = pRM->CreateConstBuffer(&dxColor, sizeof(dxColor), 1);
 
 		Resources.push_back(pConstBuffer);
 
-		type = MeshMaterial::MaterialType::Color;
+		Type = MeshMaterial::MaterialType::Color;
 	}
 }
 
 MeshMaterial::MaterialType MeshMaterial::GetType()
 {
-	return type;
+	return Type;
 }
 
 void MeshMaterial::Bind(Graphics* pGraphics)
@@ -55,24 +55,19 @@ void MeshMaterial::Bind(Graphics* pGraphics)
 
 void MeshMaterial::UpdateColor(DirectX::XMFLOAT3 color)
 {
-	this->color = color;
-	pConstBuffer->pData = static_cast<const void*>(&this->color);
-	pConstBuffer->DataSize = sizeof(this->color);
+	dxColor = color;
+	pConstBuffer->pData = static_cast<const void*>(&dxColor);
+	pConstBuffer->DataSize = sizeof(dxColor);
 }
 
-std::shared_ptr<MeshMaterial> MeshMaterial::GetDefaultMaterial(SceneResources* pSceneResources, VertexLayout& VLay)
+std::shared_ptr<MeshMaterial> MeshMaterial::GetDefaultMaterial(SceneResources* pSceneResources)
 {
 	std::shared_ptr<MeshMaterial> StaticMaterial = std::make_shared<MeshMaterial>();
 
-	if (VLay.GetSize() >= 3)
-	{
-		auto pRM = pSceneResources->pTexturePass->GetResourceManager();
-		StaticMaterial->Resources.push_back(pRM->CreateTexture2D("C:\\Home\\Visual Projects\\DirectX-12-Engine\\Gifs\\Missing_textures.png", 1, true));
-		StaticMaterial->Resources.push_back(pRM->CreateDefaultSampler(2));
-		StaticMaterial->type = MeshMaterial::MaterialType::Texture;
-	}
-	else
-		throw new std::runtime_error("Can't create default material");
+	auto pRM = pSceneResources->pTexturePass->GetResourceManager();
+	StaticMaterial->Resources.push_back(pRM->CreateTexture2D("C:\\Home\\Visual Projects\\DirectX-12-Engine\\Gifs\\Missing_textures.png", 1, true));
+	StaticMaterial->Resources.push_back(pRM->CreateDefaultSampler(2));
+	StaticMaterial->Type = MeshMaterial::MaterialType::Texture;
 
 	return StaticMaterial;
 }

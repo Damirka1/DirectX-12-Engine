@@ -28,7 +28,7 @@ public:
 	};
 
 	MeshMaterial() = default;
-	MeshMaterial(SceneResources* pSceneResources, aiMaterial* mat, std::string RootPath, VertexLayout& VLay);
+	MeshMaterial(SceneResources* pSceneResources, aiMaterial* mat, std::string RootPath);
 
 	MaterialType GetType();
 
@@ -36,7 +36,7 @@ public:
 
 	void UpdateColor(DirectX::XMFLOAT3 color);
 
-	static std::shared_ptr<MeshMaterial> GetDefaultMaterial(SceneResources* pSceneResources, VertexLayout& VLay);
+	static std::shared_ptr<MeshMaterial> GetDefaultMaterial(SceneResources* pSceneResources);
 
 private:
 	std::shared_ptr<PipelineStateObject> pPipelineStateObject;
@@ -44,7 +44,7 @@ private:
 
 	std::vector<std::shared_ptr<Resource>> Resources;
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
-	DirectX::XMFLOAT3 color;
+	DirectX::XMFLOAT3 dxColor;
 
-	MaterialType type;
+	MaterialType Type;
 };

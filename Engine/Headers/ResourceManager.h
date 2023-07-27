@@ -29,7 +29,7 @@ public:
 	Engine_API ResourceManager(Graphics* pGraphics) noexcept;
 	ResourceManager(ResourceManager&) = delete;
 
-	Engine_API std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* pData, const unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot = 0) noexcept;
+	Engine_API std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* pData, const unsigned int Stride, unsigned int DataSize, unsigned int VertexCount, unsigned int Slot = 0) noexcept;
 	Engine_API std::shared_ptr<IndexBuffer> CreateIndexBuffer(std::vector<unsigned int>* Indecies) noexcept;
 	Engine_API std::shared_ptr<RootSignature> CreateRootSignature(RS_Layout& Lay) noexcept;
 	Engine_API std::shared_ptr<PipelineStateObject> CreatePipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay, std::shared_ptr<RootSignature> pRootSignature) noexcept;

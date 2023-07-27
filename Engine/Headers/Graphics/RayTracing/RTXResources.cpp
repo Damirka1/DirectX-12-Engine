@@ -23,14 +23,20 @@ RTXResources::RTXResources(Graphics* pGraphics, ResourceManager* pRM)
 
 void RTXResources::PrepareMeshForRtx(DrawableMesh* mesh, unsigned int hitGroup)
 {
-	RTResource resource;
-	resource.mesh = mesh;
-	resource.Buffers = { 0 };
-	resource.InstanceId = BlasInstances.size();
-	resource.HitGroup = hitGroup;
+	using namespace std::string_literals;
+	const std::string key = typeid(RTResource).name() + "#"s + mesh->Tag;
+	const auto i = BlasResources.find(key);
 
-	BlasInstances.push_back(resource);
-
+	if (i == BlasResources.end())
+	{
+		auto res = std::make_shared<RTResource>();
+		res->HitGroup = hitGroup;
+		res->meshes.push_back(mesh);
+		BlasResources[key] = res;
+	}
+	else
+		BlasResources[key]->meshes.push_back(mesh);
+		
 	NeedUpdate = true;
 }
 
@@ -68,12 +74,12 @@ void RTXResources::Initialize()
 // Release only after initialization
 void RTXResources::ReleaseScratch()
 {
-	for (int i = 0; i < BlasInstances.size(); i++)
+	for (auto b = BlasResources.begin(), e = BlasResources.end(); b != e; ++b)
 	{
-		if (BlasInstances[i].Buffers.pScratch)
+		if (b->second->Buffers.pScratch)
 		{
-			BlasInstances[i].Buffers.pScratch->Release();
-			BlasInstances[i].Buffers.pScratch = nullptr;
+			b->second->Buffers.pScratch->Release();
+			b->second->Buffers.pScratch = nullptr;
 		}
 	}
 
@@ -178,14 +184,12 @@ RTXResources::~RTXResources()
 {
 	ReleaseStructures();
 
-	for (int i = 0; i < BlasInstances.size(); i++)
+	for (auto b = BlasResources.begin(), e = BlasResources.end(); b != e; ++b)
 	{
-		if (BlasInstances[i].Buffers.pResult)
+		if (b->second->Buffers.pResult)
 		{
-			BlasInstances[i].Buffers.pResult->Release();
-			BlasInstances[i].Buffers.pResult = nullptr;
-			/*BlasInstances[i].Buffers.pScratch->Release();
-			BlasInstances[i].Buffers.pScratch = nullptr;*/
+			b->second->Buffers.pResult->Release();
+			b->second->Buffers.pResult = nullptr;
 		}
 	}
 
@@ -203,14 +207,14 @@ RTXResources::~RTXResources()
 
 void RTXResources::CreateBottomLevelAS()
 {
-	for (int i = 0; i < BlasInstances.size(); i++)
+	for (auto b = BlasResources.begin(), e = BlasResources.end(); b != e; ++b)
 	{
-		if (!BlasInstances[i].Buffers.pResult)
+		if (!b->second->Buffers.pResult)
 		{
 			nv_helpers_dx12::BottomLevelASGenerator bottomLevelAS;
 
-			std::shared_ptr<VertexBuffer> pVertexBuffer = BlasInstances[i].mesh->pVertexBuffer;
-			std::shared_ptr<IndexBuffer> pIndexBuffer = BlasInstances[i].mesh->pIndexBuffer;
+			std::shared_ptr<VertexBuffer> pVertexBuffer = b->second->meshes.front()->pVertexBuffer;
+			std::shared_ptr<IndexBuffer> pIndexBuffer = b->second->meshes.front()->pIndexBuffer;
 
 			// Adding all vertex buffers and not transforming their position.
 			bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
@@ -237,7 +241,7 @@ void RTXResources::CreateBottomLevelAS()
 			// after this method.
 			bottomLevelAS.Generate(pGraphics->GetCommandList(), buffers.pScratch, buffers.pResult, false, nullptr);
 
-			BlasInstances[i].Buffers = buffers;
+			b->second->Buffers = buffers;
 		}
 	}
 }
@@ -246,8 +250,10 @@ void RTXResources::CreateTopLevelAS()
 {
 	nv_helpers_dx12::TopLevelASGenerator topLevelASGenerator;
 	// Gather all the instances into the builder helper
-	for (size_t i = 0; i < BlasInstances.size(); i++)
-		topLevelASGenerator.AddInstance(BlasInstances[i].Buffers.pResult, BlasInstances[i].mesh->GetPosMatrix(), static_cast<UINT>(i), static_cast<UINT>(BlasInstances[i].HitGroup));
+	int instanceId = 0;
+	for (auto b = BlasResources.begin(), e = BlasResources.end(); b != e; ++b)
+		for (auto bm = b->second->meshes.begin(), em = b->second->meshes.end(); bm != em; ++bm)
+			topLevelASGenerator.AddInstance(b->second->Buffers.pResult, (*bm)->GetPosMatrix(), static_cast<UINT>(instanceId++), static_cast<UINT>(b->second->HitGroup));
 
 	// As for the bottom-level AS, the building the AS requires some scratch space
 	// to store temporary data in addition to the actual AS. In the case of the

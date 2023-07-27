@@ -18,10 +18,10 @@ ResourceManager::ResourceManager(Graphics* pGraphics) noexcept
 	//rt = new RTXResources(pGraphics, this);
 }
 
-std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, VertexLayout& Lay, unsigned int VertexCount, unsigned int Slot) noexcept
+std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, unsigned int VertexCount, unsigned int Slot) noexcept
 {
 	using namespace std::string_literals;
-	std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "{" + Lay.GetCode() + "}" + "#"s + "{" + "#"s + std::to_string(((float*)pData)[0]) + "#"s
+	std::string key = typeid(VertexBuffer).name() + "#"s + std::to_string(Stride) + "#"s + std::to_string(DataSize) + "#"s + std::to_string(Slot) + "#"s + "{" + "#"s + std::to_string(((float*)pData)[0]) + "#"s
 		+ std::to_string(((float*)pData)[1]) + "#"s + std::to_string(((float*)pData)[3]) + "}";
 
 	const auto i = BaseResources.find(key);

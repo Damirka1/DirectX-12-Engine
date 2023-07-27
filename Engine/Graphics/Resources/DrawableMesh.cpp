@@ -9,12 +9,9 @@
 #include "assimp/postprocess.h"
 
 DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMaterial* mat, std::filesystem::path path, float scale)
+	:
+	Tag(path.string() + ":scale:" + std::to_string(scale))
 {
-	/*VertexLayout Lay;
-	Lay.AddElement("Position", DXGI_FORMAT_R32G32B32_FLOAT);
-	Lay.AddElement("NormCoord", DXGI_FORMAT_R32G32B32_FLOAT);
-	Lay.AddElement("TanCoord", DXGI_FORMAT_R32G32B32_FLOAT);*/
-	Lay.AddElement("BiTanCoord", DXGI_FORMAT_R32G32B32_FLOAT);
 	bool HasTexCoords = m->HasTextureCoords(0);
 
 	std::vector<FLOAT> Buffer;
@@ -25,8 +22,6 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 
 	if (HasTexCoords)
 	{
-		//Lay.AddElement("TexCoord", DXGI_FORMAT_R32G32_FLOAT);
-
 		Buffer.reserve(reserveSpace + m->mNumVertices * 2);
 	}
 	else 
@@ -78,9 +73,9 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 
 	if (!mat)
 	{	
-		Material = MeshMaterial::GetDefaultMaterial(pSceneResources, Lay);
+		Material = MeshMaterial::GetDefaultMaterial(pSceneResources);
 		auto pRM = pSceneResources->pTexturePass->GetResourceManager();
-		pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
+		pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), m->mNumVertices);
 		pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
 
 		pConstBuffer = pRM->CreateConstBuffer(&DxT, sizeof(DxTransform), 0);
@@ -89,7 +84,7 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 	}
 	else
 	{
-		Material = std::make_shared<MeshMaterial>(pSceneResources, mat, path.parent_path().string() + "\\", Lay);
+		Material = std::make_shared<MeshMaterial>(pSceneResources, mat, path.parent_path().string() + "\\");
 
 		ResourceManager* pRM;
 
@@ -104,15 +99,13 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 			pSceneResources->pTexturePass->AddMesh(this);
 		}
 
-		pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), Lay, m->mNumVertices);
+		pVertexBuffer = pRM->CreateVertexBuffer(Buffer.data(), sizeof(float) * count, sizeof(float) * Buffer.size(), m->mNumVertices);
 		pIndexBuffer = pRM->CreateIndexBuffer(&Indecies);
 
 		pConstBuffer = pRM->CreateConstBuffer(&DxT, sizeof(DxTransform), 0);
 	}
 
 	pSceneResources->pRTXPass->AddMesh(this);
-
-	this->Lay = Lay;
 }
 
 void DrawableMesh::BindMaterial(Graphics* pGraphics)
@@ -149,4 +142,9 @@ void DrawableMesh::Update(const Transform& parent, Camera* pCamera)
 DirectX::XMMATRIX& DrawableMesh::GetPosMatrix()
 {
 	return T.PosMatrix;
+}
+
+std::string DrawableMesh::GetTag()
+{
+	return Tag;
 }

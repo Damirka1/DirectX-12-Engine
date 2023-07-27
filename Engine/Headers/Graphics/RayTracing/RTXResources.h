@@ -3,6 +3,7 @@
 #include <d3d12.h>
 #include <dxcapi.h>
 #include <memory>
+#include <unordered_map>
 
 #include "nv_helpers_dx12/TopLevelASGenerator.h"
 #include "../Resources/Buffers/Buffers.h"
@@ -25,9 +26,9 @@ class RTXResources
 
 	struct RTResource 
 	{
-		DrawableMesh* mesh;
+		std::vector<DrawableMesh*> meshes;
 		AccelerationStructureBuffers Buffers;
-		unsigned int InstanceId;
+		//unsigned int InstanceId;
 		unsigned int HitGroup;
 	};
 
@@ -74,7 +75,7 @@ private:
 
 	std::shared_ptr<ConstantBuffer> pConstBuffer;
 
-	std::vector<RTResource> BlasInstances;
+	std::unordered_map<std::string, std::shared_ptr<RTResource>> BlasResources;
 
 	void CreateBottomLevelAS();
 

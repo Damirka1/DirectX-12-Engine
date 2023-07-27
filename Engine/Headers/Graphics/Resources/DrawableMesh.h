@@ -34,8 +34,9 @@ public:
 
 	DirectX::XMMATRIX& GetPosMatrix();
 
+	std::string GetTag();
+
 private:
-	VertexLayout Lay;
 	std::shared_ptr<VertexBuffer> pVertexBuffer;
 	std::shared_ptr<IndexBuffer> pIndexBuffer;
 
@@ -43,6 +44,7 @@ private:
 	Transform T = { };
 	DxTransform DxT = { };
 
+	std::string Tag;
 
 	std::shared_ptr<MeshMaterial> Material;
 };
