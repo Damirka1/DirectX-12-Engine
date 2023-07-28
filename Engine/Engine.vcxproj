@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -29,26 +30,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -135,16 +136,18 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Assimp\bin\x64\;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxcompiler.lib;assimp-vc143-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
     </FxCompile>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)DirectXTex.dll" "$(TargetDir)"
-copy "$(ProjectDir)assimp-vc140-mt.dll" "$(TargetDir)"
+copy "$(ProjectDir)assimp-vc143-mt.dll" "$(TargetDir)"
 if not exist "$(SolutionDir)Engine Test\Shaders" mkdir "$(SolutionDir)Engine Test\Shaders"
-copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Command>
+copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"
+copy "$(ProjectDir)dxcompiler.dll" "$(TargetDir)"
+copy "$(ProjectDir)dxil.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy DirectXTex to output directory and copy compiled shader to engine test project</Message>
@@ -177,7 +180,7 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Assimp\bin\x64\;$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;DirectXTex.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxcompiler.lib;assimp-vc143-mt.lib;DirectXTex.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -188,22 +191,32 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)DirectXTex.dll" "$(TargetDir)"
-copy "$(ProjectDir)assimp-vc140-mt.dll" "$(TargetDir)"
+copy "$(ProjectDir)assimp-vc143-mt.dll" "$(TargetDir)"
 if not exist "$(SolutionDir)Engine Test\Shaders" mkdir "$(SolutionDir)Engine Test\Shaders"
-copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Command>
+copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"
+copy "$(ProjectDir)dxcompiler.dll" "$(TargetDir)"
+copy "$(ProjectDir)dxil.dll" "$(TargetDir)"</Command>
       <Message>Copy DirectXTex to output directory and copy compiled shader to engine test project</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Console\Console.cpp" />
     <ClCompile Include="Events\EventListener.cpp" />
     <ClCompile Include="Events\KeyboardEvents.cpp" />
     <ClCompile Include="Events\MouseEvents.cpp" />
     <ClCompile Include="Events\ScriptManager.cpp" />
+    <ClCompile Include="Graphics\DrawableMeshMaterial.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\GraphicsException.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Buffers.cpp" />
     <ClCompile Include="Graphics\Resources\Drawable.cpp" />
+    <ClCompile Include="Graphics\Resources\DrawableArray.cpp" />
+    <ClCompile Include="Graphics\Resources\DrawableArrayMesh.cpp" />
+    <ClCompile Include="Graphics\Resources\DrawableMesh.cpp" />
     <ClCompile Include="Graphics\Resources\Heap.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap\Descriptor.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap\DescriptorHeapArray.cpp" />
+    <ClCompile Include="Graphics\Resources\Heap\DescriptorsGlobalHeap.cpp" />
     <ClCompile Include="Graphics\Resources\PipeLineState.cpp" />
     <ClCompile Include="Graphics\Resources\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Resources\RootSignature.cpp" />
@@ -212,11 +225,21 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClCompile Include="Graphics\Resources\Buffers\Textures.cpp" />
     <ClCompile Include="Graphics\Resources\Buffers\Samplers.cpp" />
     <ClCompile Include="Graphics\FrameCommander.cpp" />
-    <ClCompile Include="Graphics\Resources\DrawableArray.cpp" />
+    <ClCompile Include="Graphics\StaticMeshComponent.cpp" />
+    <ClCompile Include="Headers\Graphics\Passes\Pass.cpp" />
+    <ClCompile Include="Headers\Graphics\Passes\RenderPass.cpp" />
+    <ClCompile Include="Headers\Graphics\Passes\RTXPass.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RootSignatureGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\ShaderBindingTableGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\nv_helpers_dx12\TopLevelASGenerator.cpp" />
+    <ClCompile Include="Headers\Graphics\RayTracing\RTXResources.cpp" />
+    <ClCompile Include="Headers\Scene\Objects\Cube.cpp" />
+    <ClCompile Include="Headers\Scene\Objects\Sphere.cpp" />
     <ClCompile Include="input\Camera.cpp" />
     <ClCompile Include="input\Keyboard.cpp" />
     <ClCompile Include="input\Mouse.cpp" />
-    <ClCompile Include="Models\Cube.cpp" />
     <ClCompile Include="Models\Mesh.cpp" />
     <ClCompile Include="Models\Model.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -234,7 +257,8 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Neither</FavorSizeOrSpeed>
     </ClCompile>
-    <ClCompile Include="Models\Rectangle.cpp" />
+    <ClCompile Include="PhysX\PhysxManager.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Window\Timer.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
@@ -314,7 +338,9 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Assimp\include\assimp\version.h" />
     <ClInclude Include="Assimp\include\assimp\Vertex.h" />
     <ClInclude Include="Assimp\include\assimp\XMLTools.h" />
+    <ClInclude Include="Console\Console.h" />
     <ClInclude Include="Headers\DirectXTex.h" />
+    <ClInclude Include="Headers\EngineCore.h" />
     <ClInclude Include="Headers\Events\EventListener.h" />
     <ClInclude Include="Headers\Events\KeyboardEvents.h" />
     <ClInclude Include="Headers\Events\MouseEvents.h" />
@@ -324,17 +350,36 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Graphics\d3dx12.h" />
     <ClInclude Include="Headers\Graphics\Error_Check.h" />
     <ClInclude Include="Headers\Graphics\GraphicsException.h" />
+    <ClInclude Include="Headers\Graphics\Passes\ColorRenderPass.h" />
+    <ClInclude Include="Headers\Graphics\Passes\Pass.h" />
+    <ClInclude Include="Headers\Graphics\Passes\RenderPass.h" />
+    <ClInclude Include="Headers\Graphics\Passes\RTXPass.h" />
+    <ClInclude Include="Headers\Graphics\Passes\TextureRenderPass.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\BottomLevelASGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\DXRHelper.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RaytracingPipelineGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\RootSignatureGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\ShaderBindingTableGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\nv_helpers_dx12\TopLevelASGenerator.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\RTXResources.h" />
     <ClInclude Include="Headers\Graphics\Resources\Bindable.h" />
-    <ClInclude Include="Headers\Graphics\Resources\BindablesHeader.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap\Descriptor.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorHeapArray.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Heap\DescriptorsGlobalHeap.h" />
+    <ClInclude Include="Headers\Graphics\Resources\Drawable.h" />
+    <ClInclude Include="Headers\Graphics\Resources\DrawableArray.h" />
+    <ClInclude Include="Headers\Graphics\Resources\DrawableArrayMesh.h" />
+    <ClInclude Include="Headers\Graphics\Resources\ResourceHeader.h" />
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Buffers.h" />
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Samplers.h" />
     <ClInclude Include="Headers\Graphics\Resources\Buffers\Textures.h" />
-    <ClInclude Include="Headers\Graphics\Resources\Drawable.h" />
-    <ClInclude Include="Headers\Graphics\Resources\DrawableArray.h" />
+    <ClInclude Include="Headers\Graphics\Resources\DrawableMeshMaterial.h" />
     <ClInclude Include="Headers\Graphics\Resources\Heap.h" />
+    <ClInclude Include="Headers\Graphics\Resources\DrawableMesh.h" />
     <ClInclude Include="Headers\Graphics\Resources\PipeLineState.h" />
     <ClInclude Include="Headers\Graphics\Resources\Resource.h" />
     <ClInclude Include="Headers\Graphics\Resources\RootSignature.h" />
+    <ClInclude Include="Headers\Graphics\RayTracing\RTXStateObject.h" />
     <ClInclude Include="Headers\Graphics\Resources\UI_Element.h" />
     <ClInclude Include="Headers\Graphics\Resources\VertexLayout.h" />
     <ClInclude Include="Headers\Header.h" />
@@ -343,16 +388,89 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <ClInclude Include="Headers\Input\Mouse.h" />
     <ClInclude Include="Headers\MathUtilities.h" />
     <ClInclude Include="Headers\MessageHandler.h" />
-    <ClInclude Include="Headers\Model.h" />
+    <ClInclude Include="Headers\PhysX\PhysxManager.h" />
+    <ClInclude Include="Headers\Scene\Components\StaticMeshArrayComponent.h" />
+    <ClInclude Include="Headers\Scene\Components\StaticMeshComponent.h" />
+    <ClInclude Include="Headers\Scene\Model.h" />
     <ClInclude Include="Headers\ResourceManager.h" />
+    <ClInclude Include="Headers\Scene\Actor.h" />
+    <ClInclude Include="Headers\Scene\Character.h" />
+    <ClInclude Include="Headers\Scene\Objects\Cube.h" />
+    <ClInclude Include="Headers\Scene\Objects\Plane.h" />
+    <ClInclude Include="Headers\Scene\Objects\Sphere.h" />
+    <ClInclude Include="Headers\Scene\Pawn.h" />
+    <ClInclude Include="Headers\Scene\Scene.h" />
+    <ClInclude Include="Headers\Scene\SceneResources.h" />
+    <ClInclude Include="Headers\Scene\Transform.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\Utility.h" />
     <ClInclude Include="Headers\Window.h" />
-    <ClInclude Include="Models\Cube.h" />
-    <ClInclude Include="Headers\Mesh.h" />
-    <ClInclude Include="Models\Rectangle.h" />
+    <ClInclude Include="Headers\Scene\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="Shaders\Common.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\%(Identity)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\%(Identity)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Shaders\Hit.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\%(Identity)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\%(Identity)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Shaders\Miss.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\%(Identity)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\%(Identity)</Outputs>
+    </CustomBuild>
+    <FxCompile Include="Shaders\PixelatePixelShaderDif.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders\compiled\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders\compiled\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders\compiled\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders\compiled\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Shaders\PixelShaderDif.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -365,6 +483,23 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders\compiled\%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders\compiled\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <CustomBuild Include="Shaders\RayGen.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\%(Identity)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy %(Identity) "$(OutDir)%(Identity)" &gt; NUL
+copy %(Identity) "$(SolutionDir)Engine Test\%(Identity)" &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\%(Identity)</Outputs>
+    </CustomBuild>
     <FxCompile Include="Shaders\UI_PixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -421,11 +556,11 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Assimp\bin\x64\assimp-vc140-mt.lib" />
+    <Library Include="Assimp\bin\x64\assimp-vc143-mt.lib" />
     <Library Include="DirectXTex.lib" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assimp-vc140-mt.dll" />
+    <None Include="assimp-vc143-mt.dll" />
     <None Include="Assimp\include\assimp\color4.inl" />
     <None Include="Assimp\include\assimp\material.inl" />
     <None Include="Assimp\include\assimp\matrix3x3.inl" />
@@ -434,9 +569,19 @@ copy "$(ProjectDir)Shaders\Compiled" "$(SolutionDir)Engine Test\Shaders"</Comman
     <None Include="Assimp\include\assimp\SmoothingGroups.inl" />
     <None Include="Assimp\include\assimp\vector2.inl" />
     <None Include="Assimp\include\assimp\vector3.inl" />
+    <None Include="cpp.hint" />
     <None Include="DirectXTex.dll" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
 </Project>

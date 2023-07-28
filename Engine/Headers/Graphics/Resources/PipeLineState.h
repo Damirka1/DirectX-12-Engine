@@ -1,7 +1,8 @@
 #pragma once
 #ifndef PIPELINESTATEOBJECT_HEADER
 #define PIPELINESTATEOBJECT_HEADER
-#include "Bindable.h"
+
+#include "Resource.h"
 
 class PSO_Layout
 {
@@ -51,20 +52,26 @@ private:
 #include "VertexLayout.h"
 #include "RootSignature.h"
 
-class PipelineStateObject : public Bindable
+class PipelineStateObject : public Resource
 {
+	friend class ResourceManager;
 public:
-	PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept;
-	void Initialize(Graphics* pGraphics, RootSignature* pRS);
+	PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay, std::shared_ptr<RootSignature> pRootSignature) noexcept;
+	void Initialize(Graphics* pGraphics) override;
 	void Bind(Graphics* pGraphics) override;
-	~PipelineStateObject() override;
+	~PipelineStateObject();
+	std::string GetKey() noexcept;
 
 private:
+	void SetKey(std::string Key) noexcept;
 	void ReadShader(std::string Path, D3D12_SHADER_BYTECODE* pDesc);
+
+	std::shared_ptr<RootSignature> pRootSignature;
 
 	ID3D12PipelineState* pPipelineStateObject;
 	PSO_Layout P_Lay;
 	VertexLayout V_Lay;
+	std::string KeyCode;
 };
 
 #endif

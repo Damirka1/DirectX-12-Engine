@@ -3,11 +3,12 @@
 #define CONSOLE_HEADER
 
 #include "..\Engine\Headers\Header.h"
+// DEPRECATED
 
 class Console
 {
 public:
-	Engine_API Console(const wchar_t* Name);
+	/*Engine_API Console(const wchar_t* Name);
 	Engine_API ~Console();
 	Engine_API void Write(const char* str);
 	Engine_API void Write(const wchar_t* str);
@@ -19,7 +20,7 @@ private:
 
 private:
 	void* ConsoleInput;
-	void* ConsoleOutput;
+	void* ConsoleOutput;*/
 };
 
 #endif

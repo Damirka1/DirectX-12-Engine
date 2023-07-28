@@ -17,16 +17,18 @@
 class Graphics
 {
 	friend class Window;
+	friend class RTXResources;
 public:
 	Engine_API Graphics(HWND pWindow, short Width = 800, short Height = 600);
 	Engine_API ~Graphics();
+	Engine_API void SetupInit();
 	Engine_API void Initialize();
 
 	Engine_API void Setup(float R, float G, float B, float A = 1.0f);
 	Engine_API void Execute();
 	Engine_API std::wstring GetInfo() noexcept;
 
-	ID3D12Device8* GetDevice() noexcept;
+	ID3D12Device9* GetDevice() noexcept;
 	ID3D12GraphicsCommandList6* GetCommandList() noexcept;
 
 	void AddToRelease(ID3D12Resource*& pResource) noexcept;
@@ -35,6 +37,11 @@ public:
 
 	std::pair<short, short> GetResolution() noexcept;
 
+	ID3D12Resource* GetRenderTarget(unsigned int index);
+
+	void CopyToRenderTarget(ID3D12Resource* pBuffer);
+	void CopyFromRenderTarget(ID3D12Resource* pBuffer);
+
 private:
 	void WaitForGpu();
 	void MoveToNextFrame();
@@ -42,6 +49,7 @@ private:
 
 private:
 	static const UINT FrameCount = 2;
+	static const UINT BuffersCount = 5;
 
 	// Window size.
 	CD3DX12_VIEWPORT ViewPort;
@@ -49,18 +57,22 @@ private:
 
 	// Graphics basic units.
 	IDXGISwapChain4* pSwapChain = nullptr;
-	ID3D12Device8* pDevice = nullptr;
+	ID3D12Device9* pDevice = nullptr;
 	ID3D12GraphicsCommandList6* pCommandList = nullptr;
 	ID3D12CommandQueue* pCommandQueue = nullptr;
-	ID3D12Resource* pRenderTargets[FrameCount];
+	ID3D12Resource2* pRenderTargets[FrameCount];
+	// Create buffers for albedo, pos, normal and specular textures
+	ID3D12Resource2* pBuffers[BuffersCount];
+
 	ID3D12CommandAllocator* pCommandAllocators[FrameCount];
 	ID3D12DescriptorHeap* pRTV_Heap = nullptr;
+	ID3D12DescriptorHeap* pBuffers_Heap = nullptr;
 	UINT RTV_Size = 0;
 
 	// DepthStencil buffers.
-	ID3D12Resource* pDepthStencilBuffer;
+	ID3D12Resource2* pDepthStencilBuffer;
 	ID3D12DescriptorHeap* pdsDescriptorHeap;
-	DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DXGI_FORMAT DsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// Additional info.
 	DXGI_FORMAT ViewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -69,7 +81,7 @@ private:
 	// Synchronization info.
 	UINT FrameIndex = 0u;
 	HANDLE pFenceEvent = nullptr;
-	ID3D12Fence* pFence = nullptr;
+	ID3D12Fence1* pFence = nullptr;
 	UINT64 FenceValues[FrameCount];
 	BYTE VSync = 1;
 

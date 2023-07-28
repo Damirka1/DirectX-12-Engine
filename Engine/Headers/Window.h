@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
+#include <memory>
 
 #include "Header.h"
 #include "Timer.h"
@@ -15,12 +16,12 @@ class UI_Element;
 class Keyboard;
 class Mouse;
 class FrameCommanderHWND;
-class ScriptManager;
+//class ScriptManager;
 
 class Window
 {
 	friend FrameCommanderHWND;
-	friend ScriptManager;
+	//friend ScriptManager;
 public:
 	Window() = delete;
 	Engine_API Window(HINSTANCE hInst, const wchar_t* WindowName, short Width = 800, short Height = 600, bool VSync = true);
@@ -41,27 +42,22 @@ public:
 	Engine_API std::pair<short, short> GetWindowResolution() const noexcept;
 	Engine_API std::pair<short, short> GetGraphicsResolution() const noexcept;
 
-	// Return elapsed time from start window.				 
-	Engine_API float TimerPeek() const noexcept;
-
-	// Return elapsed time from frame render.				 
-	Engine_API float TimerMark() const noexcept;
-
 	// All handler to map. Handler will be used in messages process.
 	Engine_API bool	AddHandler(MessageHandler* ptr, const char* Name) noexcept;
 	Engine_API bool	RemoveHandler(const char* Name) noexcept;
 
-					// Add UI elements to the window.						 
-	Engine_API void	AddElement(UI_Element* pElement);
-	Engine_API void	RemoveElement(UI_Element* pElement) noexcept;
+	//				// Add UI elements to the window.						 
+	//Engine_API void	AddElement(UI_Element* pElement);
+	//Engine_API void	RemoveElement(UI_Element* pElement) noexcept;
 																						 
 	Engine_API const Graphics*	GetGraphics() const noexcept;
-	Engine_API const Keyboard*	GetKeyboard() const noexcept;
-	Engine_API const Mouse*		GetMouse() const noexcept;
-
 	Engine_API		 Graphics*	GetGraphics() noexcept;
-	Engine_API		 Keyboard*	GetKeyboard() noexcept;
-	Engine_API		 Mouse*		GetMouse() noexcept;
+
+	Engine_API std::shared_ptr<const Keyboard> GetKeyboard() const noexcept;
+	Engine_API std::shared_ptr<const Mouse> GetMouse() const noexcept;
+
+	Engine_API std::shared_ptr<Keyboard> GetKeyboard() noexcept;
+	Engine_API std::shared_ptr<Mouse> GetMouse() noexcept;
 
 	Engine_API void EnableCursor() noexcept;
 	Engine_API void DisableCursor() noexcept;
@@ -93,9 +89,9 @@ private:
 	mutable bool UpdateInThisFrame = false;
 
 	// Input
-	Keyboard* pKeyboard;
-	Mouse* pMouse;
+	std::shared_ptr<Keyboard> pKeyboard;
+	std::shared_ptr<Mouse> pMouse;
 
-	Timer* t;
+	
 };
 #endif

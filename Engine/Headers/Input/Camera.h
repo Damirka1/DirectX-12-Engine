@@ -9,6 +9,29 @@ typedef unsigned int UINT;
 class Camera
 {
 public:
+
+	struct CamView
+	{
+		DirectX::XMMATRIX View;
+		DirectX::XMMATRIX Projection;
+		DirectX::XMFLOAT3 Pos;
+	};
+
+	static Camera GetStaticCamera()
+	{
+		static Camera cam({ 800, 600 });
+		return cam;
+	}
+
+	static CamView GetStaticCamView()
+	{
+		Camera cam = Camera::GetStaticCamera();
+		CamView v;
+		v.View = cam.GetView();
+		v.Projection = cam.GetProjection();
+		return v;
+	}
+
 	enum class ProjectionType
 	{
 		Perspective,
@@ -29,6 +52,7 @@ public:
 	Engine_API void SetRotation(float Pitch, float Yaw) noexcept;
 	Engine_API void SetSpeed(float Speed) noexcept;
 	Engine_API void SetSensitivity(float Value) noexcept;
+
 	
 
 private:

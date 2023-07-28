@@ -1,6 +1,8 @@
 #include "..\Headers\Graphics.h"
 #include "..\Headers\Graphics\Error_Check.h"
 #include <algorithm>
+#include <errors.h>
+#include <assert.h>
 
 Graphics::Graphics(HWND pWindow, short w, short h)
     :
@@ -129,6 +131,11 @@ Graphics::Graphics(HWND pWindow, short w, short h)
 
         RTV_Size = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+        // Describe and create a render buffers descriptor heap.
+        rtvDesc.NumDescriptors = BuffersCount;
+        Error_Check(
+            pDevice->CreateDescriptorHeap(&rtvDesc, IID_PPV_ARGS(&pBuffers_Heap))
+        );
 
         // Create a depth stencil descriptor heap so we can get a pointer to the depth stencil buffer.
         D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -141,7 +148,7 @@ Graphics::Graphics(HWND pWindow, short w, short h)
 
         // Create a depth stencil buffer.
         D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-        depthOptimizedClearValue.Format = dsvFormat;
+        depthOptimizedClearValue.Format = DsvFormat;
         depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
         depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
@@ -149,7 +156,7 @@ Graphics::Graphics(HWND pWindow, short w, short h)
             pDevice->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
             D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Tex2D(dsvFormat, w, h, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+            &CD3DX12_RESOURCE_DESC::Tex2D(DsvFormat, w, h, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             &depthOptimizedClearValue,
             IID_PPV_ARGS(&pDepthStencilBuffer))
@@ -158,7 +165,7 @@ Graphics::Graphics(HWND pWindow, short w, short h)
 
 
         D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-        depthStencilDesc.Format = dsvFormat;
+        depthStencilDesc.Format = DsvFormat;
         depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
         depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
 
@@ -176,12 +183,38 @@ Graphics::Graphics(HWND pWindow, short w, short h)
             Error_Check(
                 pSwapChain->GetBuffer(i, IID_PPV_ARGS(&pRenderTargets[i]))
             );
+
+            pRenderTargets[i]->SetName(L"Render Target Resource Heap " + i);
+
             pDevice->CreateRenderTargetView(pRenderTargets[i], nullptr, rtvHandle);
             rtvHandle.Offset(1, RTV_Size);
 
             Error_Check(
                 pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&pCommandAllocators[i]))
             );
+        }
+
+        // Create render buffers
+        CD3DX12_CPU_DESCRIPTOR_HANDLE buffersHandle(pBuffers_Heap->GetCPUDescriptorHandleForHeapStart());
+
+        D3D12_CLEAR_VALUE rtOptimizedClearValue = { ViewFormat, {0} };
+
+        for (UINT j = 0; j < BuffersCount; j++)
+        {
+            Error_Check(
+                pDevice->CreateCommittedResource(
+                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+                    D3D12_HEAP_FLAG_NONE,
+                    &CD3DX12_RESOURCE_DESC::Tex2D(ViewFormat, w, h, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+                    D3D12_RESOURCE_STATE_RENDER_TARGET,
+                    &rtOptimizedClearValue,
+                    IID_PPV_ARGS(&pBuffers[j]))
+            );
+
+            pBuffers[j]->SetName(L"UAV Resource Heap " + j);
+
+            pDevice->CreateRenderTargetView(pBuffers[j], nullptr, buffersHandle);
+            buffersHandle.Offset(1, RTV_Size);
         }
     }
 
@@ -228,12 +261,17 @@ Graphics::~Graphics()
         pCommandAllocators[i]->Release();
         pRenderTargets[i]->Release();
     }
+
+    for (short j = 0; j < BuffersCount; j++)
+        pBuffers[j]->Release();
+
 	pSwapChain->Release();
 	pDevice->Release();
     pCommandList->Release();
 	pCommandQueue->Release();
 	pFence->Release();
     pRTV_Heap->Release();
+    pBuffers_Heap->Release();
     pDepthStencilBuffer->Release();
     pdsDescriptorHeap->Release();
 
@@ -247,12 +285,28 @@ Graphics::~Graphics()
 	pCommandQueue = nullptr;
 	pFence = nullptr;
     pRTV_Heap = nullptr;
+    pBuffers_Heap = nullptr;
     pDepthStencilBuffer = nullptr;
     pdsDescriptorHeap = nullptr;
 }
 
+void Graphics::SetupInit()
+{
+    Error_Check(
+        pCommandAllocators[FrameIndex]->Reset()
+    );
+
+    Error_Check(
+        pCommandList->Reset(pCommandAllocators[FrameIndex], nullptr)
+    );
+}
+
 void Graphics::Initialize()
 {
+    // TODO: change type of command list to COMMAND_LIST_TYPE_COPY
+
+
+
     // Close command list.
     pCommandList->Close();
 
@@ -296,10 +350,14 @@ void Graphics::Setup(float R, float G, float B, float A)
 
     // Get a handle to the render target buffer
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(pRTV_Heap->GetCPUDescriptorHandleForHeapStart(), FrameIndex, RTV_Size);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE buffersHandle(pBuffers_Heap->GetCPUDescriptorHandleForHeapStart(), 0, RTV_Size);
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE ppRenderBuffersHandle[] = { rtvHandle, buffersHandle };
+
     // Get a handle to the depth/stencil buffer
     CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(pdsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
     // Bind render target and depth stencil buffers.
-    pCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+    pCommandList->OMSetRenderTargets(2, ppRenderBuffersHandle, FALSE, &dsvHandle);
     pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // Record commands.
@@ -329,7 +387,7 @@ void Graphics::Execute()
     MoveToNextFrame();
 }
 
-ID3D12Device8* Graphics::GetDevice() noexcept
+ID3D12Device9* Graphics::GetDevice() noexcept
 {
     return pDevice;
 }
@@ -351,12 +409,57 @@ DXGI_FORMAT Graphics::GetRTVFormat() noexcept
 
 DXGI_FORMAT Graphics::GetDSVFormat() noexcept
 {
-    return dsvFormat;
+    return DsvFormat;
 }
 
 std::pair<short, short> Graphics::GetResolution() noexcept
 {
     return std::make_pair<short, short>(static_cast<short>(ViewPort.Width), static_cast<short>(ViewPort.Height));
+}
+
+ID3D12Resource* Graphics::GetRenderTarget(unsigned int index)
+{
+    assert(index < BuffersCount);
+
+    return pBuffers[index];
+}
+
+void Graphics::CopyToRenderTarget(ID3D12Resource* pBuffer)
+{
+    CD3DX12_RESOURCE_BARRIER transition[] = {
+        CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST),
+        CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE)
+    };
+
+    pCommandList->ResourceBarrier(2, transition);
+
+    pCommandList->CopyResource(pRenderTargets[FrameIndex], pBuffer);
+
+    CD3DX12_RESOURCE_BARRIER transition2[] = {
+        CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
+        CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET)
+    };
+
+    pCommandList->ResourceBarrier(2, transition2);
+}
+
+void Graphics::CopyFromRenderTarget(ID3D12Resource* pBuffer)
+{
+    CD3DX12_RESOURCE_BARRIER transition[] = {
+        CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE),
+        CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST),
+    };
+
+    pCommandList->ResourceBarrier(2, transition);
+
+    pCommandList->CopyResource(pBuffer, pRenderTargets[FrameIndex]);
+
+    CD3DX12_RESOURCE_BARRIER transition2[] = {
+        CD3DX12_RESOURCE_BARRIER::Transition(pRenderTargets[FrameIndex], D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
+        CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET)
+    };
+
+    pCommandList->ResourceBarrier(2, transition2);
 }
 
 std::wstring Graphics::GetInfo() noexcept

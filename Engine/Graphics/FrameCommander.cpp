@@ -1,63 +1,83 @@
-#include "..\Headers\FrameCommander.h"
-#include "..\Headers\Window.h"
+#include "../Headers/FrameCommander.h"
+#include "../Headers/Window.h"
+#include "../Headers/Scene/Scene.h"
+#include "../Headers/Timer.h"
 
-FrameCommander::FrameCommander(Window* pWindow, ResourceManager* pRM) noexcept
+FrameCommander::FrameCommander(Window* pWindow, Timer* pTimer) noexcept
 	:
 	pGraphics(pWindow->GetGraphics()),
-	pRM(pRM)
+	pTimer(pTimer)
 {
 }
 
 void FrameCommander::SetBackgroundColor(float r, float g, float b) noexcept
 {
-	bg[0] = r;
-	bg[1] = g;
-	bg[2] = b;
+	BackgroundColor.x = r;
+	BackgroundColor.y = g;
+	BackgroundColor.z = b;
 }
 
 void FrameCommander::ChangeBackgroundColor(float dr, float dg, float db) noexcept
 {
-	bg[0] += dr;
-	bg[1] += dg;
-	bg[2] += db;
+	BackgroundColor.x += dr;
+	BackgroundColor.y += dg;
+	BackgroundColor.z += db;
+}
+
+void FrameCommander::SetScene(std::shared_ptr<Scene> pScene)
+{
+	if (pScene)
+		this->pScene = pScene;
+	else
+		throw std::exception("Scene was nullptr");
+}
+
+void FrameCommander::SetupInit()
+{
+	pGraphics->SetupInit();
+}
+
+void FrameCommander::InitializeResources()
+{
+	if (pScene)
+		pScene->InitializeResources();
+	else
+		throw std::exception("Set scene to frame commander befor preparetion");
+}
+
+void FrameCommander::Update()
+{
+	pScene->Update();
+	//pResourceManager->Update();
 }
 
 void FrameCommander::Render()
 {
-	pGraphics->Setup(bg[0], bg[1], bg[2]);
+	float dt = pTimer->Mark();
+	pGraphics->Setup(BackgroundColor.x, BackgroundColor.y, BackgroundColor.z);
 
-	// Bind global heap.
-	pRM->Heap.Bind(pGraphics);
+	auto* res = &pScene->SceneResources;
 
-	auto Render = [&](std::unordered_map<std::string, ResourceManager::PipeLineResources>& Resources)
-	{
-		// Bind pipelinestate object.
-		for (auto& PSO : Resources)
-		{
-			PSO.second.pPipeLineStateObject->Bind(pGraphics);
+	res->pColorPass->Bind();
+	res->pColorPass->Execute();
 
-			// Bind rootsignatures.
-			for (auto& RS : PSO.second.RootSignatures)
-			{
-				RS.second.pRootSignature->Bind(pGraphics);
+	res->pTexturePass->Bind();
+	res->pTexturePass->Execute();
 
-				// And finaly render objects.
-				for (auto& obj : RS.second.DrawIndexed)
-					obj.second.DrawIndexed(pGraphics);
-			}
-		}
-	};
+	res->pRTXPass->Execute();
 
-	Render(pRM->PSO_Drawables);
-
-	Render(pRM->UI_PSO_Drawables);
+	res->pPhysx->Simulate(dt);
 
 	pGraphics->Execute();
 }
 
-FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, ResourceManager* pRM) noexcept
+FrameCommander::~FrameCommander()
+{
+}
+
+FrameCommanderHWND::FrameCommanderHWND(Window* pWindow, Timer* pTimer) noexcept
 	:
-	FrameCommander(pWindow, pRM)
+	FrameCommander(pWindow, pTimer)
 {
 	pWindow->DisableVSync();
 	pWindow->SleepTime = 1;

@@ -20,10 +20,11 @@ protected:
 	ID3D12Resource* pCopyBuffer = nullptr;
 };
 
-class VertexBuffer : public Buffer, public Bindable
+class VertexBuffer : public Buffer, public Resource
 {
 	friend class Drawable;
 	friend class DrawableArray;
+	friend class RTXResources;
 public:
 	VertexBuffer(const void* pData, UINT Stride, UINT DataSize, UINT VetexCount, UINT Slot = 0);
 	void Bind(Graphics* pGraphics) override;
@@ -40,10 +41,11 @@ private:
 	std::string key;
 };
 
-class IndexBuffer : public Buffer, public Bindable
+class IndexBuffer : public Buffer, public Resource
 {
 	friend class Drawable;
 	friend class DrawableArray;
+	friend class RTXResources;
 public:
 	IndexBuffer(std::vector<unsigned int>* Indecies) noexcept;
 	void Bind(Graphics* pGraphics) override;
@@ -61,9 +63,12 @@ private:
 
 class ConstantBuffer : public Resource
 {
+	friend class RTXResources;
+	friend class MeshMaterial;
 public:
 	ConstantBuffer(const void* pData, unsigned int DataSize);
-	void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) override;
+	void Bind(Graphics* pGraphics) override;
+	void Initialize(Graphics* pGraphics) override;
 	void Update(const void* pData, UINT DataSize);
 	~ConstantBuffer() override;
 
@@ -72,6 +77,7 @@ private:
 	D3D12_CONSTANT_BUFFER_VIEW_DESC BufferView;
 	const void* pData;
 	UINT DataSize;
+	UINT BufferSize;
 };
 
 #endif

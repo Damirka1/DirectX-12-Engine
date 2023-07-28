@@ -1,35 +1,58 @@
 #include "Application.h"
 #include <random>
+#include <thread>
 
 Application::Application(HINSTANCE hInstance)
-	:
-	Con(L"DirectX 12 Console")
 {
-	pWindow = new Window(hInstance, L"DirectX 12 Engine", 1280, 720);
-	Con << pWindow->GetGraphics()->GetInfo().c_str();
-	pWindow->Show();
-	pWindow->GetMouse()->EnableRawInput();
-	cam = new Camera(pWindow->GetGraphicsResolution());
-	cam->SetSensitivity(0.005f);
-	RM = new ResourceManager(pWindow);
-	FC = new FrameCommander(pWindow, RM);
-	FC->SetBackgroundColor(0.2f, 0.2f, 0.2f);
+	Core = new EngineCore(hInstance);
+	Core->PrintGraphicsInfoToConsole();
+	Core->ShowWindow();
 
-	Con << std::to_wstring(pWindow->TimerPeek()).c_str();
+	kb = Core->GetKeyboardInput();
+	ms = Core->GetMouseInput();
 
-	RM->InitializeResources(pWindow);
+	ms->EnableRawInput();
 
-	RM->SetCamera(cam);
+	pCamera = new Camera(std::make_pair<short, short>(1280, 720));
+	pCamera->SetSensitivity(0.005f);
+
+	Core->SetBackgroundColor(0.2f, 0.2f, 0.2f);
+
+	pCamera->SetPos({ 0.0f, 20.0f, -30.0f });
+	pCamera->SetRotation(DirectX::XMConvertToRadians(45), 0);
+
+	pScene = Core->CreateScene();
+	pScene->SetCamera(pCamera);
+
+	models.push_back(pScene->CreatePlane({ 0, -20, 0 }, { 0, 0, 0 }));
+
+	models.push_back(pScene->CreatePlane({ 0, -20, -20 }, { DirectX::XMConvertToRadians(-90), 0, 0 }));
+
+	models.push_back(pScene->CreatePlane({ 0, -20, 20 }, { DirectX::XMConvertToRadians(90), 0, 0 }));
+
+	models.push_back(pScene->CreatePlane({ 20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(-90) }));
+
+	models.push_back(pScene->CreatePlane({ -20, -20, 0 }, { 0, 0, DirectX::XMConvertToRadians(90) }));
+
 	
+	std::default_random_engine e;
+	std::uniform_real_distribution<float> dis(-15, 16); // range [-15, 15]
+
+	for (int i = 0; i < 100; i++)
+		cubes.push_back(pScene->CreateCube({ dis(e), dis(e), dis(e) }));
+
+	Core->SetCurrentScene(pScene);
+	Core->PrepareDX();
 }
 
 void Application::Run()
 {
-	while (pWindow->IsExist())
+	static float z = 0.0f;
+	static int index = 0;
+	bool add = false;
+	while (Core->WindowIsExist())
 	{
-		pWindow->ProcessMessages();
-
-		auto kb = pWindow->GetKeyboard();
+		Core->SetupJobs();
 
 		while (auto El = kb->GetEvent())
 		{
@@ -39,9 +62,14 @@ void Application::Run()
 			auto Ev = El.value();
 
 			if (Ev == '1')
-				pWindow->DisableCursor();
+				Core->DisableCursor();
 			else if (Ev == '2')
-				pWindow->EnableCursor();
+				Core->EnableCursor();
+			else if (Ev == '3')
+			{
+				add = true;
+			}
+
 		}
 
 		float speed = 1.0f;
@@ -50,16 +78,14 @@ void Application::Run()
 			speed = 10.0f;
 
 		if (kb->KeyIsPressed('W'))
-			cam->Translate({ 0.0f, 0.0f, 0.1f * speed });
+			pCamera->Translate({ 0.0f, 0.0f, 0.1f * speed });
 		if (kb->KeyIsPressed('S'))
-			cam->Translate({ 0.0f, 0.0f, -0.1f * speed });
+			pCamera->Translate({ 0.0f, 0.0f, -0.1f * speed });
 		if (kb->KeyIsPressed('D'))
-			cam->Translate({ 0.1f * speed, 0.0f, 0.0f });
+			pCamera->Translate({ 0.1f * speed, 0.0f, 0.0f });
 		if (kb->KeyIsPressed('A'))
-			cam->Translate({ -0.1f * speed , 0.0f, 0.0f });
+			pCamera->Translate({ -0.1f * speed , 0.0f, 0.0f });
 
-
-		auto ms = pWindow->GetMouse();
 		if (!ms->IsCursorEnabled())
 		{
 			while (auto El = ms->GetRawData())
@@ -67,24 +93,42 @@ void Application::Run()
 				if (El == std::nullopt)
 					continue;
 				auto delta = El.value();
-				cam->Rotate(delta.dx, delta.dy);
+				pCamera->Rotate(delta.dx, delta.dy);
 			}
 		}
 
-		for (Model* m : models)
-			m->Update();
+		Core->Update();
 
-		// Render.
-		FC->Render();
+		//for (auto m : spheres)
+		//	m->UpdateBody(pCamera);
+
+		//for (auto m : cubes)
+		//	m->UpdateBody(pCamera);
+
+		if (add)
+		{
+			//auto s = Core->CreateSphere({0, 5.0f, 0});
+			//s->AddForce({2.2f, 0.0f, 20.0f});
+			//spheres.push_back(s);
+			cubes.push_back(pScene->CreateCube({ 0, 5.0f, 0 }));
+
+			//auto c = Core->CreateCube();
+			////c->AddForce({ 2.2f, 0.0f, 20.0f });
+			//cubes.push_back(c);
+			//pScene->AddModel(c);
+
+
+			add = false;
+			z += 5.0f;
+			index++;
+		}
+
+		Core->ExecuteJobs();
 	}
 }
 
 Application::~Application()
 {
-	delete pWindow;
-	delete FC;
-	delete RM;
-	delete cam;
-	for (Model* m : models)
-		delete m;
+	delete Core;
+	delete pCamera;
 }

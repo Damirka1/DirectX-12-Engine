@@ -1,6 +1,8 @@
 #include "..\..\Headers\Graphics\Resources\PipeLineState.h"
+#include "..\..\Headers\Graphics\Resources\Resource.h"
 #include "..\..\Headers\Utility.h"
 #include "..\..\Headers\Graphics\Error_Check.h"
+#include "../../Headers/Graphics.h"
 
 
 PSO_Layout::PSO_Layout(unsigned int RTC, unsigned int SmpCount) noexcept
@@ -61,14 +63,17 @@ std::string PSO_Layout::GetCode() noexcept
 	return code;
 }
 
-PipelineStateObject::PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay) noexcept
+PipelineStateObject::PipelineStateObject(PSO_Layout& pLay, VertexLayout& vLay, std::shared_ptr<RootSignature> pRootSignature) noexcept
 	:
 	P_Lay(pLay),
-	V_Lay(vLay)
+	V_Lay(vLay),
+	pRootSignature(std::move(pRootSignature))
 
-{}
+{
+	Name = "PipelineStateObjetct";
+}
 
-void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)
+void PipelineStateObject::Initialize(Graphics* pGraphics)
 {
 	if (Initialized)
 		return;
@@ -77,7 +82,7 @@ void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 	const auto& il = V_Lay.GetDesc();
 	psoDesc.InputLayout = { il.data(), static_cast<UINT>(il.size()) };
-	psoDesc.pRootSignature = pRS->pRootSignature;
+	psoDesc.pRootSignature = pRootSignature->pRootSignature;
 	psoDesc.DepthStencilState = { 0 };
 	psoDesc.DepthStencilState.DepthEnable = P_Lay.Depth;
 	psoDesc.DSVFormat = pGraphics->GetDSVFormat();
@@ -98,7 +103,8 @@ void PipelineStateObject::Initialize(Graphics* pGraphics, RootSignature* pRS)
 	}
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.NumRenderTargets = P_Lay.RenderTargetsCount;
-	psoDesc.RTVFormats[0] = pGraphics->GetRTVFormat();
+	for(int i = 0; i < psoDesc.NumRenderTargets; i++)
+		psoDesc.RTVFormats[i] = pGraphics->GetRTVFormat();
 	psoDesc.SampleDesc.Count = P_Lay.SampleCount;
 
 
@@ -167,6 +173,16 @@ PipelineStateObject::~PipelineStateObject()
 {
 	pPipelineStateObject->Release();
 	pPipelineStateObject = nullptr;
+}
+
+std::string PipelineStateObject::GetKey() noexcept
+{
+	return KeyCode;
+}
+
+void PipelineStateObject::SetKey(std::string Key) noexcept
+{
+	this->KeyCode = Key;
 }
 
 void PipelineStateObject::ReadShader(std::string Path, D3D12_SHADER_BYTECODE* pDesc)

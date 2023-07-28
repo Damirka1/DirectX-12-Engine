@@ -2,6 +2,7 @@
 #include "..\Headers\Graphics\Resources\UI_Element.h"
 #include "..\Headers\Input\Keyboard.h"
 #include "..\Headers\Input\Mouse.h"
+#include "..\Headers\Graphics.h"
 #include <exception>
 
 Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short Height, bool VSync)
@@ -10,8 +11,7 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 	Width(Width),
 	Height(Height),
 	VSync(VSync),
-	Visible(false),
-	t(new Timer)
+	Visible(false)
 {
 	WNDCLASSEX wc = { 0 };
 	wc.cbSize = sizeof(wc);
@@ -80,11 +80,11 @@ Window::Window(HINSTANCE hInst, const wchar_t* WindowName, short Width, short He
 		pGraphics->VSync = 0;
 
 	// Create input handlers.
-	pKeyboard = new Keyboard();
-	pMouse = new Mouse();
+	pKeyboard = std::make_shared<Keyboard>();
+	pMouse = std::make_shared<Mouse>();
 
-	AddHandler(pKeyboard, "KeyBoard");
-	AddHandler(pMouse, "Mouse");
+	AddHandler(&*pKeyboard, "Keyboard");
+	AddHandler(&*pMouse, "Mouse");
 
 	SetCursor(LoadCursorW(0, IDC_ARROW));
 }
@@ -97,10 +97,7 @@ Window::Window(const wchar_t* WindowName, short Width, short Height, bool VSync)
 
 Window::~Window()
 {
-	delete t;
 	delete pGraphics;
-	delete pKeyboard;
-	delete pMouse;
 }
 
 void Window::SetWindowName(const char* Name) const noexcept
@@ -180,16 +177,6 @@ std::pair<short, short> Window::GetGraphicsResolution() const noexcept
 	return pGraphics->GetResolution();
 }
 
-float Window::TimerPeek() const noexcept
-{
-	return t->Peek();
-}
-
-float Window::TimerMark() const noexcept
-{
-	return t->Mark();
-}
-
 bool Window::AddHandler(MessageHandler* ptr, const char* Name) noexcept
 {
 	const auto i = MessageHandlers.find(Name);
@@ -212,38 +199,38 @@ bool Window::RemoveHandler(const char* Name) noexcept
 	return false;
 }
 
-void Window::AddElement(UI_Element* pElement)
-{
-	if (pElement)
-	{
-		auto i = UI_elements.find(pElement->ObjectName);
-
-		if (i == UI_elements.end())
-		{
-			UI_elements[pElement->ObjectName] = pElement;
-		}
-		else
-			throw std::exception((std::string("Element with name: ") + pElement->ObjectName + " already exsist").c_str());
-	}
-}
-
-void Window::RemoveElement(UI_Element* pElement) noexcept
-{
-	if(pElement)
-		UI_elements.erase(pElement->ObjectName);
-}
+//void Window::AddElement(UI_Element* pElement)
+//{
+//	if (pElement)
+//	{
+//		auto i = UI_elements.find(pElement->ObjectName);
+//
+//		if (i == UI_elements.end())
+//		{
+//			UI_elements[pElement->ObjectName] = pElement;
+//		}
+//		else
+//			throw std::exception((std::string("Element with name: ") + pElement->ObjectName + " already exsist").c_str());
+//	}
+//}
+//
+//void Window::RemoveElement(UI_Element* pElement) noexcept
+//{
+//	if(pElement)
+//		UI_elements.erase(pElement->ObjectName);
+//}
 
 const Graphics* Window::GetGraphics() const noexcept
 {
 	return pGraphics;
 }
 
-const Keyboard* Window::GetKeyboard() const noexcept
+std::shared_ptr<const Keyboard> Window::GetKeyboard() const noexcept
 {
 	return pKeyboard;
 }
 
-const Mouse* Window::GetMouse() const noexcept
+std::shared_ptr<const Mouse> Window::GetMouse() const noexcept
 {
 	return pMouse;
 }
@@ -253,12 +240,12 @@ Graphics* Window::GetGraphics() noexcept
 	return pGraphics;
 }
 
-Keyboard* Window::GetKeyboard() noexcept
+std::shared_ptr<Keyboard> Window::GetKeyboard() noexcept
 {
 	return pKeyboard;
 }
 
-Mouse* Window::GetMouse() noexcept
+std::shared_ptr<Mouse> Window::GetMouse() noexcept
 {
 	return pMouse;
 }

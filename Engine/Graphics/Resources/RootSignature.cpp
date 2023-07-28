@@ -1,13 +1,15 @@
-#include "..\..\Headers\Graphics\Resources\RootSignature.h"
-#include "..\..\Headers\Graphics\d3dx12.h"
-#include "..\..\Headers\Graphics\Error_Check.h"
-#include "..\..\Headers\Graphics\Resources\Heap.h"
+#include "../../Headers/Graphics/Resources/RootSignature.h"
+#include "../../Headers/Graphics/d3dx12.h"
+#include "../../Headers/Graphics/Error_Check.h"
+#include "../../Headers/Graphics/Resources/Resource.h"
 #include <array>
 
 RootSignature::RootSignature(RS_Layout& Lay) noexcept
     :
     Lay(Lay)
-{}
+{
+    Name = "RootSignature";
+}
 
 void RootSignature::Initialize(Graphics* pGraphics)
 {
@@ -87,6 +89,16 @@ RootSignature::~RootSignature()
 {
     pRootSignature->Release();
     pRootSignature = nullptr;
+}
+
+std::string RootSignature::GetKey()
+{
+    return KeyCode;
+}
+
+void RootSignature::SetKey(std::string Key)
+{
+    this->KeyCode = Key;
 }
 
 RS_Layout::RS_Layout(D3D12_ROOT_SIGNATURE_FLAGS F) noexcept

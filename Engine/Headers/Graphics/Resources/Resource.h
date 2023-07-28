@@ -1,26 +1,55 @@
 #pragma once
 #ifndef RESOURCE_HEADER
 #define RESOURCE_HEADER
-#include "..\..\Graphics.h"
+#include "../../Graphics.h"
+#include "Heap/Descriptor.h"
 
 class Resource
 {
 	friend class ResourceManager;
-
-protected:
-	virtual void Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle) = 0;
-
-	virtual ~Resource(){}
-
-	void SetHeapIndex(UINT Table, UINT Range, UINT Index) noexcept
+	friend class RTXResources;
+public:
+	virtual void Bind(Graphics* pGraphics)
 	{
-		this->Table = Table;
-		this->Range = Range;
+
+	};
+
+	void SetDescriptor(Descriptor* pDescriptor)
+	{
+		this->pDescriptor = pDescriptor;
+	}
+
+	void RemoveDescriptor()
+	{
+		pDescriptor = nullptr;
+	}
+
+	bool HasDescriptor()
+	{
+		return pDescriptor;
+	}
+protected:
+	virtual void Initialize(Graphics* pGraphics)
+	{
+	};
+
+	virtual ~Resource()
+	{
+		if (pDescriptor)
+			pDescriptor->RemoveResource();
+	}
+
+	void SetHeapIndex(UINT Index) noexcept
+	{
 		this->Index = Index;
 	}
 
+	std::string Name;
 	bool Initialized = false;
-	UINT Table = 0u, Range = 0u, Index = 0u;
+	UINT Index = 0u;
+
+	Descriptor* pDescriptor = nullptr;
+
 };
 
 #endif

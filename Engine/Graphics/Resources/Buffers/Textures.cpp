@@ -7,11 +7,17 @@ Texture2D::Texture2D(std::unique_ptr<DirectX::ScratchImage> pImage, D3D12_RESOUR
 	pDesc(*pDesc),
 	OnlyPixelShader(OnlyPixelShader)
 {
+	Name = "Texture2D";
 }
 
-void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHandle)
+void Texture2D::Bind(Graphics* pGraphics)
 {
-	ID3D12Device8* pDevice = pGraphics->GetDevice();
+	pGraphics->GetCommandList()->SetGraphicsRootDescriptorTable(Index, pDescriptor->GetGpuHandle());
+}
+
+void Texture2D::Initialize(Graphics* pGraphics)
+{
+	ID3D12Device9* pDevice = pGraphics->GetDevice();
 
 	if (!Initialized)
 	{
@@ -21,7 +27,7 @@ void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHa
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&pDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_COMMON,
 			nullptr,
 			IID_PPV_ARGS(&pBuffer)));
 
@@ -47,7 +53,6 @@ void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHa
 		pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pBuffer, D3D12_RESOURCE_STATE_COPY_DEST, State));
 
 		pGraphics->AddToRelease(pCopyBuffer);
-
 		Initialized = true;
 	}
 
@@ -57,7 +62,9 @@ void Texture2D::Initialize(Graphics* pGraphics, D3D12_CPU_DESCRIPTOR_HANDLE& pHa
 	srvDesc.Format = pDesc.Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
-	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, pHandle);
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	pDevice->CreateShaderResourceView(pBuffer, &srvDesc, pDescriptor->GetCpuHandle());
 }
 
 Texture2D::~Texture2D()
