@@ -11,6 +11,8 @@
 
 #include "../../ResourceManager.h"
 
+#include "../Passes/ColorRenderPass.h"
+
 RTXResources::RTXResources(Graphics* pGraphics, ResourceManager* pRM)
 {
 	this->pGraphics = pGraphics;
@@ -252,8 +254,8 @@ void RTXResources::CreateTopLevelAS()
 	// Gather all the instances into the builder helper
 	int instanceId = 0;
 	for (auto b = BlasResources.begin(), e = BlasResources.end(); b != e; ++b)
-		for (auto bm = b->second->meshes.begin(), em = b->second->meshes.end(); bm != em; ++bm)
-			topLevelASGenerator.AddInstance(b->second->Buffers.pResult, (*bm)->GetPosMatrix(), static_cast<UINT>(instanceId++), static_cast<UINT>(b->second->HitGroup));
+		for (auto bm = b->second->meshes.begin(), em = b->second->meshes.end(); bm != em; ++bm, instanceId++)
+			topLevelASGenerator.AddInstance(b->second->Buffers.pResult, (*bm)->GetPosMatrix(), static_cast<UINT>(instanceId), static_cast<UINT>(instanceId));
 
 	// As for the bottom-level AS, the building the AS requires some scratch space
 	// to store temporary data in addition to the actual AS. In the case of the
@@ -310,15 +312,7 @@ ID3D12RootSignature* RTXResources::CreateHitSignature()
 {
 	nv_helpers_dx12::RootSignatureGenerator rsc;
 
-	rsc.AddHeapRangesParameter(
-		{
-		 {0 /*t0*/, 1, 0,
-		  D3D12_DESCRIPTOR_RANGE_TYPE_SRV /*Top-level acceleration structure*/,
-		  1},
-		  {0 /*b0*/, 1, 0,
-		  D3D12_DESCRIPTOR_RANGE_TYPE_CBV /* Const buffer */,
-		  2}
-		});
+	rsc.AddRootParameter(D3D12_ROOT_PARAMETER_TYPE_CBV, 0);
 
 	return rsc.Generate(pGraphics->GetDevice(), true);
 }
@@ -499,8 +493,16 @@ void RTXResources::CreateShaderBindingTable()
 	// communicate their results through the ray payload
 	SbtHelper.AddMissProgram(L"Miss", {});
 
-	// Adding the triangle hit shader
-	SbtHelper.AddHitGroup(L"HitGroup", { heapPointer });
+	for (auto b = BlasResources.begin(), e = BlasResources.end(); b != e; ++b)
+	{
+		for (auto m : b->second->meshes)
+		{
+			// Casting because we render only meshes with color material
+			std::shared_ptr<ConstantBuffer> cb = std::static_pointer_cast<ConstantBuffer>(m->Material->Resources[0]);
+			// Adding the triangle hit shader
+			SbtHelper.AddHitGroup(L"HitGroup", { (void*)(cb->pBuffer->GetGPUVirtualAddress()) });
+		}
+	}	
 
 	// Compute the size of the SBT given the number of shaders and their
 	// parameters

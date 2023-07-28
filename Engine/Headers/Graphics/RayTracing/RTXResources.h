@@ -13,6 +13,7 @@
 
 class DrawableMesh;
 class Camera;
+class ColoredRenderPass;
 
 class RTXResources 
 {

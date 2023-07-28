@@ -56,17 +56,13 @@ void FrameCommander::Render()
 	float dt = pTimer->Mark();
 	pGraphics->Setup(BackgroundColor.x, BackgroundColor.y, BackgroundColor.z);
 
-	/*pResourceManager->CopyBuffer();
-
-	pResourceManager->DispatchRays();*/
-
 	auto* res = &pScene->SceneResources;
 
-	res->pColorPass->Bind();
+	/*res->pColorPass->Bind();
 	res->pColorPass->Execute();
 
 	res->pTexturePass->Bind();
-	res->pTexturePass->Execute();
+	res->pTexturePass->Execute();*/
 
 	res->pRTXPass->Execute();
 

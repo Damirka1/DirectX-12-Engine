@@ -7,6 +7,7 @@
 class Resource
 {
 	friend class ResourceManager;
+	friend class RTXResources;
 public:
 	virtual void Bind(Graphics* pGraphics)
 	{

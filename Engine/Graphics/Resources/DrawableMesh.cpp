@@ -92,6 +92,7 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 		{
 			pRM = pSceneResources->pColorPass->GetResourceManager();
 			pSceneResources->pColorPass->AddMesh(this);
+			pSceneResources->pRTXPass->AddMesh(this);
 		}
 		else
 		{
@@ -104,8 +105,6 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 
 		pConstBuffer = pRM->CreateConstBuffer(&DxT, sizeof(DxTransform), 0);
 	}
-
-	pSceneResources->pRTXPass->AddMesh(this);
 }
 
 void DrawableMesh::BindMaterial(Graphics* pGraphics)

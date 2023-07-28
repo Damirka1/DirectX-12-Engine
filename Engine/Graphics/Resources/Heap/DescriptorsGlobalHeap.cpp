@@ -20,7 +20,7 @@ void DescriptorsGlobalHeap::IncrementDescCountForCbvSrvUav()
 	DescHeapArr0.IncrementDescriptorsCount();
 }
 
-void DescriptorsGlobalHeap::IncrementDescCoutForSamplers()
+void DescriptorsGlobalHeap::IncrementDescCountForSamplers()
 {
 	DescHeapArr1.IncrementDescriptorsCount();
 }

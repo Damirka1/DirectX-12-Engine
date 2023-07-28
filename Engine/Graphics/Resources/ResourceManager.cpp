@@ -14,8 +14,6 @@ ResourceManager::ResourceManager(Graphics* pGraphics) noexcept
 	pGraphics(pGraphics)
 {
 	Heap.Initialize(pGraphics);
-
-	//rt = new RTXResources(pGraphics, this);
 }
 
 std::shared_ptr<VertexBuffer> ResourceManager::CreateVertexBuffer(const void* pData, unsigned int Stride, unsigned int DataSize, unsigned int VertexCount, unsigned int Slot) noexcept
@@ -200,7 +198,7 @@ std::shared_ptr<Sampler> ResourceManager::CreateDefaultSampler(UINT Index) noexc
 		res->SetHeapIndex(Index);
 
 		// Increment desc count.
-		Heap.IncrementDescCoutForSamplers();
+		Heap.IncrementDescCountForSamplers();
 
 		Samplers[key] = res;
 		return res;

@@ -1,5 +1,15 @@
 #include "Common.hlsl"
 
+// Perspective Camera and light info
+cbuffer CameraParams : register(b0)
+{
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewI;
+    float4x4 projectionI;
+    float3 lightPos;
+}
+
 // Raytracing output texture, accessed as a UAV
 RWTexture2D< float4 > gOutput : register(u0);
 
@@ -83,8 +93,11 @@ void RayGen() {
     /*if(payload.colorAndDistance.r < 0)
         gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, 1.f);*/
     
-    //gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1);
+    
 
-    if (payload.colorAndDistance.w <= -2)
-        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb * payload.colorAndDistance.rgb, gOutput[launchIndex].a);
+    /*if (payload.colorAndDistance.w <= -2)
+        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb * payload.colorAndDistance.rgb, gOutput[launchIndex].a);*/
+
+    //if(payload.colorAndDistance.w < -1)
+    gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1);
 }

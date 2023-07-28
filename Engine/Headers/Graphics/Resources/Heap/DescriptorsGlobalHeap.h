@@ -12,7 +12,7 @@ public:
 
 	void IncrementDescCountForCbvSrvUav();
 
-	void IncrementDescCoutForSamplers();
+	void IncrementDescCountForSamplers();
 
 	void Initialize(Graphics* pGraphics);
 
