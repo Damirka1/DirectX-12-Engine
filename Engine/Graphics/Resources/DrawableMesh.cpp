@@ -12,20 +12,20 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 	:
 	Tag(path.string() + ":scale:" + std::to_string(scale))
 {
-	bool HasTexCoords = m->HasTextureCoords(0);
+	//bool HasTexCoords = m->HasTextureCoords(0);
 
 	std::vector<FLOAT> Buffer;
 	std::vector<UINT> Indecies;
 
 	// Reserve space for vertecies, normals, tangents and bitangents
-	int reserveSpace = (m->mNumVertices * 3) * 4;
+	int reserveSpace = ((m->mNumVertices * 3) * 4) + (m->mNumVertices * 2);
 
-	if (HasTexCoords)
+	/*if (HasTexCoords)
 	{
 		Buffer.reserve(reserveSpace + m->mNumVertices * 2);
 	}
-	else 
-		Buffer.reserve(reserveSpace);
+	else */
+	Buffer.reserve(reserveSpace);
 
 	if (m->mFaces[0].mNumIndices != 3)
 		throw std::exception("Not triangulated mesh");
@@ -53,12 +53,16 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 		Buffer.push_back(vbtn.y);
 		Buffer.push_back(vbtn.z);
 
-		if (HasTexCoords)
+		/*if (HasTexCoords)
 		{
 			aiVector3D vt = m->mTextureCoords[0][i];
 			Buffer.push_back(vt.x);
 			Buffer.push_back(vt.y);
-		}
+		}*/
+
+		aiVector3D vt = m->mTextureCoords[0][i];
+		Buffer.push_back(vt.x);
+		Buffer.push_back(vt.y);
 	}
 
 	for (size_t i = 0; i < m->mNumFaces; i++)
@@ -69,7 +73,8 @@ DrawableMesh::DrawableMesh(SceneResources* pSceneResources, aiMesh* m, aiMateria
 		Indecies.push_back(face.mIndices[2]);	
 	}
 
-	int count = HasTexCoords ? 3 * 4 + 2 : 3 * 4;
+	//int count = HasTexCoords ? 3 * 4 + 2 : 3 * 4;
+	int count = 3 * 4 + 2;
 
 	if (!mat)
 	{	

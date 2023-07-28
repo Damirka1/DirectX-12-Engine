@@ -38,8 +38,8 @@ Application::Application(HINSTANCE hInstance)
 	std::default_random_engine e;
 	std::uniform_real_distribution<float> dis(-15, 16); // range [-15, 15]
 
-	for (int i = 0; i < 20; i++)
-		spheres.push_back(pScene->CreateSphere({ dis(e), dis(e), dis(e) }));
+	for (int i = 0; i < 100; i++)
+		cubes.push_back(pScene->CreateCube({ dis(e), dis(e), dis(e) }));
 
 	Core->SetCurrentScene(pScene);
 	Core->PrepareDX();
@@ -110,7 +110,7 @@ void Application::Run()
 			//auto s = Core->CreateSphere({0, 5.0f, 0});
 			//s->AddForce({2.2f, 0.0f, 20.0f});
 			//spheres.push_back(s);
-			spheres.push_back(pScene->CreateSphere({ 0, 5.0f, 0 }));
+			cubes.push_back(pScene->CreateCube({ 0, 5.0f, 0 }));
 
 			//auto c = Core->CreateCube();
 			////c->AddForce({ 2.2f, 0.0f, 20.0f });

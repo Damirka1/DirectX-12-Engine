@@ -174,9 +174,9 @@ void RTXResources::Update(Camera* pCamera)
 	b.IView = DirectX::XMMatrixInverse(&det, b.View);
 	b.IProjection = DirectX::XMMatrixInverse(&det, b.Projection);
 	
-	float df = timer.Peek();
+	//float df = timer.Peek();
 
-	b.LightPos = {b.LightPos.x + sinf(df) * 50, b.LightPos.y, b.LightPos.z + cosf(df) * 50 };
+	//b.LightPos = {b.LightPos.x + sinf(df) * 50, b.LightPos.y, b.LightPos.z + cosf(df) * 50 };
 
 	pConstBuffer->Update(&b, sizeof(b));
 }
@@ -219,7 +219,7 @@ void RTXResources::CreateBottomLevelAS()
 			std::shared_ptr<IndexBuffer> pIndexBuffer = b->second->meshes.front()->pIndexBuffer;
 
 			// Adding all vertex buffers and not transforming their position.
-			bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0);
+			bottomLevelAS.AddVertexBuffer(pVertexBuffer->pBuffer, 0, pVertexBuffer->VertexCount, pVertexBuffer->Stride, pIndexBuffer->pBuffer, 0, pIndexBuffer->IndeciesCount, nullptr, 0, true);
 
 			// The AS build requires some scratch space to store temporary information.
 			// The amount of scratch memory is dependent on the scene complexity.
@@ -312,7 +312,10 @@ ID3D12RootSignature* RTXResources::CreateHitSignature()
 {
 	nv_helpers_dx12::RootSignatureGenerator rsc;
 
-	rsc.AddRootParameter(D3D12_ROOT_PARAMETER_TYPE_CBV, 0);
+	rsc.AddRootParameter(D3D12_ROOT_PARAMETER_TYPE_SRV, 0); // Vertex buffer - t0
+	rsc.AddRootParameter(D3D12_ROOT_PARAMETER_TYPE_SRV, 1); // Index buffer  - t1
+
+	rsc.AddRootParameter(D3D12_ROOT_PARAMETER_TYPE_CBV, 0); // Const buffer  - b0
 
 	return rsc.Generate(pGraphics->GetDevice(), true);
 }
@@ -384,7 +387,10 @@ void RTXResources::CreateRaytracingPipeline()
 	// exchanged between shaders, such as the HitInfo structure in the HLSL code.
 	// It is important to keep this value as low as possible as a too high value
 	// would result in unnecessary memory consumption and cache trashing.
-	pipeline.SetMaxPayloadSize(4 * sizeof(float)); // RGB + distance
+	pipeline.SetMaxPayloadSize(
+		(3 * sizeof(float) * 3) + // Vertex pos, normals and hit origin
+		4 * sizeof(float) // RGB + distance
+	); 
 
 	// Upon hitting a surface, DXR can provide several attributes to the hit. In
 	// our sample we just use the barycentric coordinates defined by the weights
@@ -397,7 +403,7 @@ void RTXResources::CreateRaytracingPipeline()
 	// then requires a trace depth of 1. Note that this recursion depth should be
 	// kept to a minimum for best performance. Path tracing algorithms can be
 	// easily flattened into a simple loop in the ray generation.
-	pipeline.SetMaxRecursionDepth(2);
+	pipeline.SetMaxRecursionDepth(5);
 
 	// Compile the pipeline for execution on the GPU
 	pRtStateObject = pipeline.Generate();
@@ -500,7 +506,11 @@ void RTXResources::CreateShaderBindingTable()
 			// Casting because we render only meshes with color material
 			std::shared_ptr<ConstantBuffer> cb = std::static_pointer_cast<ConstantBuffer>(m->Material->Resources[0]);
 			// Adding the triangle hit shader
-			SbtHelper.AddHitGroup(L"HitGroup", { (void*)(cb->pBuffer->GetGPUVirtualAddress()) });
+			SbtHelper.AddHitGroup(L"HitGroup", {
+				(void*)(m->pVertexBuffer->pBuffer->GetGPUVirtualAddress()),
+				(void*)(m->pIndexBuffer->pBuffer->GetGPUVirtualAddress()),
+				(void*)(cb->pBuffer->GetGPUVirtualAddress())
+				});
 		}
 	}	
 

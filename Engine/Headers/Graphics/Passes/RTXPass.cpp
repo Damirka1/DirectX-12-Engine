@@ -25,8 +25,8 @@ void RTXPass::Initialize(Camera* pCamera)
 
 	if (pRTX->IsNeedUpdate())
 		pRTX->Initialize();
-	else
-		pRTX->Update(pCamera);
+	
+	pRTX->Update(pCamera);
 
 	pGraphics->Initialize();
 

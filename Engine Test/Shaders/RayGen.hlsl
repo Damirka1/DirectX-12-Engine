@@ -16,8 +16,8 @@ RWTexture2D< float4 > gOutput : register(u0);
 // Raytracing acceleration structure, accessed as a SRV
 RaytracingAccelerationStructure SceneBVH : register(t0);
 
-[shader("raygeneration")]
-void RayGen() {
+HitInfo TraceFirtsRay()
+{
     // Get the location within the dispatched 2D grid of work items
     // (often maps to pixels, so this could represent a pixel coordinate).
     uint2 launchIndex = DispatchRaysIndex().xy;
@@ -27,7 +27,7 @@ void RayGen() {
     // Initialize the ray payload
     HitInfo payload;
     payload.colorAndDistance = float4(1, 1, 1, 1);
-
+    
     // Define a ray, consisting of origin, direction, and the min-max distance
     // values
     RayDesc ray;
@@ -89,15 +89,85 @@ void RayGen() {
         // Payload associated to the ray, which will be used to communicate
         // between the hit/miss shaders and the raygen
         payload);
-
-    /*if(payload.colorAndDistance.r < 0)
-        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb - payload.colorAndDistance.rgb, 1.f);*/
     
+    return payload;
+}
+
+[shader("raygeneration")]
+void RayGen()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    float2 dims = float2(DispatchRaysDimensions().xy);
+    float2 d = (((launchIndex.xy + 0.5f) / dims.xy) * 2.f - 1.f);
     
-
-    /*if (payload.colorAndDistance.w <= -2)
-        gOutput[launchIndex] = float4(gOutput[launchIndex].rgb * payload.colorAndDistance.rgb, gOutput[launchIndex].a);*/
-
-    //if(payload.colorAndDistance.w < -1)
-    gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1);
+    HitInfo payload = TraceFirtsRay();
+    
+    // Sky color
+    float3 color = float3(0.2, 0.2, 0.2);
+    
+    // Hit to sky
+    if (payload.colorAndDistance.w < 0)
+    {
+        //gOutput[launchIndex] = float4(color, 1);
+        return;
+    }
+    
+    color = payload.colorAndDistance.rgb;
+    
+    RayDesc ray;
+    ray.Origin = payload.hitOrigin;
+    
+    float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
+    ray.Direction = reflect(mul(viewI, float4(target.xyz, 0)).xyz, payload.normal);
+    ray.TMin = 0.01;
+    ray.TMax = 100000;
+    
+    TraceRay(
+                SceneBVH,
+                RAY_FLAG_NONE,
+                0xFF,
+                0,
+                0,
+                0,
+                ray,
+                payload);
+    
+    float m = 0.5f;
+    
+    if (payload.colorAndDistance.w > 0)
+    {
+        color += payload.colorAndDistance.rgb * m;
+        
+        m *= 0.5f;
+    
+        for (int i = 0; i < 3; i++)
+        {
+            RayDesc ray;
+            ray.Origin = payload.hitOrigin;
+    
+            float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
+            ray.Direction = reflect(mul(viewI, float4(target.xyz, 0)).xyz, payload.normal);
+            ray.TMin = 0.01;
+            ray.TMax = 100000;
+    
+            TraceRay(
+                SceneBVH,
+                RAY_FLAG_NONE,
+                0xFF,
+                0,
+                0,
+                0,
+                ray,
+                payload);
+            
+            if (payload.colorAndDistance.w > 0)
+            {
+                color += payload.colorAndDistance.rgb * m;
+                m *= 0.5f;
+            }
+        }
+        
+        gOutput[launchIndex] = float4(color, 1);
+    }
+    
 }

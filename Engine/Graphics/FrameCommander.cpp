@@ -58,11 +58,11 @@ void FrameCommander::Render()
 
 	auto* res = &pScene->SceneResources;
 
-	/*res->pColorPass->Bind();
+	res->pColorPass->Bind();
 	res->pColorPass->Execute();
 
 	res->pTexturePass->Bind();
-	res->pTexturePass->Execute();*/
+	res->pTexturePass->Execute();
 
 	res->pRTXPass->Execute();
 

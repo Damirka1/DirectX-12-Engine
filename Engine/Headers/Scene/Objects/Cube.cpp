@@ -3,6 +3,7 @@
 #include "../../Headers/ResourceManager.h"
 #include "../../Headers/Scene/SceneResources.h"
 #include "../../Headers/Input/Camera.h"
+#include <random>
 
 Cube::Cube(SceneResources* pSceneResources, DirectX::XMFLOAT3 Pos, DirectX::XMFLOAT3 Rotation)
 	:
@@ -22,6 +23,15 @@ Cube::Cube(SceneResources* pSceneResources, DirectX::XMFLOAT3 Pos, DirectX::XMFL
 	pShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 	pPM->AddToScene(pRigidDynamic);
+
+	static std::default_random_engine e;
+	static std::uniform_real_distribution<float> dis(0, 1); // range [0, 1)
+
+	for (auto& m : Meshes)
+	{
+		DirectX::XMFLOAT3 color = { dis(e), dis(e), dis(e) };
+		m.UpdateColor(color);
+	}
 
 	//pRM->PrepareForRtx(this, 0);
 }

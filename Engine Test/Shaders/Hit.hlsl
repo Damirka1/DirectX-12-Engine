@@ -3,11 +3,6 @@
 //// Raytracing acceleration structure, accessed as a SRV
 //RaytracingAccelerationStructure SceneBVH : register(t0);
 
-cbuffer C : register(b0)
-{
-    float3 color;
-}
-
 //[shader("closesthit")]
 //void ClosestHit(inout HitInfo payload, Attributes attrib)
 //{
@@ -57,9 +52,39 @@ cbuffer C : register(b0)
 //        payload.colorAndDistance = float4(1, 1, 1, RayTCurrent());
 //}
 
+struct VertexLayout
+{
+    float3 vertex;
+    float3 normal;
+    float3 tan;
+    float3 bitan;
+    float2 tex;
+};
+
+StructuredBuffer<VertexLayout> VertexBuffer : register(t0);
+
+StructuredBuffer<uint> IndexBuffer : register(t1);
+
+cbuffer ConstBuffer : register(b0)
+{
+    float3 color;
+}
+
 [shader("closesthit")]
 void ClosestHit(inout HitInfo payload, Attributes attrib)
 {
+    float3 barycentrics = float3(1.f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
+    
+    uint vertId = IndexBuffer[PrimitiveIndex() * 3];
+    
+    VertexLayout v = VertexBuffer[vertId];
+    
+    float3 localVertex = v.vertex * barycentrics.x + v.vertex * barycentrics.y + v.vertex * barycentrics.z;
+    float3 localNormal = v.normal * barycentrics.x + v.normal * barycentrics.y + v.normal * barycentrics.z;
+    
+    payload.vertex = mul(localVertex, ObjectToWorld3x4());
+    payload.normal = mul(localNormal, ObjectToWorld3x4());
+    
+    payload.hitOrigin = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
     payload.colorAndDistance = float4(color, RayTCurrent());
-    //payload.colorAndDistance = float4(1,1,1, RayTCurrent());
 }

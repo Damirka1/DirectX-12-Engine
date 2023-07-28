@@ -5,6 +5,9 @@
 // D3D12_RAYTRACING_SHADER_CONFIG pipeline subobjet.
 struct HitInfo
 {
+	float3 vertex;
+	float3 normal;
+    float3 hitOrigin;
 	float4 colorAndDistance;
 };
 
