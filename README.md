@@ -11,4 +11,4 @@ To compile you need to have Windows SDK 10.0.19041.0 and higher.
 
 ## Some examples
 ![](Gifs/Image1.jpg)
-![](Gifs/Image2.png)
+![](Gifs/image2.png)
